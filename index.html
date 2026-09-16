@@ -32,8 +32,8 @@
 
         .native-cam-box { padding: 20px 10px; background: #0f172a; border-radius: 10px; border: 1px dashed #475569; margin-bottom: 15px; cursor: pointer; }
 
-        /* FIXED FLOATING SAVE BUTTON AT BOTTOM */
-        .floating-save-container { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(15, 23, 42, 0.95); padding: 12px 20px; box-shadow: 0 -4px 10px rgba(0,0,0,0.5); z-index: 90; backdrop-filter: blur(5px); }
+        /* FIXED FLOATING SAVE BUTTON AT BOTTOM (OUTSIDE PANELS) */
+        .floating-save-container { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(15, 23, 42, 0.95); padding: 12px 20px; box-shadow: 0 -4px 10px rgba(0,0,0,0.6); z-index: 9999; backdrop-filter: blur(5px); }
 
         /* REVIEW STUDIO */
         #review-workspace { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0f172a; z-index: 110; display: flex; flex-direction: column; justify-content: space-between; padding: 12px; overflow-y: auto; }
@@ -104,12 +104,12 @@
             
             <p style="font-size: 12px; color: #94a3b8; margin: 5px 0 0 0;">Scanned Pages (Tap thumbnail to re-edit):</p>
             <div id="scanned-pages-grid" class="scanned-grid"></div>
-            
-            <!-- FIXED FLOATING SAVE BUTTON -->
-            <div id="save-container" class="floating-save-container hidden">
-                <button id="btn-save-scans" class="primary-btn success-btn" onclick="generateScannedPDF()">💾 Save as PDF</button>
-            </div>
         </div>
+    </div>
+
+    <!-- FIXED FLOATING SAVE BUTTON (OUTSIDE PANELS, ALWAYS VISIBLE AT BOTTOM) -->
+    <div id="save-container" class="floating-save-container hidden">
+        <button id="btn-save-scans" class="primary-btn success-btn" onclick="generateScannedPDF()">💾 Save as PDF</button>
     </div>
 
     <!-- REVIEW & EDIT STUDIO -->
@@ -151,6 +151,13 @@
                 document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
                 document.getElementById(`panel-${t}`).classList.toggle('hidden', t !== tab);
             });
+            // Hide/Show floating save button based on active tab and buffer count
+            const saveContainer = document.getElementById('save-container');
+            if (tab === 'scan' && scannedPagesBuffer.length > 0) {
+                saveContainer.classList.remove('hidden');
+            } else {
+                saveContainer.classList.add('hidden');
+            }
         }
 
         function handleQueueFiles(files, type) {
@@ -208,7 +215,7 @@
                             const canvas = document.createElement('canvas');
                             canvas.width = img.width; canvas.height = img.height;
                             canvas.getContext('2d').drawImage(img, 0, 0);
-                            if (targetKB && fmt === 'image/jpeg') smartCompressImage(canvas, targetKB, file.name, resolve);
+                            if (targetKB && fmt === 'image/jpeg') smartтропоImage(canvas, targetKB, file.name, resolve);
                             else {
                                 canvas.toBlob(blob => {
                                     triggerDownload(blob, file.name.replace(/\.[^/.]+$/, "") + (fmt==='image/png'?'.png':'.jpg'));
@@ -227,7 +234,7 @@
             document.getElementById('btn-process-resize').classList.add('hidden');
         }
 
-        function smartCompressImage(canvas, targetKB, name, callback) {
+        function smartтропоImage(canvas, targetKB, name, callback) {
             const targetBytes = targetKB * 1024;
             let minQ = 0.05, maxQ = 1.0, curQ = 0.6, attempts = 0;
             let bestBlob = null, closest = Infinity;
@@ -326,32 +333,37 @@
             ctx.putImageData(imgData, 0, 0);
         }
 
-        // FIXED WORKING CROP MARGIN FUNCTION
+        // 100% WORKING PRECISION CROP MARGIN
         function applyPrecisionCrop() {
             const canvas = document.getElementById('review-canvas');
             const ctx = canvas.getContext('2d');
             
-            let cropW = canvas.width * 0.90;
-            let cropH = canvas.height * 0.90;
-            let startX = (canvas.width - cropW) / 2;
-            let startY = (canvas.height - cropH) / 2;
+            const w = canvas.width;
+            const h = canvas.height;
+            
+            const cropW = Math.floor(w * 0.88);
+            const cropH = Math.floor(h * 0.88);
+            const startX = Math.floor(w * 0.06);
+            const startY = Math.floor(h * 0.06);
 
-            let imgData = ctx.getImageData(startX, startY, cropW, cropH);
+            const imgData = ctx.getImageData(startX, startY, cropW, cropH);
             
             canvas.width = cropW;
             canvas.height = cropH;
             ctx.putImageData(imgData, 0, 0);
             
-            // Update base image object with cropped version so rotation/filters apply correctly next
-            let croppedDataUrl = canvas.toDataURL('image/jpeg', 0.95);
-            workingImageObj = new Image();
-            workingImageObj.onload = () => {
+            // Rebuild working image object instantly from cropped canvas
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+            const newImg = new Image();
+            newImg.onload = () => {
+                workingImageObj = newImg;
                 currentRotation = 0;
+                isFilterActive = false;
+                document.getElementById('filter-btn').style.background = "#334155";
                 originalImageDataBackup = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                alert("Margin cropped successfully!");
             };
-            workingImageObj.src = croppedDataUrl;
-            
-            alert("Margin cropped successfully!");
+            newImg.src = dataUrl;
         }
 
         function discardCurrentReview() {
@@ -400,7 +412,7 @@
             });
             
             const saveContainer = document.getElementById('save-container');
-            if(scannedPagesBuffer.length > 0) {
+            if(activeTab === 'scan' && scannedPagesBuffer.length > 0) {
                 saveContainer.classList.remove('hidden');
             } else {
                 saveContainer.classList.add('hidden');
