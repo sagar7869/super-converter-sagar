@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Super Converter Pro - Vision Studio Scanner</title>
+    <title>Super Converter Pro - Fast Studio Scanner</title>
     <!-- PDF Library -->
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-    <!-- OpenCV.js for Real Edge Detection & Perspective Warp -->
-    <script async src="https://docs.opencv.org/4.8.0/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: #0f172a; margin: 0; padding: 15px; text-align: center; color: #f8fafc; }
@@ -57,19 +55,17 @@
         .grid-thumb { position: relative; background: #0f172a; border-radius: 8px; overflow: hidden; aspect-ratio: 3/4; border: 1px solid #334155; }
         .grid-thumb img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
         .grid-thumb button { position: absolute; top: 6px; right: 6px; background: rgba(239, 68, 68, 0.9); color: white; border: none; border-radius: 50%; width: 26px; height: 26px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-        
-        #opencv-status { font-size: 12px; color: #f59e0b; margin-bottom: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <h1>Super Converter Pro</h1>
-    <p class="subtitle">Vision-Powered Local Document Scanner</p>
+    <p class="subtitle">Fast & Reliable Document Scanner</p>
 
     <div class="tool-grid">
         <button class="tool-card active" id="tab-merge" onclick="switchTab('merge')">Merge PDF</button>
         <button class="tool-card" id="tab-resize" onclick="switchTab('resize')">Image Resizer</button>
-        <button class="tool-card" id="tab-scan" onclick="switchTab('scan')">Vision Scan</button>
+        <button class="tool-card" id="tab-scan" onclick="switchTab('scan')">Smart Scan</button>
     </div>
 
     <!-- MERGE PANEL -->
@@ -103,10 +99,9 @@
 
     <!-- SCANNER DASHBOARD -->
     <div id="panel-scan" class="panel hidden">
-        <div id="opencv-status">⏳ Loading OpenCV Vision Engine...</div>
         <div id="scanner-dashboard">
             <div style="padding: 10px 0;">
-                <button id="cam-open-btn" class="primary-btn" onclick="openCameraModal()" disabled style="opacity: 0.5;">📷 Open Vision Scanner</button>
+                <button class="primary-btn" onclick="openCameraModal()">📷 Open Scanner Camera</button>
             </div>
             <div id="scanned-pages-grid" class="scanned-grid"></div>
             <button id="btn-save-scans" class="primary-btn success-btn hidden" style="margin-top: 15px;" onclick="generateScannedPDF()">💾 Save as PDF</button>
@@ -117,29 +112,29 @@
     <div id="active-camera-overlay" class="hidden">
         <div class="cam-header">
             <button onclick="toggleFlashLight()" id="flash-toggle-btn">⚡ Flash OFF</button>
-            <span style="color: white; font-size: 14px;">Auto-Edge Detection Active</span>
+            <span style="color: white; font-size: 14px;">Document Capture</span>
             <button onclick="closeCameraModal()" style="color: #f87171;">Done</button>
         </div>
         <div class="cam-viewport">
             <video id="camera-feed" autoplay playsinline></video>
         </div>
         <div class="cam-footer">
-            <button class="shutter-btn" onclick="captureAndWarpPhoto()"></button>
+            <button class="shutter-btn" onclick="capturePhoto()"></button>
         </div>
     </div>
 
     <!-- REVIEW STUDIO -->
     <div id="review-workspace" class="hidden">
         <div style="display: flex; justify-content: space-between; align-items: center; color: white;">
-            <span style="font-weight: 600; font-size: 14px;">Processed Document Review</span>
+            <span style="font-weight: 600; font-size: 14px;">Review Scanned Page</span>
             <button onclick="discardCurrentReview()" style="background:none; border:none; color:#f87171; font-size:14px; cursor:pointer;">Retake</button>
         </div>
         <div class="review-box">
-            <img id="review-img" alt="Warped Preview">
+            <img id="review-img" alt="Preview">
         </div>
         <div class="review-toolbar">
             <button class="tool-icon-btn" onclick="rotateCurrentReview()"><span>🔄</span>Rotate</button>
-            <button class="tool-icon-btn" onclick="applyMagicBinarization()"><span>🪄</span>B&W Magic</button>
+            <button class="tool-icon-btn" onclick="applyMagicFilter()"><span>🪄</span>B&W Magic</button>
             <button class="tool-icon-btn" onclick="acceptCurrentReview()" style="color: #34d399;"><span>✅</span>Keep Page</button>
         </div>
     </div>
@@ -147,21 +142,6 @@
     <canvas id="hidden-canvas" hidden></canvas>
 
     <script>
-        let opencvReady = false;
-        function onOpenCvReady() {
-            opencvReady = true;
-            const status = document.getElementById('opencv-status');
-            const btn = document.getElementById('cam-open-btn');
-            if(status) {
-                status.innerText = "✅ OpenCV Vision Engine Ready!";
-                status.style.color = "#10b981";
-            }
-            if(btn) {
-                btn.disabled = false;
-                btn.style.opacity = "1";
-            }
-        }
-
         let activeTab = 'merge';
         let processingQueue = [];
         let mediaStream = null;
@@ -235,7 +215,7 @@
                             const canvas = document.createElement('canvas');
                             canvas.width = img.width; canvas.height = img.height;
                             canvas.getContext('2d').drawImage(img, 0, 0);
-                            if (targetKB && fmt === 'image/jpeg') smartCompressImage(canvas, targetKB, file.name, resolve);
+                            if (targetKB && fmt === 'image/jpeg') smartтропоImage(canvas, targetKB, file.name, resolve);
                             else {
                                 canvas.toBlob(blob => {
                                     triggerDownload(blob, file.name.replace(/\.[^/.]+$/, "") + (fmt==='image/png'?'.png':'.jpg'));
@@ -254,7 +234,7 @@
             document.getElementById('btn-process-resize').classList.add('hidden');
         }
 
-        function smartCompressImage(canvas, targetKB, name, callback) {
+        function smartтропоImage(canvas, targetKB, name, callback) {
             const targetBytes = targetKB * 1024;
             let minQ = 0.05, maxQ = 1.0, curQ = 0.6, attempts = 0;
             let bestBlob = null, closest = Infinity;
@@ -276,9 +256,8 @@
             loop();
         }
 
-        // --- VISION CAMERA & OPENCV EDGE WARP WORKFLOW ---
+        // --- SCANNER WORKFLOW ---
         async function openCameraModal() {
-            if(!opencvReady) { alert("OpenCV engine is still loading. Please wait a moment."); return; }
             document.getElementById('active-camera-overlay').classList.remove('hidden');
             try {
                 mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
@@ -313,71 +292,15 @@
             } catch(e) {}
         }
 
-        function captureAndWarpPhoto() {
+        function capturePhoto() {
             const video = document.getElementById('camera-feed');
             const canvas = document.getElementById('hidden-canvas');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            if (!opencvReady) {
-                currentCapturedDataURL = canvas.toDataURL('image/jpeg', 0.9);
-                proceedToReview();
-                return;
-            }
-
-            try {
-                let src = cv.imread(canvas);
-                let gray = new cv.Mat();
-                cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-                
-                let blurred = new cv.Mat();
-                cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0);
-                let edged = new cv.Mat();
-                cv.Canny(blurred, edged, 75, 200);
-
-                let contours = new cv.MatVector();
-                let hierarchy = new cv.Mat();
-                cv.findContours(edged, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
-
-                let maxArea = 0;
-                let bestContour = null;
-
-                for (let i = 0; i < contours.size(); ++i) {
-                    let cnt = contours.get(i);
-                    let area = cv.contourArea(cnt);
-                    let approx = new cv.Mat();
-                    let peri = cv.arcLength(cnt, true);
-                    cv.approxPolyDP(cnt, approx, 0.02 * peri, true);
-
-                    if (approx.rows === 4 && area > maxArea && area > (src.rows * src.cols * 0.15)) {
-                        maxArea = area;
-                        if (bestContour) bestContour.delete();
-                        bestContour = approx.clone();
-                    } else {
-                        approx.delete();
-                    }
-                    cnt.delete();
-                }
-
-                if (bestContour) {
-                    currentCapturedDataURL = canvas.toDataURL('image/jpeg', 0.9);
-                    bestContour.delete();
-                } else {
-                    currentCapturedDataURL = canvas.toDataURL('image/jpeg', 0.9);
-                }
-
-                src.delete(); gray.delete(); blurred.delete(); edged.delete(); contours.delete(); hierarchy.delete();
-            } catch (err) {
-                console.error("OpenCV processing fallback:", err);
-                currentCapturedDataURL = canvas.toDataURL('image/jpeg', 0.9);
-            }
-
-            proceedToReview();
-        }
-
-        function proceedToReview() {
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            currentCapturedDataURL = canvas.toDataURL('image/jpeg', 0.9);
+            
             document.getElementById('active-camera-overlay').classList.add('hidden');
             document.getElementById('review-img').src = currentCapturedDataURL;
             document.getElementById('review-workspace').classList.remove('hidden');
@@ -413,7 +336,7 @@
             img.src = currentCapturedDataURL;
         }
 
-        function applyMagicBinarization() {
+        function applyMagicFilter() {
             const img = new Image();
             img.onload = () => {
                 const canvas = document.getElementById('hidden-canvas');
@@ -455,7 +378,7 @@
         }
 
         async function generateScannedPDF() {
-            const fileName = prompt("Enter Document File Name:", "Vision_Scanned_Document");
+            const fileName = prompt("Enter Document File Name:", "Scanned_Document");
             if(!fileName) return;
 
             const btn = document.getElementById('btn-save-scans');
@@ -472,7 +395,7 @@
                 }
                 const pdfBytes = await pdfDoc.save();
                 triggerDownload(new Blob([pdfBytes], {type: 'application/pdf'}), fileName + ".pdf");
-                alert("Vision PDF Generated & Downloaded!");
+                alert("PDF Generated & Downloaded!");
                 scannedPagesBuffer = [];
                 renderScannerGrid();
             } catch(e) {
