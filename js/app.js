@@ -10,7 +10,7 @@ const btnScan = document.getElementById('btn-scan');
 const workspace = document.getElementById('workspace');
 const resizeOptions = document.getElementById('resize-options');
 
-// Naye UI elements
+// Naye UI elements (Staging Area)
 const fileListContainer = document.getElementById('file-list-container');
 const fileList = document.getElementById('file-list');
 const btnAction = document.getElementById('btn-action');
@@ -83,23 +83,42 @@ btnAction.addEventListener('click', async () => {
             alert("Error: Please make sure all files are PDFs.");
         }
     } else if (currentTool === 'resize') {
+        // Naya KB/MB wala logic
+        const sizeValue = document.getElementById('input-size').value;
+        const unit = document.getElementById('input-unit').value;
+        
+        let finalKB = sizeValue;
+        if (sizeValue && unit === 'MB') {
+            finalKB = sizeValue * 1024; 
+        }
+
         const options = {
             width: document.getElementById('input-width').value,
             height: document.getElementById('input-height').value,
-            targetKB: document.getElementById('input-kb').value,
+            targetKB: finalKB,
             format: document.getElementById('input-format').value
         };
+        
         await processImages(pendingFiles, options);
         alert("Success! Images are processed and downloading.");
+    } else {
+        alert("Smart Scanner is coming next!");
     }
 
     // Process hone ke baad reset kar do
     btnAction.disabled = false;
     pendingFiles = [];
     updateFileListUI();
+    
+    // Tools reset
+    if (currentTool === 'merge') {
+        setActiveTool('merge', btnMerge);
+    } else {
+        setActiveTool('resize', btnResize);
+    }
 });
 
-// Drag & Drop Init
+// Drag & Drop Init (Integrated logic)
 document.addEventListener('DOMContentLoaded', () => {
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
