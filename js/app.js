@@ -16,7 +16,7 @@ function setActiveTool(toolId, buttonElement) {
     
     if (toolId === 'resize') {
         resizeOptions.classList.remove('hidden');
-        workspace.innerHTML = `<p style="color: #4F46E5; font-weight: bold;">Set width/height or target KB, then Drop images!</p>`;
+        workspace.innerHTML = `<p style="color: #4F46E5; font-weight: bold;">Set inputs, then Drop images!</p>`;
     } else {
         resizeOptions.classList.add('hidden');
         workspace.innerHTML = `<p style="color: #4F46E5; font-weight: bold;">Ready to ${toolId}. Drop files above!</p>`;
@@ -32,9 +32,9 @@ async function handleFiles(files) {
         workspace.innerHTML = `<p>Merging ${files.length} PDFs... Please wait.</p>`;
         try {
             await mergePdfs(files);
-            workspace.innerHTML = `<p style="color: green; font-weight: bold;">Merge Complete! Check your downloads.</p>`;
+            workspace.innerHTML = `<p style="color: green; font-weight: bold;">Merge Complete!</p>`;
         } catch (error) {
-            workspace.innerHTML = `<p style="color: red;">Error: Please upload only PDF files.</p>`;
+            workspace.innerHTML = `<p style="color: red;">Error: Use PDF files only.</p>`;
         }
     } else if (currentTool === 'resize') {
         const options = {
@@ -43,19 +43,20 @@ async function handleFiles(files) {
             targetKB: document.getElementById('input-kb').value,
             format: document.getElementById('input-format').value
         };
-        workspace.innerHTML = `<p>Processing ${files.length} image(s)...</p>`;
+        workspace.innerHTML = `<p>Processing images...</p>`;
         await processImages(files, options);
-        workspace.innerHTML = `<p style="color: green; font-weight: bold;">Images Processed Successfully!</p>`;
+        workspace.innerHTML = `<p style="color: green; font-weight: bold;">Processed!</p>`;
     } else {
-        alert("Smart Scanner tool is coming next!");
+        alert("Smart Scanner next!");
     }
 }
 
-// --- DRAG AND DROP LOGIC INTEGRATED HERE ---
-function setupDragAndDrop() {
+// Drag & Drop
+document.addEventListener('DOMContentLoaded', () => {
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
 
+    // CLICK KARTAY HI FILE MANAGER KHULEGA
     dropZone.addEventListener('click', () => fileInput.click());
 
     fileInput.addEventListener('change', (e) => {
@@ -74,9 +75,6 @@ function setupDragAndDrop() {
         dropZone.classList.remove('dragover');
         if (e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files);
     });
-}
 
-document.addEventListener('DOMContentLoaded', () => {
-    setupDragAndDrop();
     setActiveTool('merge', btnMerge);
 });
