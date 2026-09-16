@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Converter Pro</title>
-    <!-- PDF Library -->
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
@@ -53,12 +52,10 @@
         let currentTool = 'merge';
         let fileQueue = [];
 
-        // 1. UI Logic
         function switchTool(tool) {
             currentTool = tool;
             fileQueue = [];
             document.getElementById('staging-area').classList.add('hidden');
-            
             document.getElementById('btn-merge').classList.toggle('active', tool === 'merge');
             document.getElementById('btn-resize').classList.toggle('active', tool === 'resize');
             document.getElementById('resize-options').classList.toggle('hidden', tool !== 'resize');
@@ -67,7 +64,6 @@
         function handleFiles(files) {
             if (files.length === 0) return;
             fileQueue = Array.from(files);
-            
             let html = '';
             fileQueue.forEach(f => {
                 html += `<div class="file-item"><span>📄 ${f.name}</span><span>${(f.size/1024).toFixed(1)} KB</span></div>`;
@@ -83,15 +79,11 @@
             btn.disabled = true;
 
             try {
-                if (currentTool === 'merge') {
-                    await runPdfMerge(fileQueue);
-                } else {
-                    await runImageResizer(fileQueue);
-                }
+                if (currentTool === 'merge') await runPdfMerge(fileQueue);
+                else await runImageResizer(fileQueue);
                 alert("Task Complete! File(s) downloaded.");
             } catch (err) {
                 alert("Error: " + err.message);
-                console.error(err);
             }
 
             btn.disabled = false;
@@ -99,7 +91,6 @@
             document.getElementById('staging-area').classList.add('hidden');
         }
 
-        // 2. PDF Logic
         async function runPdfMerge(files) {
             const { PDFDocument } = window.PDFLib;
             const mergedPdf = await PDFDocument.create();
@@ -113,7 +104,6 @@
             triggerDownload(new Blob([bytes], { type: 'application/pdf' }), 'Merged_Output.pdf');
         }
 
-        // 3. Image Logic
         async function runImageResizer(files) {
             const sizeVal = document.getElementById('inp-size').value;
             const unit = document.getElementById('inp-unit').value;
@@ -127,31 +117,28 @@
             };
 
             for (let file of files) {
-                if (file.type.startsWith('image/')) {
-                    await processSingle(file, options);
-                }
+                if (file.type.startsWith('image/')) await processSingle(file, options);
             }
         }
 
         function processSingle(file, opt) {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.onload = e => {
                     const img = new Image();
                     img.onload = () => {
-                        const canvas = document.createElement('canvas');
                         let finalW = opt.w ? parseInt(opt.w) : img.width;
                         let finalH = opt.h ? parseInt(opt.h) : img.height;
                         if (opt.w && !opt.h) finalH = (img.height / img.width) * finalW;
                         if (opt.h && !opt.w) finalW = (img.width / img.height) * finalH;
                         
-                        canvas.width = finalW;
-                        canvas.height = finalH;
-                        canvas.getContext('2d').drawImage(img, 0, 0, finalW, finalH);
-
                         if (opt.kb && opt.fmt === 'image/jpeg') {
-                            compressToSize(canvas, opt.kb, file.name, resolve);
+                            // Call Smart Scale & Compress
+                            smartCompress(img, finalW, finalH, opt.kb, file.name, resolve);
                         } else {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = finalW; canvas.height = finalH;
+                            canvas.getContext('2d').drawImage(img, 0, 0, finalW, finalH);
                             canvas.toBlob(blob => {
                                 triggerDownload(blob, file.name.replace(/\.[^/.]+$/, "") + (opt.fmt==='image/png'?'.png':'.jpg'));
                                 resolve();
@@ -166,29 +153,49 @@
             });
         }
 
-        function compressToSize(canvas, targetKB, name, callback) {
-            let minQ = 0.01, maxQ = 1.0, curQ = 0.5, attempts = 0;
+        // --- NEW: SMART DOWNSCALING ALGORITHM ---
+        function smartCompress(img, w, h, targetKB, name, callback) {
             const targetBytes = targetKB * 1024;
-            let bestBlob = null, closest = Infinity;
+            let scale = 1.0; // Start at 100% dimensions
+            let bestBlob = null;
+            let closest = Infinity;
 
-            function attempt() {
-                canvas.toBlob(blob => {
-                    if (!blob) return callback();
-                    attempts++;
-                    const diff = Math.abs(blob.size - targetBytes);
-                    if (diff < closest) { closest = diff; bestBlob = blob; }
-                    
-                    if (diff <= 2048 || attempts >= 15) {
-                        triggerDownload(bestBlob, name.replace(/\.[^/.]+$/, "") + ".jpg");
-                        callback();
-                        return;
-                    }
-                    if (blob.size > targetBytes) maxQ = curQ; else minQ = curQ;
-                    curQ = (minQ + maxQ) / 2;
-                    attempt();
-                }, 'image/jpeg', curQ);
+            function tryScale() {
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.max(w * scale, 50); // Prevent making it microscopic
+                canvas.height = Math.max(h * scale, 50);
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                let minQ = 0.1, maxQ = 1.0, curQ = 0.7, attempts = 0;
+
+                function tryQuality() {
+                    canvas.toBlob(blob => {
+                        if (!blob) return callback();
+                        attempts++;
+                        const diff = Math.abs(blob.size - targetBytes);
+                        
+                        if (diff < closest) { closest = diff; bestBlob = blob; }
+
+                        if (diff <= 3072 || attempts >= 8) {
+                            // MAGIC TRICK: Agar size abhi bhi bada hai AUR quality bahut buri (0.3 se kam) ho rahi hai
+                            if (blob.size > targetBytes + 1024 && curQ <= 0.3 && scale > 0.2) {
+                                scale -= 0.15; // Image ko 15% chota karo
+                                tryScale(); // Wapas try karo achi quality ke sath
+                            } else {
+                                triggerDownload(bestBlob, name.replace(/\.[^/.]+$/, "") + ".jpg");
+                                callback();
+                            }
+                            return;
+                        }
+
+                        if (blob.size > targetBytes) maxQ = curQ; else minQ = curQ;
+                        curQ = (minQ + maxQ) / 2;
+                        tryQuality();
+                    }, 'image/jpeg', curQ);
+                }
+                tryQuality();
             }
-            attempt();
+            tryScale();
         }
 
         function triggerDownload(blob, filename) {
