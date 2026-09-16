@@ -406,6 +406,29 @@ COMPRESS PDF
     outline:none;
 }
 
+.compress-target-row{
+    display:grid;
+    grid-template-columns:1fr 105px;
+    gap:7px;
+}
+
+.compress-target-row input,
+.compress-target-row select{
+    width:100%;
+    min-height:44px;
+    background:#0f172a;
+    color:#fff;
+    border:1px solid #475569;
+    border-radius:8px;
+    padding:8px 10px;
+    outline:none;
+}
+
+.compress-target-row input:focus,
+.compress-target-row select:focus{
+    border-color:#6366f1;
+}
+
 .compress-help{
     margin-top:6px;
 
@@ -1051,6 +1074,10 @@ MOBILE TOOL GRID
 VERY SMALL PHONES
 ========================= */
 
+@media(max-width:520px){
+    .compress-target-row{grid-template-columns:1fr 90px;}
+}
+
 @media(max-width:360px){
 
     body{
@@ -1511,7 +1538,7 @@ NEW - COMPRESS PDF
                 Compression Quality
             </label>
 
-            <select id="compress-quality">
+            <select id="compress-quality" onchange="toggleCompressTarget()">
 
                 <option value="high">
                     💎 High Quality — Better clarity
@@ -1525,7 +1552,44 @@ NEW - COMPRESS PDF
                     📉 Maximum Compression — Smallest size
                 </option>
 
+                <option value="target">
+                    🎯 Target File Size — Set KB / MB
+                </option>
+
             </select>
+
+        </div>
+
+
+        <div id="compress-target-box" class="compress-method hidden">
+
+            <label>
+                Target File Size
+            </label>
+
+            <div class="compress-target-row">
+
+                <input
+                    id="compress-target"
+                    type="number"
+                    min="1"
+                    step="0.1"
+                    placeholder="e.g. 500">
+
+                <select id="compress-target-unit">
+                    <option value="KB">KB</option>
+                    <option value="MB">MB</option>
+                </select>
+
+            </div>
+
+            <div class="compress-help">
+                Example: <strong>500 KB</strong>, <strong>2 MB</strong> or <strong>5 MB</strong>.<br>
+                Automatically adjusts quality and resolution to get as close as possible to the target.<br>
+                Exact size is not always possible.
+            </div>
+
+        </div>
 
         </div>
 
@@ -5562,335 +5626,192 @@ async function buildCompressedPDF(
 EXECUTE COMPRESS PDF
 ===================================================== */
 
+function toggleCompressTarget(){
+    const mode=document.getElementById("compress-quality").value;
+    document.getElementById("compress-target-box").classList.toggle("hidden",mode!=="target");
+}
+
+function getCompressTargetBytes(){
+    const value=parseFloat(document.getElementById("compress-target").value);
+    const unit=document.getElementById("compress-target-unit").value;
+    if(!Number.isFinite(value) || value<=0) throw new Error("Please enter a valid target file size.");
+    return unit==="MB" ? value*1024*1024 : value*1024;
+}
+
+function getTargetPreset(strength){
+    return {
+        quality:0.90-(0.48*strength),
+        maxDimension:Math.round(2400-(1500*strength)),
+        label:`Target optimisation — ${Math.round(strength*100)}% compression`
+    };
+}
+
 async function executeCompressPDF(){
 
     if(!compressPDFFile){
-
-        alert(
-            "Please select a PDF first."
-        );
-
+        alert("Please select a PDF first.");
         return;
-
     }
 
     if(!window.pdfjsLib){
-
-        alert(
-            "PDF compressor library is not loaded. Please check your internet connection and reload the page."
-        );
-
+        alert("PDF compressor library is not loaded. Please check your internet connection and reload the page.");
         return;
-
     }
 
-    const btn=
-        document.getElementById(
-            "compress-btn"
-        );
+    const btn=document.getElementById("compress-btn");
+    const status=document.getElementById("compress-status");
+    const result=document.getElementById("compress-result");
+    const sizeInfo=document.getElementById("compress-size-info");
+    const selected=document.getElementById("compress-quality").value;
 
-    const status=
-        document.getElementById(
-            "compress-status"
-        );
+    let filename=document.getElementById("compress-name").value.trim();
+    if(!filename) filename="Compressed_Document";
+    filename=filename.replace(/\.pdf$/i,"")+".pdf";
 
-    const result=
-        document.getElementById(
-            "compress-result"
-        );
-
-    const sizeInfo=
-        document.getElementById(
-            "compress-size-info"
-        );
-
-    const selected=
-        document.getElementById(
-            "compress-quality"
-        ).value;
-
-    let filename=
-        document.getElementById(
-            "compress-name"
-        ).value.trim();
-
-    if(!filename){
-
-        filename="Compressed_Document";
-
+    let targetBytes=null;
+    if(selected==="target"){
+        try{ targetBytes=getCompressTargetBytes(); }
+        catch(error){ alert(error.message); return; }
     }
 
-    filename=
-        filename.replace(
-            /\.pdf$/i,
-            ""
-        )+".pdf";
-
-    const originalText=
-        btn.innerText;
-
+    const originalText=btn.innerText;
     btn.disabled=true;
-
-    result.classList.add(
-        "hidden"
-    );
-
+    result.classList.add("hidden");
     setCompressProgress(0);
 
     try{
+        status.innerText="Loading PDF rendering engine... ⏳";
 
-        status.innerText=
-            "Loading PDF rendering engine... ⏳";
+        const bytes=await compressPDFFile.arrayBuffer();
+        const pdfJS=await pdfjsLib.getDocument({data:new Uint8Array(bytes)}).promise;
+        const totalPages=pdfJS.numPages;
+        const originalSize=compressPDFFile.size;
 
-        const bytes=
-            await compressPDFFile.arrayBuffer();
+        let finalBlob=null;
+        let finalMode="";
 
-        const pdfJS=
-            await pdfjsLib
-                .getDocument({
-                    data:new Uint8Array(bytes)
-                })
-                .promise;
-
-        const totalPages=
-            pdfJS.numPages;
-
-        /*
-        First try user's selected quality.
-        If result is larger than original,
-        try Maximum Compression automatically.
-        */
-
-        const firstPreset=
-            COMPRESS_PRESETS[selected];
-
-        let firstBlob=
-            await buildCompressedPDF(
-                pdfJS,
-                totalPages,
-                firstPreset,
-                0,
-                selected==="maximum"
-                    ?100
-                    :75,
-                status
+        if(selected!=="target"){
+            const firstPreset=COMPRESS_PRESETS[selected];
+            const firstBlob=await buildCompressedPDF(
+                pdfJS,totalPages,firstPreset,0,selected==="maximum"?100:75,status
             );
+            finalBlob=firstBlob;
+            finalMode=firstPreset.label;
 
-        let finalBlob=
-            firstBlob;
-
-        let finalMode=
-            firstPreset.label;
-
-        /*
-        Automatic stronger compression
-        if the first result is not smaller.
-        */
-
-        if(
-            firstBlob.size>=compressPDFFile.size &&
-            selected!=="maximum"
-        ){
-
-            status.innerText=
-                "Output is not smaller — trying stronger compression... ⏳";
-
-            const maximumPreset=
-                COMPRESS_PRESETS.maximum;
-
-            const secondBlob=
-                await buildCompressedPDF(
-                    pdfJS,
-                    totalPages,
-                    maximumPreset,
-                    75,
-                    100,
-                    status
+            if(firstBlob.size>=originalSize && selected!=="maximum"){
+                status.innerText="Output is not smaller — trying stronger compression... ⏳";
+                const maximumBlob=await buildCompressedPDF(
+                    pdfJS,totalPages,COMPRESS_PRESETS.maximum,75,100,status
                 );
-
-            /*
-            Always keep the smaller of
-            the two generated versions.
-            */
-
-            if(
-                secondBlob.size<
-                firstBlob.size
-            ){
-
-                finalBlob=secondBlob;
-                finalMode=
-                    maximumPreset.label;
-
+                if(maximumBlob.size<firstBlob.size){
+                    finalBlob=maximumBlob;
+                    finalMode=COMPRESS_PRESETS.maximum.label;
+                }
             }
+        }else{
+            if(targetBytes>=originalSize){
+                status.innerText="Target is larger than the original — creating a high-quality optimized copy... ⏳";
+                finalBlob=await buildCompressedPDF(
+                    pdfJS,totalPages,getTargetPreset(0),0,100,status
+                );
+                finalMode="Target optimisation — high quality";
+            }else{
+                let low=0, high=1;
+                let bestUnder=null;
+                let smallest=null;
+                const attempts=6;
 
+                for(let attempt=1;attempt<=attempts;attempt++){
+                    const strength=(low+high)/2;
+                    const preset=getTargetPreset(strength);
+
+                    status.innerText=`Finding closest target size — attempt ${attempt}/${attempts}... ⏳`;
+
+                    const blob=await buildCompressedPDF(
+                        pdfJS,totalPages,preset,
+                        ((attempt-1)/attempts)*100,
+                        (attempt/attempts)*100,
+                        status
+                    );
+
+                    if(!smallest || blob.size<smallest.blob.size){
+                        smallest={blob,strength};
+                    }
+
+                    if(blob.size<=targetBytes){
+                        if(!bestUnder || blob.size>bestUnder.blob.size){
+                            bestUnder={blob,strength};
+                        }
+                        high=strength;
+                    }else{
+                        low=strength;
+                    }
+
+                    await sleep(20);
+                }
+
+                const chosen=bestUnder || smallest;
+                finalBlob=chosen.blob;
+                finalMode=`Target optimisation — ${Math.round(chosen.strength*100)}% compression`;
+            }
         }
 
-        compressedPDFBlob=
-            finalBlob;
+        compressedPDFBlob=finalBlob;
+        compressedPDFName=filename;
 
-        compressedPDFName=
-            filename;
+        const compressedSize=finalBlob.size;
+        const difference=originalSize-compressedSize;
+        const reduction=originalSize>0?(difference/originalSize)*100:0;
 
-        const originalSize=
-            compressPDFFile.size;
-
-        const compressedSize=
-            finalBlob.size;
-
-        const difference=
-            originalSize-
-            compressedSize;
-
-        const reduction=
-            originalSize>0
-            ?(
-                difference/
-                originalSize
-            )*100
-            :0;
+        let targetLine="";
+        if(selected==="target"){
+            const unit=document.getElementById("compress-target-unit").value;
+            const value=parseFloat(document.getElementById("compress-target").value);
+            const label=`${value} ${unit}`;
+            targetLine=compressedSize<=targetBytes
+                ?`<br>🎯 Target: <strong>${escapeHTML(label)}</strong><br>✅ Achieved: <strong>${formatBytes(compressedSize)}</strong>`
+                :`<br>🎯 Target: <strong>${escapeHTML(label)}</strong><br><span class="compress-warning">⚠️ Target could not be reached; closest practical result: ${formatBytes(compressedSize)}</span>`;
+        }
 
         if(compressedSize<originalSize){
-
             sizeInfo.innerHTML=`
-
-                <strong>Compression Complete ✅</strong>
-
-                <br><br>
-
-                📦 Original Size:
-                <strong>
-                    ${formatBytes(originalSize)}
-                </strong>
-
-                <br>
-
-                📉 Compressed Size:
-                <strong>
-                    ${formatBytes(compressedSize)}
-                </strong>
-
-                <br>
-
-                💾 Saved:
-                <span class="compress-saved">
-                    ${formatBytes(difference)}
-                    (${reduction.toFixed(1)}%)
-                </span>
-
-                <br>
-
-                ⚙️ Mode:
-                <strong>
-                    ${finalMode}
-                </strong>
-
-                <br>
-
-                📄 Pages:
-                <strong>
-                    ${totalPages}
-                </strong>
-
+                <strong>Compression Complete ✅</strong><br><br>
+                📦 Original Size: <strong>${formatBytes(originalSize)}</strong><br>
+                📉 Compressed Size: <strong>${formatBytes(compressedSize)}</strong><br>
+                💾 Saved: <span class="compress-saved">${formatBytes(difference)} (${reduction.toFixed(1)}%)</span><br>
+                ⚙️ Mode: <strong>${escapeHTML(finalMode)}</strong><br>
+                📄 Pages: <strong>${totalPages}</strong>
+                ${targetLine}
             `;
-
-            status.innerText=
-                "✅ PDF compressed successfully.";
-
+            status.innerText=selected==="target"?"✅ Target-size compression completed.":"✅ PDF compressed successfully.";
         }else{
-
-            const increase=
-                compressedSize-
-                originalSize;
-
+            const increase=compressedSize-originalSize;
             sizeInfo.innerHTML=`
-
-                <strong>Compression Finished ⚠️</strong>
-
-                <br><br>
-
-                📦 Original Size:
-                <strong>
-                    ${formatBytes(originalSize)}
-                </strong>
-
-                <br>
-
-                📉 New PDF Size:
-                <strong>
-                    ${formatBytes(compressedSize)}
-                </strong>
-
-                <br>
-
-                <span class="compress-warning">
-                    The rebuilt PDF is
-                    ${formatBytes(increase)}
-                    larger than the original.
-                    The original PDF may already be optimized.
-                </span>
-
-                <br>
-
-                ⚙️ Mode:
-                <strong>
-                    ${finalMode}
-                </strong>
-
-                <br>
-
-                📄 Pages:
-                <strong>
-                    ${totalPages}
-                </strong>
-
+                <strong>Compression Finished ⚠️</strong><br><br>
+                📦 Original Size: <strong>${formatBytes(originalSize)}</strong><br>
+                📉 New PDF Size: <strong>${formatBytes(compressedSize)}</strong><br>
+                <span class="compress-warning">The rebuilt PDF is ${formatBytes(increase)} larger than the original. The original PDF may already be optimized.</span><br>
+                ⚙️ Mode: <strong>${escapeHTML(finalMode)}</strong><br>
+                📄 Pages: <strong>${totalPages}</strong>
+                ${targetLine}
             `;
-
-            status.innerText=
-                "⚠️ Original PDF was already highly optimized.";
-
+            status.innerText=selected==="target"?"⚠️ Target result could not be made smaller than the original.":"⚠️ Original PDF was already highly optimized.";
         }
 
         setCompressProgress(100);
-
-        result.classList.remove(
-            "hidden"
-        );
-
-        btn.innerText=
-            "✅ COMPRESSION COMPLETE";
-
-        setTimeout(
-            ()=>{
-                btn.innerText=
-                    originalText;
-            },
-            1800
-        );
+        result.classList.remove("hidden");
+        btn.innerText="✅ COMPRESSION COMPLETE";
+        setTimeout(()=>btn.innerText=originalText,1800);
 
     }catch(error){
-
-        console.error(
-            "Compress PDF Error:",
-            error
-        );
-
+        console.error("Compress PDF Error:",error);
         status.innerText="";
-
         setCompressProgress(0);
-
-        alert(
-            "Compression Error: "+
-            error.message
-        );
-
-        btn.innerText=
-            originalText;
-
+        alert("Compression Error: "+error.message);
+        btn.innerText=originalText;
     }
 
     btn.disabled=false;
-
 }
 
 
