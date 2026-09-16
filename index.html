@@ -7,7 +7,7 @@
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: #0f172a; margin: 0; padding: 15px; text-align: center; color: #f8fafc; padding-bottom: 100px; }
+        body { background-color: #0f172a; margin: 0; padding: 15px; text-align: center; color: #f8fafc; padding-bottom: 120px; }
         
         h1 { font-size: 20px; margin-bottom: 2px; color: #f8fafc; }
         p.subtitle { font-size: 12px; color: #94a3b8; margin-top: 0; margin-bottom: 15px; }
@@ -32,19 +32,20 @@
 
         .native-cam-box { padding: 20px 10px; background: #0f172a; border-radius: 10px; border: 1px dashed #475569; margin-bottom: 15px; cursor: pointer; }
 
-        /* FIXED FLOATING SAVE BUTTON (FULLY VISIBLE INSIDE SCREEN) */
+        /* FIXED FLOATING SAVE BUTTON ON DASHBOARD */
         .floating-save-container { position: fixed; bottom: 15px; left: 15px; right: 15px; background: rgba(15, 23, 42, 0.95); padding: 10px; border-radius: 10px; box-shadow: 0 -4px 15px rgba(0,0,0,0.8); z-index: 9999; backdrop-filter: blur(5px); }
 
-        /* REVIEW STUDIO */
-        #review-workspace { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0f172a; z-index: 110; display: flex; flex-direction: column; justify-content: space-between; padding: 10px; overflow: hidden; }
-        .review-header { display: flex; justify-content: space-between; align-items: center; color: white; flex-shrink: 0; padding: 5px 10px; }
+        /* REVIEW STUDIO - FIXED LAYOUT SO NO BUTTONS ARE HIDDEN */
+        #review-workspace { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0f172a; z-index: 110; display: flex; flex-direction: column; justify-content: space-between; padding: 10px; overflow-y: auto; }
+        .review-header { display: flex; justify-content: space-between; align-items: center; color: white; flex-shrink: 0; padding: 5px; }
         
-        .review-box { flex-grow: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; margin: 5px 0; }
-        #review-canvas { max-width: 100%; max-height: 48vh; border-radius: 6px; border: 2px solid #6366f1; object-fit: contain; cursor: crosshair; touch-action: none; }
+        .review-box { flex-grow: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; margin: 2px 0; }
+        #review-canvas { max-width: 100%; max-height: 45vh; border-radius: 6px; border: 2px solid #6366f1; object-fit: contain; cursor: crosshair; touch-action: none; }
         
-        .review-toolbar { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; background: #1e293b; padding: 8px; border-radius: 10px; flex-shrink: 0; }
-        .tool-icon-btn { background: #334155; border: none; color: #f8fafc; padding: 10px; font-size: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .tool-icon-btn span { font-size: 15px; }
+        /* STICKY TOOLBAR AT BOTTOM OF REVIEW SCREEN */
+        .review-toolbar { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; background: #1e293b; padding: 10px; border-radius: 10px; flex-shrink: 0; margin-bottom: 10px; }
+        .tool-icon-btn { background: #334155; border: none; color: #f8fafc; padding: 12px; font-size: 13px; font-weight: bold; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .tool-icon-btn span { font-size: 16px; }
         .tool-icon-btn.success { background: #10b981; color: white; grid-column: span 2; }
 
         .scanned-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; margin-bottom: 80px; max-height: 280px; overflow-y: auto; padding: 2px; }
@@ -122,7 +123,7 @@
         <div class="review-box">
             <canvas id="review-canvas"></canvas>
         </div>
-        <p style="font-size: 10px; color: #94a3b8; margin: 2px 0;">Drag corners on canvas to crop document</p>
+        <p style="font-size: 11px; color: #818cf8; margin: 2px 0; font-weight: bold;">👉 Drag white circles on canvas to crop document</p>
         
         <div class="review-toolbar">
             <button class="tool-icon-btn" onclick="rotateCanvasImage()"><span>🔄</span> Rotate 90°</button>
@@ -144,9 +145,9 @@
         let isFilterActive = false;
         let editingIndex = -1;
 
-        // Interactive Crop State
-        let cropBox = { x: 0, y: 0, w: 0, h: 0 };
-        let draggingCorner = null;
+        // Interactive Crop State with 4 Independent Corners
+        let corners = [];
+        let activeCornerIndex = null;
 
         function switchTab(tab) {
             activeTab = tab;
@@ -301,13 +302,15 @@
 
             originalImageDataBackup = ctx.getImageData(0, 0, canvas.width, canvas.height);
             
-            // Set initial crop box inside image margins (10% padding)
-            cropBox = {
-                x: canvas.width * 0.08,
-                y: canvas.height * 0.08,
-                w: canvas.width * 0.84,
-                h: canvas.height * 0.84
-            };
+            // Initialize 4 corners inside image (TL, TR, BR, BL) with ample padding
+            let padW = canvas.width * 0.1;
+            let padH = canvas.height * 0.1;
+            corners = [
+                {x: padW, y: padH},                   // 0: Top-Left
+                {x: canvas.width - padW, y: padH},    // 1: Top-Right
+                {x: canvas.width - padW, y: canvas.height - padH}, // 2: Bottom-Right
+                {x: padW, y: canvas.height - padH}    // 3: Bottom-Left
+            ];
 
             if (isFilterActive) {
                 applyFilterPixels(ctx, canvas.width, canvas.height);
@@ -326,14 +329,15 @@
             }
 
             // Draw Darkened Outer Mask
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Clear crop area to show clear image inside
-            ctx.clearRect(cropBox.x, cropBox.y, cropBox.w, cropBox.h);
+            // Highlight Inner Crop Polygon Area
             ctx.save();
             ctx.beginPath();
-            ctx.rect(cropBox.x, cropBox.y, cropBox.w, cropBox.h);
+            ctx.moveTo(corners[0].x, corners[0].y);
+            for(let i=1; i<4; i++) ctx.lineTo(corners[i].x, corners[i].y);
+            ctx.closePath();
             ctx.clip();
             ctx.putImageData(originalImageDataBackup, 0, 0);
             if (isFilterActive) {
@@ -341,36 +345,38 @@
             }
             ctx.restore();
 
-            // Draw Crop Border Box
+            // Draw Connecting Border Lines
             ctx.strokeStyle = '#6366f1';
             ctx.lineWidth = 3;
-            ctx.strokeRect(cropBox.x, cropBox.y, cropBox.w, cropBox.h);
+            ctx.beginPath();
+            ctx.moveTo(corners[0].x, corners[0].y);
+            for(let i=1; i<4; i++) ctx.lineTo(corners[i].x, corners[i].y);
+            ctx.closePath();
+            ctx.stroke();
 
-            // Draw Corner Handles
-            const handleSize = 16;
-            ctx.fillStyle = '#ffffff';
-            ctx.strokeStyle = '#4f46e5';
-            ctx.lineWidth = 2;
-
-            const handles = [
-                {x: cropBox.x, y: cropBox.y}, // TL
-                {x: cropBox.x + cropBox.w, y: cropBox.y}, // TR
-                {x: cropBox.x, y: cropBox.y + cropBox.h}, // BL
-                {x: cropBox.x + cropBox.w, y: cropBox.y + cropBox.h} // BR
-            ];
-
-            handles.forEach(h => {
+            // Draw Big Touch-Friendly Corner Handles (White circles with blue stroke)
+            const handleRadius = 24; // Large touch radius for finger dragging
+            corners.forEach((c, idx) => {
                 ctx.beginPath();
-                ctx.arc(h.x, h.y, handleSize, 0, Math.PI * 2);
+                ctx.arc(c.x, c.y, handleRadius, 0, Math.PI * 2);
+                ctx.fillStyle = (activeCornerIndex === idx) ? '#4f46e5' : '#ffffff';
                 ctx.fill();
+                ctx.strokeStyle = '#312e81';
+                ctx.lineWidth = 3;
                 ctx.stroke();
+
+                // Inner dot
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, 6, 0, Math.PI * 2);
+                ctx.fillStyle = (activeCornerIndex === idx) ? '#ffffff' : '#4f46e5';
+                ctx.fill();
             });
         }
 
-        // Touch & Drag Handling for Crop Handles
+        // --- SMOOTH TOUCH & DRAG FOR 4 CORNERS ---
         const canvas = document.getElementById('review-canvas');
 
-        function getMousePos(e) {
+        function getTouchPos(e) {
             const rect = canvas.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -380,60 +386,59 @@
             };
         }
 
-        canvas.addEventListener('mousedown', startCropDrag);
-        canvas.addEventListener('touchstart', startCropDrag);
+        canvas.addEventListener('mousedown', startTouchCorner);
+        canvas.addEventListener('touchstart', startTouchCorner);
 
-        function startCropDrag(e) {
+        function startTouchCorner(e) {
             e.preventDefault();
-            const pos = getMousePos(e);
-            let radius = 30; // touch sensitivity
+            const pos = getTouchPos(e);
+            let hitRadius = 45; // Generous hit test radius for mobile fingers
+            
+            activeCornerIndex = null;
+            corners.forEach((c, idx) => {
+                let dist = Math.hypot(pos.x - c.x, pos.y - c.y);
+                if (dist < hitRadius) {
+                    activeCornerIndex = idx;
+                }
+            });
 
-            if (Math.hypot(pos.x - cropBox.x, pos.y - cropBox.y) < radius) draggingCorner = 'tl';
-            else if (Math.hypot(pos.x - (cropBox.x + cropBox.w), pos.y - cropBox.y) < radius) draggingCorner = 'tr';
-            else if (Math.hypot(pos.x - cropBox.x, pos.y - (cropBox.y + cropBox.h)) < radius) draggingCorner = 'bl';
-            else if (Math.hypot(pos.x - (cropBox.x + cropBox.w), pos.y - (cropBox.y + cropBox.h)) < radius) draggingCorner = 'br';
-            else draggingCorner = 'move';
+            // If no specific corner hit, find the nearest corner and select it
+            if (activeCornerIndex === null) {
+                let minDist = Infinity;
+                corners.forEach((c, idx) => {
+                    let dist = Math.hypot(pos.x - c.x, pos.y - c.y);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        activeCornerIndex = idx;
+                    }
+                });
+            }
 
-            window.addEventListener('mousemove', onCropDrag);
-            window.addEventListener('touchmove', onCropDrag);
-            window.addEventListener('mouseup', endCropDrag);
-            window.addEventListener('touchend', endCropDrag);
+            window.addEventListener('mousemove', dragCorner);
+            window.addEventListener('touchmove', dragCorner);
+            window.addEventListener('mouseup', endTouchCorner);
+            window.addEventListener('touchend', endTouchCorner);
         }
 
-        function onCropDrag(e) {
-            if (!draggingCorner) return;
+        function dragCorner(e) {
+            if (activeCornerIndex === null) return;
             e.preventDefault();
-            const pos = getMousePos(e);
+            const pos = getTouchPos(e);
 
-            if (draggingCorner === 'tl') {
-                let r = cropBox.x + cropBox.w, b = cropBox.y + cropBox.h;
-                cropBox.x = Math.max(0, Math.min(pos.x, r - 50));
-                cropBox.y = Math.max(0, Math.min(pos.y, b - 50));
-                cropBox.w = r - cropBox.x; cropBox.h = b - cropBox.y;
-            } else if (draggingCorner === 'tr') {
-                let l = cropBox.x, b = cropBox.y + cropBox.h;
-                cropBox.w = Math.max(50, Math.min(pos.x - l, canvas.width - l));
-                cropBox.y = Math.max(0, Math.min(pos.y, b - 50));
-                cropBox.h = b - cropBox.y;
-            } else if (draggingCorner === 'bl') {
-                let r = cropBox.x + cropBox.w, t = cropBox.y;
-                cropBox.x = Math.max(0, Math.min(pos.x, r - 50));
-                cropBox.w = r - cropBox.x;
-                cropBox.h = Math.max(50, Math.min(pos.y - t, canvas.height - t));
-            } else if (draggingCorner === 'br') {
-                let l = cropBox.x, t = cropBox.y;
-                cropBox.w = Math.max(50, Math.min(pos.x - l, canvas.width - l));
-                cropBox.h = Math.max(50, Math.min(pos.y - t, canvas.height - t));
-            }
+            // Keep within canvas bounds
+            corners[activeCornerIndex].x = Math.max(0, Math.min(pos.x, canvas.width));
+            corners[activeCornerIndex].y = Math.max(0, Math.min(pos.y, canvas.height));
+
             drawCropOverlay();
         }
 
-        function endCropDrag() {
-            draggingCorner = null;
-            window.removeEventListener('mousemove', onCropDrag);
-            window.removeEventListener('touchmove', onCropDrag);
-            window.removeEventListener('mouseup', endCropDrag);
-            window.removeEventListener('touchend', endCropDrag);
+        function endTouchCorner() {
+            activeCornerIndex = null;
+            drawCropOverlay();
+            window.removeEventListener('mousemove', dragCorner);
+            window.removeEventListener('touchmove', dragCorner);
+            window.removeEventListener('mouseup', endTouchCorner);
+            window.removeEventListener('touchend', endTouchCorner);
         }
 
         function rotateCanvasImage() {
@@ -469,12 +474,20 @@
             const canvas = document.getElementById('review-canvas');
             const ctx = canvas.getContext('2d');
             
-            // Extract final cropped region
-            const croppedData = ctx.getImageData(cropBox.x, cropBox.y, cropBox.w, cropBox.h);
+            // Bounding box of the 4 corners for precise cropped extraction
+            let minX = Math.min(...corners.map(c => c.x));
+            let maxX = Math.max(...corners.map(c => c.x));
+            let minY = Math.min(...corners.map(c => c.y));
+            let maxY = Math.max(...corners.map(c => c.y));
+
+            let cropW = Math.max(50, maxX - minX);
+            let cropH = Math.max(50, maxY - minY);
+
+            const imgData = ctx.getImageData(Math.max(0, minX), Math.max(0, minY), cropW, cropH);
             const tempCanvas = document.getElementById('hidden-canvas');
-            tempCanvas.width = cropBox.w;
-            tempCanvas.height = cropBox.h;
-            tempCanvas.getContext('2d').putImageData(croppedData, 0, 0);
+            tempCanvas.width = cropW;
+            tempCanvas.height = cropH;
+            tempCanvas.getContext('2d').putImageData(imgData, 0, 0);
             
             const dataUrl = tempCanvas.toDataURL('image/jpeg', 0.95);
             
