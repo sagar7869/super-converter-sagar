@@ -79,7 +79,7 @@ TOOLS
     margin:0 auto 14px;
 
     display:grid;
-    grid-template-columns:repeat(3,minmax(0,1fr));
+    grid-template-columns:repeat(4,minmax(0,1fr));
     gap:7px;
 }
 
@@ -92,6 +92,7 @@ TOOLS
     padding:8px 4px;
     font-weight:700;
     font-size:12px;
+    line-height:1.25;
 }
 
 .tool-card.active{
@@ -223,6 +224,130 @@ OPTIONS
     border-radius:8px;
     padding:8px 10px;
     outline:none;
+}
+
+/* =========================
+SPLIT PDF
+========================= */
+
+.split-info{
+    margin-top:9px;
+    padding:10px;
+    border-radius:8px;
+    background:#0f172a;
+    border:1px solid #334155;
+
+    color:#94a3b8;
+    font-size:11px;
+    line-height:1.5;
+}
+
+.split-info strong{
+    color:#c7d2fe;
+}
+
+.split-method{
+    margin-top:12px;
+    text-align:left;
+}
+
+.split-method label{
+    display:block;
+    color:#cbd5e1;
+    font-size:11px;
+    font-weight:800;
+    margin-bottom:7px;
+}
+
+.split-method select,
+.split-method input{
+    width:100%;
+    min-height:44px;
+    background:#0f172a;
+    color:#fff;
+    border:1px solid #475569;
+    border-radius:8px;
+    padding:8px 10px;
+    outline:none;
+}
+
+.split-help{
+    margin-top:6px;
+    color:#64748b;
+    font-size:10px;
+    line-height:1.5;
+}
+
+.split-status{
+    margin-top:10px;
+    min-height:18px;
+    color:#a5b4fc;
+    font-size:11px;
+    font-weight:700;
+}
+
+.split-results{
+    margin-top:12px;
+    text-align:left;
+}
+
+.split-results-title{
+    color:#cbd5e1;
+    font-size:12px;
+    font-weight:800;
+    margin-bottom:7px;
+}
+
+.split-result{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+
+    padding:9px;
+    margin-top:6px;
+
+    background:#0f172a;
+    border:1px solid #334155;
+    border-radius:8px;
+}
+
+.split-result-name{
+    min-width:0;
+    flex:1;
+
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+
+    font-size:11px;
+    color:#e2e8f0;
+}
+
+.split-result-pages{
+    color:#64748b;
+    font-size:10px;
+    white-space:nowrap;
+}
+
+.split-download{
+    flex:0 0 auto;
+
+    min-height:34px;
+    padding:6px 10px;
+
+    border:0;
+    border-radius:7px;
+
+    background:#10b981;
+    color:#fff;
+
+    font-size:10px;
+    font-weight:800;
+}
+
+.split-download-all{
+    margin-top:8px;
 }
 
 /* =========================
@@ -359,11 +484,6 @@ SAVE AREA
     gap:7px;
     margin-bottom:9px;
 }
-
-/*
-IMPORTANT:
-sticky save bar for mobile/browser
-*/
 
 #scan-save-bar{
     position:fixed;
@@ -696,7 +816,7 @@ EDITOR BUTTONS
 }
 
 /* =========================
-SMALL HEIGHT DEVICES
+SMALL HEIGHT
 ========================= */
 
 @media(max-height:700px){
@@ -765,6 +885,21 @@ DESKTOP
         width:100%;
         margin:0 auto;
     }
+}
+
+/* =========================
+MOBILE TOOL GRID
+========================= */
+
+@media(max-width:520px){
+
+    .tool-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .tool-card{
+        min-height:46px;
+    }
 
 }
 
@@ -794,6 +929,7 @@ VERY SMALL PHONES
     .filter-btn{
         min-width:68px;
     }
+
 }
 </style>
 </head>
@@ -821,6 +957,12 @@ VERY SMALL PHONES
             class="tool-card"
             onclick="switchTab('scan')">
         📸 Smart Scan
+    </button>
+
+    <button id="tab-split"
+            class="tool-card"
+            onclick="switchTab('split')">
+        ✂️ Split PDF
     </button>
 
 </div>
@@ -981,7 +1123,6 @@ SMART SCAN
         hidden
         onchange="handleGallery(this.files)">
 
-
     <div class="scan-heading">
 
         <div class="scan-heading-title">
@@ -998,9 +1139,6 @@ SMART SCAN
     <div id="scanned-grid"
          class="scanned-grid">
     </div>
-
-
-    <!-- Normal save box remains available on page -->
 
     <div id="save-box"
          class="save-box hidden">
@@ -1052,6 +1190,135 @@ SMART SCAN
             💾 SAVE AS PDF
 
         </button>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+SPLIT PDF
+===================================================== -->
+
+<div id="panel-split" class="panel hidden">
+
+    <div class="drop-zone"
+         onclick="document.getElementById('split-input').click()">
+
+        ✂️ Tap to Select PDF
+
+        <input
+            id="split-input"
+            type="file"
+            accept="application/pdf"
+            hidden
+            onchange="loadSplitPDF(this.files[0])">
+
+    </div>
+
+    <div id="split-file-info"
+         class="split-info hidden">
+    </div>
+
+
+    <div id="split-controls"
+         class="hidden">
+
+        <div class="split-method">
+
+            <label>
+                Split Method
+            </label>
+
+            <select id="split-method"
+                    onchange="updateSplitUI()">
+
+                <option value="each">
+                    Every Page → Separate PDF
+                </option>
+
+                <option value="range">
+                    Custom Page Range(s)
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div id="split-range-box"
+             class="split-method hidden">
+
+            <label>
+                Page Ranges
+            </label>
+
+            <input
+                id="split-ranges"
+                type="text"
+                placeholder="Example: 1-3, 5, 8-10">
+
+            <div class="split-help">
+                Each range becomes one independent PDF.
+                Example: 1-3, 5, 8-10 = 3 PDF files.
+            </div>
+
+        </div>
+
+
+        <div class="split-method">
+
+            <label>
+                Output File Name
+            </label>
+
+            <input
+                id="split-name"
+                type="text"
+                value="Split_Document">
+
+            <div class="split-help">
+                Page/range number will automatically be added.
+            </div>
+
+        </div>
+
+
+        <button
+            id="split-btn"
+            class="primary-btn success-btn"
+            style="margin-top:12px"
+            onclick="executeSplitPDF()">
+
+            ✂️ SPLIT PDF
+
+        </button>
+
+
+        <div id="split-status"
+             class="split-status">
+        </div>
+
+
+        <div id="split-results"
+             class="split-results hidden">
+
+            <div class="split-results-title">
+                📥 Generated PDF Files
+            </div>
+
+            <div id="split-result-list"></div>
+
+            <button
+                id="split-download-all"
+                class="primary-btn split-download-all"
+                onclick="downloadAllSplitFiles()">
+
+                ⬇️ DOWNLOAD ALL
+
+            </button>
+
+        </div>
 
     </div>
 
@@ -1135,8 +1402,6 @@ SMART SCAN EDITOR
 
     <div class="editor-controls">
 
-        <!-- CROP MODE -->
-
         <div class="mode-bar">
 
             <button
@@ -1159,8 +1424,6 @@ SMART SCAN EDITOR
 
         </div>
 
-
-        <!-- FILTERS -->
 
         <div class="filter-scroll">
 
@@ -1202,8 +1465,6 @@ SMART SCAN EDITOR
 
         </div>
 
-
-        <!-- EDIT BUTTONS -->
 
         <div class="editor-buttons">
 
@@ -1283,6 +1544,15 @@ const canvas=
 
 
 /* =====================================================
+SPLIT PDF GLOBAL
+===================================================== */
+
+let splitPDFFile=null;
+
+let splitResults=[];
+
+
+/* =====================================================
 TAB
 ===================================================== */
 
@@ -1290,7 +1560,7 @@ function switchTab(tab){
 
     activeTab=tab;
 
-    ["merge","resize","scan"].forEach(t=>{
+    ["merge","resize","scan","split"].forEach(t=>{
 
         document
             .getElementById(`tab-${t}`)
@@ -1673,10 +1943,6 @@ function handleGallery(files){
 
     if(!files || !files.length)return;
 
-    /*
-    Current page opens first image.
-    */
-
     openScanner(files[0]);
 
 }
@@ -1697,11 +1963,6 @@ function openScanner(file){
             new Image();
 
         img.onload=()=>{
-
-            /*
-            Keep working canvas reasonably HD
-            while avoiding mobile memory crash.
-            */
 
             const MAX=3000;
 
@@ -1756,11 +2017,6 @@ function openScanner(file){
                 .classList.remove(
                     "hidden"
                 );
-
-            /*
-            Draw first.
-            Auto detection then runs.
-            */
 
             drawEditor();
 
@@ -1961,10 +2217,6 @@ function drawEditor(){
         canvas.height
     );
 
-    /*
-    THIS FIXES THE FILTER PREVIEW ISSUE.
-    */
-
     const preview=
         createFilteredCanvas();
 
@@ -2003,10 +2255,6 @@ function drawPerspectiveOverlay(ctx){
 
         }));
 
-    /*
-    Dark outside area.
-    */
-
     ctx.save();
 
     ctx.fillStyle=
@@ -2018,10 +2266,6 @@ function drawPerspectiveOverlay(ctx){
         canvas.width,
         canvas.height
     );
-
-    /*
-    Restore selected area
-    */
 
     ctx.beginPath();
 
@@ -2053,10 +2297,6 @@ function drawPerspectiveOverlay(ctx){
 
     ctx.restore();
 
-    /*
-    Border
-    */
-
     ctx.strokeStyle="#818cf8";
     ctx.lineWidth=3;
 
@@ -2079,10 +2319,6 @@ function drawPerspectiveOverlay(ctx){
     ctx.closePath();
 
     ctx.stroke();
-
-    /*
-    Corner handles
-    */
 
     p.forEach(point=>{
 
@@ -2125,10 +2361,6 @@ function drawFreeOverlay(ctx){
         )*
         canvas.height;
 
-    /*
-    Dark entire canvas.
-    */
-
     ctx.fillStyle=
         "rgba(0,0,0,.55)";
 
@@ -2138,10 +2370,6 @@ function drawFreeOverlay(ctx){
         canvas.width,
         canvas.height
     );
-
-    /*
-    Show selected image area again.
-    */
 
     ctx.save();
 
@@ -2166,10 +2394,6 @@ function drawFreeOverlay(ctx){
 
     ctx.restore();
 
-    /*
-    Crop border
-    */
-
     ctx.strokeStyle="#818cf8";
     ctx.lineWidth=3;
 
@@ -2179,10 +2403,6 @@ function drawFreeOverlay(ctx){
         w,
         h
     );
-
-    /*
-    Rule of thirds
-    */
 
     ctx.strokeStyle=
         "rgba(255,255,255,.35)";
@@ -2227,33 +2447,10 @@ function drawFreeOverlay(ctx){
 
     }
 
-    /*
-    Handles
-    */
-
-    drawHandle(
-        ctx,
-        x,
-        y
-    );
-
-    drawHandle(
-        ctx,
-        x+w,
-        y
-    );
-
-    drawHandle(
-        ctx,
-        x+w,
-        y+h
-    );
-
-    drawHandle(
-        ctx,
-        x,
-        y+h
-    );
+    drawHandle(ctx,x,y);
+    drawHandle(ctx,x+w,y);
+    drawHandle(ctx,x+w,y+h);
+    drawHandle(ctx,x,y+h);
 
 }
 
@@ -2359,7 +2556,7 @@ function getFreeCorner(p){
     ];
 
     let found=-1;
-    let best=.06;
+    let best=.08;
 
     handles.forEach(h=>{
 
@@ -2399,7 +2596,7 @@ canvas.addEventListener(
         if(cropMode==="perspective"){
 
             let nearest=-1;
-            let best=.07;
+            let best=.08;
 
             corners.forEach(
                 (c,i)=>{
@@ -2421,10 +2618,6 @@ canvas.addEventListener(
 
         }else{
 
-            /*
-            First check corner.
-            */
-
             const corner=
                 getFreeCorner(p);
 
@@ -2433,11 +2626,6 @@ canvas.addEventListener(
                 dragCorner=corner;
 
             }else{
-
-                /*
-                If inside current crop,
-                move entire crop.
-                */
 
                 const inside=
                     p.x>freeCrop.left &&
@@ -2460,12 +2648,6 @@ canvas.addEventListener(
 
                 }else{
 
-                    /*
-                    IMPORTANT:
-                    Touch/click anywhere outside
-                    starts a brand new free crop.
-                    */
-
                     drawingFree=true;
 
                     freeStart={
@@ -2487,9 +2669,11 @@ canvas.addEventListener(
         }
 
         try{
+
             canvas.setPointerCapture(
                 e.pointerId
             );
+
         }catch{}
 
         drawEditor();
@@ -2523,11 +2707,6 @@ canvas.addEventListener(
             return;
 
         }
-
-
-        /* =========================
-        FREE CROP RESIZE
-        ========================= */
 
         if(dragCorner>=0){
 
@@ -2601,11 +2780,6 @@ canvas.addEventListener(
 
         }
 
-
-        /* =========================
-        MOVE FREE CROP
-        ========================= */
-
         if(dragFree && dragStart){
 
             const dx=
@@ -2653,11 +2827,6 @@ canvas.addEventListener(
             return;
 
         }
-
-
-        /* =========================
-        DRAW NEW FREE CROP
-        ========================= */
 
         if(drawingFree && freeStart){
 
@@ -2834,11 +3003,6 @@ function applyFilter(c){
             .587*g+
             .114*b;
 
-
-        /* =================
-        GRAY
-        ================= */
-
         if(filterMode==="gray"){
 
             d[i]=gray;
@@ -2847,17 +3011,7 @@ function applyFilter(c){
 
         }
 
-
-        /* =================
-        B&W
-        ================= */
-
         else if(filterMode==="bw"){
-
-            /*
-            Higher contrast document
-            threshold.
-            */
 
             const value=
                 gray>155
@@ -2870,17 +3024,7 @@ function applyFilter(c){
 
         }
 
-
-        /* =================
-        AUTO
-        ================= */
-
         else if(filterMode==="auto"){
-
-            /*
-            Contrast enhancement
-            + slight brightness.
-            */
 
             let value=
                 (gray-128)*1.35+
@@ -2919,10 +3063,6 @@ function createFinalCrop(){
 
     const src=
         sourceCanvas;
-
-    /*
-    FREE CROP
-    */
 
     if(cropMode==="free"){
 
@@ -2990,10 +3130,6 @@ function createFinalCrop(){
     }
 
 
-    /*
-    4 CORNER PERSPECTIVE
-    */
-
     const p=
         corners.map(c=>({
 
@@ -3040,11 +3176,6 @@ function createFinalCrop(){
             1,
             Math.round(height)
         );
-
-
-    /*
-    OpenCV perspective correction
-    */
 
     if(
         window.cv &&
@@ -3137,11 +3268,6 @@ function createFinalCrop(){
         }
 
     }
-
-
-    /*
-    Fallback if OpenCV isn't ready
-    */
 
     const out=
         document.createElement(
@@ -3240,27 +3366,7 @@ function keepPage(){
 
         renderPages();
 
-        /*
-        Switch to Scan tab
-        */
-
         switchTab("scan");
-
-        /*
-        Small feedback
-        */
-
-        setTimeout(
-            ()=>{
-                const count=
-                    scannedPages.length;
-
-                console.log(
-                    `${count} page saved`
-                );
-            },
-            50
-        );
 
     }catch(error){
 
@@ -3348,15 +3454,7 @@ function autoDetect(){
 
     }
 
-    /*
-    Default crop first.
-    */
-
     resetCrop();
-
-    /*
-    OpenCV may not be loaded yet.
-    */
 
     if(
         !window.cv ||
@@ -3823,20 +3921,10 @@ function updateSaveUI(){
 
     saveBarPages.innerText=text;
 
-    /*
-    Normal save box only on Scan page.
-    */
-
     saveBox.classList.toggle(
         "hidden",
         !hasPages
     );
-
-    /*
-    Fixed save bar visible only
-    when scan tab is active and
-    pages exist.
-    */
 
     saveBar.classList.toggle(
         "hidden",
@@ -3917,11 +4005,6 @@ async function saveScannedPDF(){
             const img=
                 await loadImage(url);
 
-            /*
-            Re-compress based on selected
-            PDF quality.
-            */
-
             const c=
                 document.createElement(
                     "canvas"
@@ -3969,11 +4052,6 @@ async function saveScannedPDF(){
             let height=
                 embedded.height;
 
-
-            /* =====================
-            A4
-            ===================== */
-
             if(pageSize==="a4"){
 
                 const A4W=595;
@@ -4012,11 +4090,6 @@ async function saveScannedPDF(){
 
             }
 
-
-            /* =====================
-            LETTER
-            ===================== */
-
             if(pageSize==="letter"){
 
                 const W=612;
@@ -4054,11 +4127,6 @@ async function saveScannedPDF(){
                 continue;
 
             }
-
-
-            /* =====================
-            ORIGINAL
-            ===================== */
 
             const maxPoints=900;
 
@@ -4133,6 +4201,712 @@ async function saveScannedPDF(){
     }
 
     btn.disabled=false;
+
+}
+
+
+/* =====================================================
+SPLIT PDF - LOAD
+===================================================== */
+
+async function loadSplitPDF(file){
+
+    if(!file)return;
+
+    if(
+        file.type!=="application/pdf" &&
+        !file.name.toLowerCase().endsWith(".pdf")
+    ){
+
+        alert("Please select a PDF file.");
+
+        return;
+
+    }
+
+    splitPDFFile=file;
+    splitResults=[];
+
+    const info=
+        document.getElementById(
+            "split-file-info"
+        );
+
+    const controls=
+        document.getElementById(
+            "split-controls"
+        );
+
+    const status=
+        document.getElementById(
+            "split-status"
+        );
+
+    const results=
+        document.getElementById(
+            "split-results"
+        );
+
+    info.classList.remove("hidden");
+    controls.classList.remove("hidden");
+    results.classList.add("hidden");
+
+    status.innerText=
+        "Reading PDF... ⏳";
+
+    try{
+
+        const bytes=
+            await file.arrayBuffer();
+
+        const pdf=
+            await PDFLib.PDFDocument.load(
+                bytes
+            );
+
+        const total=
+            pdf.getPageCount();
+
+        splitPDFFile._pageCount=total;
+
+        info.innerHTML=`
+            <strong>${escapeHTML(file.name)}</strong><br>
+            ${total} ${total===1?"page":"pages"} • ${formatBytes(file.size)}
+        `;
+
+        status.innerText=
+            `Ready — ${total} pages available.`;
+
+        document.getElementById(
+            "split-name"
+        ).value=
+            file.name.replace(
+                /\.pdf$/i,
+                ""
+            )+"_Split";
+
+        updateSplitUI();
+
+    }catch(error){
+
+        splitPDFFile=null;
+        controls.classList.add("hidden");
+
+        info.innerHTML=
+            "Could not read this PDF.";
+
+        status.innerText="";
+
+        alert(
+            "PDF Error: "+
+            error.message
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+SPLIT UI
+===================================================== */
+
+function updateSplitUI(){
+
+    const method=
+        document.getElementById(
+            "split-method"
+        ).value;
+
+    const rangeBox=
+        document.getElementById(
+            "split-range-box"
+        );
+
+    rangeBox.classList.toggle(
+        "hidden",
+        method!=="range"
+    );
+
+}
+
+
+/* =====================================================
+PARSE PAGE RANGES
+===================================================== */
+
+function parsePageRanges(
+    input,
+    totalPages
+){
+
+    const text=
+        String(input||"").trim();
+
+    if(!text){
+
+        throw new Error(
+            "Please enter page ranges."
+        );
+
+    }
+
+    const groups=
+        text
+        .split(",")
+        .map(x=>x.trim())
+        .filter(Boolean);
+
+    if(!groups.length){
+
+        throw new Error(
+            "Invalid page ranges."
+        );
+
+    }
+
+    const result=[];
+
+    groups.forEach((group,index)=>{
+
+        if(group.includes("-")){
+
+            const parts=
+                group
+                .split("-")
+                .map(x=>x.trim());
+
+            if(parts.length!==2){
+
+                throw new Error(
+                    `Invalid range: ${group}`
+                );
+
+            }
+
+            let start=
+                parseInt(parts[0],10);
+
+            let end=
+                parseInt(parts[1],10);
+
+            if(
+                !Number.isInteger(start) ||
+                !Number.isInteger(end)
+            ){
+
+                throw new Error(
+                    `Invalid range: ${group}`
+                );
+
+            }
+
+            if(start>end){
+
+                const temp=start;
+                start=end;
+                end=temp;
+
+            }
+
+            if(
+                start<1 ||
+                end>totalPages
+            ){
+
+                throw new Error(
+                    `Range ${group} is outside the PDF page count.`
+                );
+
+            }
+
+            const pages=[];
+
+            for(
+                let p=start;
+                p<=end;
+                p++
+            ){
+
+                pages.push(p-1);
+
+            }
+
+            result.push({
+                label:`Pages ${start}-${end}`,
+                pages
+            });
+
+        }else{
+
+            const page=
+                parseInt(
+                    group,
+                    10
+                );
+
+            if(
+                !Number.isInteger(page) ||
+                page<1 ||
+                page>totalPages
+            ){
+
+                throw new Error(
+                    `Invalid page number: ${group}`
+                );
+
+            }
+
+            result.push({
+                label:`Page ${page}`,
+                pages:[page-1]
+            });
+
+        }
+
+    });
+
+    return result;
+
+}
+
+
+/* =====================================================
+CREATE PDF FROM PAGES
+===================================================== */
+
+async function createPDFFromPages(
+    sourcePDF,
+    pageIndexes
+){
+
+    const newPDF=
+        await PDFLib.PDFDocument.create();
+
+    const pages=
+        await newPDF.copyPages(
+            sourcePDF,
+            pageIndexes
+        );
+
+    pages.forEach(
+        page=>{
+            newPDF.addPage(page);
+        }
+    );
+
+    const bytes=
+        await newPDF.save();
+
+    return new Blob(
+        [bytes],
+        {
+            type:"application/pdf"
+        }
+    );
+
+}
+
+
+/* =====================================================
+EXECUTE SPLIT
+===================================================== */
+
+async function executeSplitPDF(){
+
+    if(!splitPDFFile){
+
+        alert(
+            "Please select a PDF first."
+        );
+
+        return;
+
+    }
+
+    const btn=
+        document.getElementById(
+            "split-btn"
+        );
+
+    const status=
+        document.getElementById(
+            "split-status"
+        );
+
+    const resultBox=
+        document.getElementById(
+            "split-results"
+        );
+
+    const resultList=
+        document.getElementById(
+            "split-result-list"
+        );
+
+    const method=
+        document.getElementById(
+            "split-method"
+        ).value;
+
+    let baseName=
+        document.getElementById(
+            "split-name"
+        ).value.trim();
+
+    if(!baseName){
+
+        baseName="Split_Document";
+
+    }
+
+    baseName=
+        baseName.replace(
+            /\.pdf$/i,
+            ""
+        );
+
+    btn.disabled=true;
+
+    splitResults=[];
+
+    resultList.innerHTML="";
+
+    resultBox.classList.add("hidden");
+
+    try{
+
+        status.innerText=
+            "Loading PDF... ⏳";
+
+        const bytes=
+            await splitPDFFile.arrayBuffer();
+
+        const sourcePDF=
+            await PDFLib.PDFDocument.load(
+                bytes
+            );
+
+        const totalPages=
+            sourcePDF.getPageCount();
+
+        let groups=[];
+
+        /* =====================
+        EVERY PAGE
+        ===================== */
+
+        if(method==="each"){
+
+            for(
+                let i=0;
+                i<totalPages;
+                i++
+            ){
+
+                groups.push({
+
+                    label:
+                        `Page ${i+1}`,
+
+                    pages:[i]
+
+                });
+
+            }
+
+        }
+
+        /* =====================
+        CUSTOM RANGE
+        ===================== */
+
+        else{
+
+            const rangeInput=
+                document.getElementById(
+                    "split-ranges"
+                ).value;
+
+            groups=
+                parsePageRanges(
+                    rangeInput,
+                    totalPages
+                );
+
+        }
+
+        if(!groups.length){
+
+            throw new Error(
+                "No pages selected."
+            );
+
+        }
+
+        /* =====================
+        CREATE FILES
+        ===================== */
+
+        for(
+            let i=0;
+            i<groups.length;
+            i++
+        ){
+
+            const group=
+                groups[i];
+
+            status.innerText=
+                `Creating PDF ${i+1} of ${groups.length}... ⏳`;
+
+            const blob=
+                await createPDFFromPages(
+                    sourcePDF,
+                    group.pages
+                );
+
+            let suffix="";
+
+            if(method==="each"){
+
+                suffix=
+                    `_Page_${group.pages[0]+1}`;
+
+            }else{
+
+                suffix=
+                    `_Part_${i+1}`;
+
+            }
+
+            const filename=
+                baseName+
+                suffix+
+                ".pdf";
+
+            splitResults.push({
+
+                blob,
+                name:filename,
+                label:group.label
+
+            });
+
+            /*
+            Allow browser UI to breathe
+            on large PDFs.
+            */
+
+            await sleep(30);
+
+        }
+
+        renderSplitResults();
+
+        status.innerText=
+            `✅ ${splitResults.length} PDF ${
+                splitResults.length===1
+                ?"file"
+                :"files"
+            } created successfully.`;
+
+        resultBox.classList.remove(
+            "hidden"
+        );
+
+    }catch(error){
+
+        status.innerText="";
+
+        alert(
+            "Split Error: "+
+            error.message
+        );
+
+    }
+
+    btn.disabled=false;
+
+}
+
+
+/* =====================================================
+RENDER SPLIT RESULTS
+===================================================== */
+
+function renderSplitResults(){
+
+    const list=
+        document.getElementById(
+            "split-result-list"
+        );
+
+    list.innerHTML="";
+
+    splitResults.forEach(
+        (item,index)=>{
+
+            const row=
+                document.createElement(
+                    "div"
+                );
+
+            row.className=
+                "split-result";
+
+            const name=
+                document.createElement(
+                    "div"
+                );
+
+            name.className=
+                "split-result-name";
+
+            name.innerText=
+                item.name;
+
+            name.title=
+                item.name;
+
+            const pages=
+                document.createElement(
+                    "div"
+                );
+
+            pages.className=
+                "split-result-pages";
+
+            pages.innerText=
+                item.label;
+
+            const button=
+                document.createElement(
+                    "button"
+                );
+
+            button.className=
+                "split-download";
+
+            button.innerText=
+                "Download";
+
+            button.onclick=()=>{
+
+                download(
+                    item.blob,
+                    item.name
+                );
+
+            };
+
+            row.appendChild(name);
+            row.appendChild(pages);
+            row.appendChild(button);
+
+            list.appendChild(row);
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+DOWNLOAD ALL SPLIT FILES
+===================================================== */
+
+async function downloadAllSplitFiles(){
+
+    if(!splitResults.length){
+
+        return;
+
+    }
+
+    const btn=
+        document.getElementById(
+            "split-download-all"
+        );
+
+    const original=
+        btn.innerText;
+
+    btn.disabled=true;
+    btn.innerText=
+        "Preparing... ⏳";
+
+    try{
+
+        /*
+        Browser/mobile may block multiple
+        automatic downloads.
+
+        We trigger them with a delay.
+        If blocked, individual Download
+        buttons remain available.
+        */
+
+        for(
+            let i=0;
+            i<splitResults.length;
+            i++
+        ){
+
+            const item=
+                splitResults[i];
+
+            download(
+                item.blob,
+                item.name
+            );
+
+            btn.innerText=
+                `Downloading ${i+1}/${splitResults.length}...`;
+
+            await sleep(350);
+
+        }
+
+        btn.innerText=
+            "✅ ALL DOWNLOADS STARTED";
+
+        setTimeout(
+            ()=>{
+                btn.innerText=original;
+            },
+            2000
+        );
+
+    }catch(error){
+
+        alert(
+            "Download Error: "+
+            error.message
+        );
+
+        btn.innerText=original;
+
+    }
+
+    btn.disabled=false;
+
+}
+
+
+/* =====================================================
+SLEEP
+===================================================== */
+
+function sleep(ms){
+
+    return new Promise(
+        resolve=>
+            setTimeout(
+                resolve,
+                ms
+            )
+    );
 
 }
 
@@ -4256,7 +5030,7 @@ function download(
         ()=>{
             URL.revokeObjectURL(url);
         },
-        1500
+        3000
     );
 
 }
