@@ -20,12 +20,30 @@
         .primary-btn { background: #4F46E5; color: white; border: none; padding: 15px; font-size: 16px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
         .primary-btn:disabled { background: #9ca3af; cursor: not-allowed; }
         
-        /* Scanner Specific Styles */
-        #scanner-ui { max-width: 600px; margin: 0 auto; background: white; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb; }
-        #camera-feed { width: 100%; border-radius: 8px; background: #000; max-height: 400px; object-fit: cover; }
+        /* ADOBE STYLE SCANNER UI */
+        #scanner-ui { max-width: 600px; margin: 0 auto; background: #1f2937; padding: 15px; border-radius: 12px; position: relative; }
+        .camera-container { position: relative; width: 100%; border-radius: 8px; overflow: hidden; background: #000; }
+        #camera-feed { width: 100%; max-height: 500px; object-fit: cover; display: block; }
+        #flash-btn { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; border: 1px solid white; padding: 8px 12px; border-radius: 20px; cursor: pointer; font-size: 14px; z-index: 10; }
+        
+        /* Capture Button Layout */
+        .camera-controls { display: flex; justify-content: center; padding: 20px 0; }
+        .capture-btn { width: 70px; height: 70px; border-radius: 50%; background: white; border: 4px solid #9ca3af; cursor: pointer; transition: 0.2s; }
+        .capture-btn:active { transform: scale(0.9); background: #e5e7eb; }
+
+        /* Review Screen Overlay */
+        #review-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #1f2937; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 15px; }
+        #review-image { max-width: 100%; max-height: 70%; object-fit: contain; border-radius: 8px; }
+        .review-toolbar { display: flex; gap: 10px; width: 100%; justify-content: space-around; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; }
+        .icon-btn { background: none; border: none; color: white; font-size: 14px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .icon-btn span { font-size: 20px; }
+
+        /* Thumbnails List */
         .preview-thumbnails { display: flex; gap: 10px; overflow-x: auto; margin-top: 15px; padding-bottom: 10px; }
-        .preview-thumbnails img { height: 80px; border-radius: 4px; border: 2px solid #e5e7eb; }
-        .success-btn { background: #10b981; } .success-btn:hover { background: #059669; }
+        .thumb-wrap { position: relative; flex-shrink: 0; }
+        .thumb-wrap img { height: 90px; width: 70px; object-fit: cover; border-radius: 4px; border: 2px solid #4F46E5; }
+        .delete-thumb { position: absolute; top: -5px; right: -5px; background: red; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; cursor: pointer; }
+        .success-btn { background: #10b981; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -38,7 +56,6 @@
         <button class="tool-card" id="btn-scan" onclick="switchTool('scan')">Smart Scanner</button>
     </div>
 
-    <!-- Image Resizer Options -->
     <div id="resize-options" class="options-panel hidden">
         <input type="number" id="inp-w" placeholder="Width (px)">
         <input type="number" id="inp-h" placeholder="Height (px)">
@@ -47,26 +64,40 @@
         <select id="inp-fmt"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option></select>
     </div>
 
-    <!-- Drag & Drop UI -->
     <div id="drop-zone-area" class="drop-zone" onclick="document.getElementById('file-input').click()">
         <p>Click here to Browse Files</p>
         <input type="file" id="file-input" multiple hidden onchange="handleFiles(this.files)">
     </div>
 
-    <!-- Processing UI -->
     <div id="staging-area" class="file-list hidden">
         <div id="file-display"></div>
         <button id="action-btn" class="primary-btn" onclick="processQueue()">Process Files</button>
     </div>
 
-    <!-- NAYA: Smart Scanner UI -->
+    <!-- SCANNER MODULE -->
     <div id="scanner-ui" class="hidden">
-        <video id="camera-feed" autoplay playsinline></video>
-        <button class="primary-btn" style="margin-top: 15px;" onclick="capturePage()">📸 Capture Page</button>
+        <div class="camera-container" id="camera-view">
+            <button id="flash-btn" onclick="toggleFlash()">⚡ Flash OFF</button>
+            <video id="camera-feed" autoplay playsinline></video>
+            
+            <div class="camera-controls">
+                <button class="capture-btn" onclick="capturePage()"></button>
+            </div>
+        </div>
+
+        <!-- ADOBE STYLE REVIEW SCREEN -->
+        <div id="review-screen" class="hidden">
+            <img id="review-image" src="" alt="Captured Frame">
+            <div class="review-toolbar">
+                <button class="icon-btn" onclick="retakePhoto()"><span>✖️</span> Retake</button>
+                <button class="icon-btn" onclick="rotatePhoto()"><span>🔃</span> Rotate</button>
+                <button class="icon-btn" onclick="applyScanFilter()"><span>🪄</span> Filter</button>
+                <button class="icon-btn" onclick="keepPhoto()"><span>✅</span> Keep</button>
+            </div>
+        </div>
         
         <div id="scanned-preview-list" class="preview-thumbnails"></div>
-        
-        <button id="btn-save-scan" class="primary-btn success-btn hidden" style="margin-top: 10px;" onclick="finishScan()">Save PDF & Upload to Drive</button>
+        <button id="btn-save-scan" class="primary-btn success-btn hidden" onclick="finishScan()">Save PDF & Close Camera</button>
         <canvas id="hidden-canvas" hidden></canvas>
     </div>
 
@@ -75,24 +106,23 @@
         let currentTool = 'merge';
         let fileQueue = [];
         
-        // Scanner State
         let videoStream = null;
+        let imageTrack = null;
+        let isFlashOn = false;
         let scannedPages = [];
+        let tempCurrentPhoto = null; // Temp storage for review screen
 
-        // --- 2. UI SWITCHING LOGIC ---
+        // --- 2. MAIN UI LOGIC ---
         function switchTool(tool) {
             currentTool = tool;
             fileQueue = [];
             document.getElementById('staging-area').classList.add('hidden');
             
-            // Buttons UI
             document.getElementById('btn-merge').classList.toggle('active', tool === 'merge');
             document.getElementById('btn-resize').classList.toggle('active', tool === 'resize');
             document.getElementById('btn-scan').classList.toggle('active', tool === 'scan');
-            
             document.getElementById('resize-options').classList.toggle('hidden', tool !== 'resize');
 
-            // Toggle between Upload UI and Scanner UI
             if (tool === 'scan') {
                 document.getElementById('drop-zone-area').classList.add('hidden');
                 document.getElementById('scanner-ui').classList.remove('hidden');
@@ -104,14 +134,11 @@
             }
         }
 
-        // --- 3. EXISTING MERGE & RESIZE LOGIC (UNTOUCHED) ---
         function handleFiles(files) {
             if (files.length === 0) return;
             fileQueue = Array.from(files);
             let html = '';
-            fileQueue.forEach(f => {
-                html += `<div class="file-item"><span>📄 ${f.name}</span><span>${(f.size/1024).toFixed(1)} KB</span></div>`;
-            });
+            fileQueue.forEach(f => html += `<div class="file-item"><span>📄 ${f.name}</span><span>${(f.size/1024).toFixed(1)} KB</span></div>`);
             document.getElementById('file-display').innerHTML = html;
             document.getElementById('staging-area').classList.remove('hidden');
             document.getElementById('action-btn').innerText = currentTool === 'merge' ? 'Merge PDFs' : 'Compress Images';
@@ -126,9 +153,7 @@
                 if (currentTool === 'merge') await runPdfMerge(fileQueue);
                 else await runImageResizer(fileQueue);
                 alert("Task Complete! File(s) downloaded.");
-            } catch (err) {
-                alert("Error: " + err.message);
-            }
+            } catch (err) { alert("Error: " + err.message); }
 
             btn.disabled = false;
             fileQueue = [];
@@ -144,8 +169,7 @@
                 const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
                 pages.forEach(p => mergedPdf.addPage(p));
             }
-            const bytes = await mergedPdf.save();
-            triggerDownload(new Blob([bytes], { type: 'application/pdf' }), 'Merged_Output.pdf');
+            triggerDownload(new Blob([await mergedPdf.save()], { type: 'application/pdf' }), 'Merged_Output.pdf');
         }
 
         async function runImageResizer(files) {
@@ -154,12 +178,10 @@
             const targetKB = (sizeVal && unit === 'MB') ? sizeVal * 1024 : sizeVal;
             const options = { w: document.getElementById('inp-w').value, h: document.getElementById('inp-h').value, kb: targetKB, fmt: document.getElementById('inp-fmt').value };
 
-            for (let file of files) {
-                if (file.type.startsWith('image/')) await processSingle(file, options);
-            }
+            for (let file of files) if (file.type.startsWith('image/')) await processSingleImage(file, options);
         }
 
-        function processSingle(file, opt) {
+        function processSingleImage(file, opt) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.onload = e => {
@@ -185,9 +207,7 @@
         }
 
         function smartCompress(img, w, h, targetKB, name, callback) {
-            const targetBytes = targetKB * 1024;
-            let scale = 1.0; let bestBlob = null; let closest = Infinity;
-
+            const targetBytes = targetKB * 1024; let scale = 1.0; let bestBlob = null; let closest = Infinity;
             function tryScale() {
                 const canvas = document.createElement('canvas');
                 canvas.width = Math.max(w * scale, 50); canvas.height = Math.max(h * scale, 50);
@@ -201,11 +221,8 @@
                         if (diff < closest) { closest = diff; bestBlob = blob; }
                         
                         if (diff <= 3072 || attempts >= 8) {
-                            if (blob.size > targetBytes + 1024 && curQ <= 0.3 && scale > 0.2) {
-                                scale -= 0.15; tryScale(); 
-                            } else {
-                                triggerDownload(bestBlob, name.replace(/\.[^/.]+$/, "") + ".jpg"); callback();
-                            }
+                            if (blob.size > targetBytes + 1024 && curQ <= 0.3 && scale > 0.2) { scale -= 0.15; tryScale(); } 
+                            else { triggerDownload(bestBlob, name.replace(/\.[^/.]+$/, "") + ".jpg"); callback(); }
                             return;
                         }
                         if (blob.size > targetBytes) maxQ = curQ; else minQ = curQ;
@@ -223,64 +240,146 @@
             link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
 
-        // --- 4. NAYA: SMART SCANNER LOGIC ---
+        // --- 4. ADVANCED SCANNER MODULE ---
         
-        // Start Mobile Back Camera
         async function startCamera() {
             try {
-                // facingMode: 'environment' opens the back camera directly on mobile
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                document.getElementById('camera-feed').srcObject = stream;
+                const video = document.getElementById('camera-feed');
+                video.srcObject = stream;
                 videoStream = stream;
-            } catch (err) {
-                alert("Please grant camera permission to use the scanner.");
-            }
+                imageTrack = stream.getVideoTracks()[0];
+                
+                // Check if Flash (Torch) is supported
+                const capabilities = imageTrack.getCapabilities();
+                if (!capabilities.torch) {
+                    document.getElementById('flash-btn').style.display = 'none';
+                } else {
+                    document.getElementById('flash-btn').style.display = 'block';
+                }
+            } catch (err) { alert("Camera start fail: " + err.message); }
         }
 
         function stopCamera() {
             if (videoStream) {
-                videoStream.getTracks().forEach(track => track.stop());
+                videoStream.getTracks().forEach(track => {
+                    track.stop(); // Stops hardware camera
+                });
                 videoStream = null;
+                document.getElementById('camera-feed').srcObject = null;
             }
+            if (isFlashOn) toggleFlash(); // Turn off flash safely
         }
 
-        // Click a photo and store in array
+        async function toggleFlash() {
+            if (!imageTrack) return;
+            isFlashOn = !isFlashOn;
+            try {
+                await imageTrack.applyConstraints({ advanced: [{ torch: isFlashOn }] });
+                document.getElementById('flash-btn').innerText = isFlashOn ? "⚡ Flash ON" : "⚡ Flash OFF";
+                document.getElementById('flash-btn').style.color = isFlashOn ? "#facc15" : "white";
+            } catch (e) { alert("Flash feature is not supported on this device's browser."); }
+        }
+
+        // Click photo & show Review Screen
         function capturePage() {
             const video = document.getElementById('camera-feed');
             const canvas = document.getElementById('hidden-canvas');
-            
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
+            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
             canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
             
-            const imageData = canvas.toDataURL('image/jpeg', 0.9);
-            scannedPages.push(imageData);
+            tempCurrentPhoto = canvas.toDataURL('image/jpeg', 0.9);
             
+            document.getElementById('review-image').src = tempCurrentPhoto;
+            document.getElementById('camera-view').classList.add('hidden');
+            document.getElementById('review-screen').classList.remove('hidden');
+        }
+
+        // Review Action: Retake
+        function retakePhoto() {
+            tempCurrentPhoto = null;
+            document.getElementById('review-screen').classList.add('hidden');
+            document.getElementById('camera-view').classList.remove('hidden');
+        }
+
+        // Review Action: Keep
+        function keepPhoto() {
+            scannedPages.push(tempCurrentPhoto);
+            tempCurrentPhoto = null;
+            document.getElementById('review-screen').classList.add('hidden');
+            document.getElementById('camera-view').classList.remove('hidden');
             updateScannerUI();
         }
 
+        // Review Action: Rotate 90 deg
+        function rotatePhoto() {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.getElementById('hidden-canvas');
+                canvas.width = img.height; // Swap W and H
+                canvas.height = img.width;
+                const ctx = canvas.getContext('2d');
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.rotate(90 * Math.PI / 180);
+                ctx.drawImage(img, -img.width / 2, -img.height / 2);
+                
+                tempCurrentPhoto = canvas.toDataURL('image/jpeg', 0.9);
+                document.getElementById('review-image').src = tempCurrentPhoto;
+            };
+            img.src = tempCurrentPhoto;
+        }
+
+        // Review Action: Document Filter (High Contrast B&W effect)
+        function applyScanFilter() {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.getElementById('hidden-canvas');
+                canvas.width = img.width; canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                // Apply a CSS filter on canvas drawing
+                ctx.filter = 'grayscale(100%) contrast(150%) brightness(120%)';
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                
+                tempCurrentPhoto = canvas.toDataURL('image/jpeg', 0.9);
+                document.getElementById('review-image').src = tempCurrentPhoto;
+            };
+            img.src = tempCurrentPhoto;
+        }
+
+        // Thumbnails UI and Delete
         function updateScannerUI() {
             const previewContainer = document.getElementById('scanned-preview-list');
             previewContainer.innerHTML = '';
             
             scannedPages.forEach((dataUrl, index) => {
-                previewContainer.innerHTML += `<img src="${dataUrl}" alt="Page ${index + 1}">`;
+                previewContainer.innerHTML += `
+                <div class="thumb-wrap">
+                    <img src="${dataUrl}" alt="Page">
+                    <button class="delete-thumb" onclick="deletePage(${index})">X</button>
+                </div>`;
             });
 
             if (scannedPages.length > 0) {
                 document.getElementById('btn-save-scan').classList.remove('hidden');
+            } else {
+                document.getElementById('btn-save-scan').classList.add('hidden');
             }
         }
 
-        // Ask for file name, generate single PDF, and Upload
+        // Delete specific page from array
+        function deletePage(index) {
+            scannedPages.splice(index, 1);
+            updateScannerUI();
+        }
+
+        // Finish and close Camera
         async function finishScan() {
             if (scannedPages.length === 0) return;
+            const fileName = prompt("Enter File Name:", "Scanned_Document");
+            if (!fileName) return;
 
-            const fileName = prompt("Please enter a File Name for your scan:", "New_Scan_Document");
-            if (!fileName) return; // User canceled
-
-            document.getElementById('btn-save-scan').innerText = "Generating PDF... ⏳";
-            document.getElementById('btn-save-scan').disabled = true;
+            const btn = document.getElementById('btn-save-scan');
+            btn.innerText = "Generating PDF... ⏳"; btn.disabled = true;
 
             try {
                 const { PDFDocument } = window.PDFLib;
@@ -293,15 +392,12 @@
                     page.drawImage(pdfImage, { x: 0, y: 0, width: pdfImage.width, height: pdfImage.height });
                 }
 
-                const pdfBytes = await pdfDoc.save();
-                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-                const fullFileName = fileName + ".pdf";
-
-                // 1. Download to local device
-                triggerDownload(blob, fullFileName);
-
-                // 2. Push to Google Drive
-                uploadToGoogleDrive(blob, fullFileName);
+                const blob = new Blob([await pdfDoc.save()], { type: 'application/pdf' });
+                triggerDownload(blob, fileName + ".pdf");
+                
+                // IMPORTANT: Turn off camera after save!
+                stopCamera();
+                alert("Scan Complete! PDF Downloaded & Camera Turned Off.");
                 
             } catch (err) {
                 alert("Error generating PDF: " + err.message);
@@ -310,37 +406,12 @@
             // Reset UI
             scannedPages = [];
             updateScannerUI();
-            document.getElementById('btn-save-scan').classList.add('hidden');
-            document.getElementById('btn-save-scan').innerText = "Save PDF & Upload to Drive";
-            document.getElementById('btn-save-scan').disabled = false;
-        }
-
-        // The Cloud Connection Logic
-        function uploadToGoogleDrive(blob, fileName) {
-            const wantsUpload = confirm("PDF has been downloaded. Do you want to sync this directly to Google Drive?");
-            if (!wantsUpload) return;
-
-            // !! IMPORTANT: Replace this URL with your Google Apps Script Web App URL !!
-            const appsScriptWebhook = "ENTER_YOUR_SCRIPT_URL_HERE"; 
-
-            if (appsScriptWebhook === "ENTER_YOUR_SCRIPT_URL_HERE") {
-                alert("Drive connection pending! Please deploy the Apps Script code and paste the URL in index.html to enable this.");
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onloadend = function() {
-                const base64data = reader.result.split(',')[1];
-                
-                fetch(appsScriptWebhook, {
-                    method: "POST",
-                    body: JSON.stringify({ name: fileName, mimeType: "application/pdf", data: base64data })
-                })
-                .then(res => res.text())
-                .then(response => alert("✅ Upload Successful: " + response))
-                .catch(err => alert("❌ Upload Failed! Check console."));
-            }
-            reader.readAsDataURL(blob);
+            btn.classList.add('hidden');
+            btn.innerText = "Save PDF & Close Camera";
+            btn.disabled = false;
+            
+            // Switch back to merge screen to clear everything safely
+            switchTool('merge');
         }
     </script>
 </body>
