@@ -4,56 +4,202 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Converter Pro</title>
-    <link rel="stylesheet" href="css/style.css">
+    <!-- PDF Library -->
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #f3f4f6; margin: 0; padding: 20px; text-align: center; }
+        .tool-grid { display: flex; justify-content: center; gap: 15px; margin: 30px 0; flex-wrap: wrap; }
+        .tool-card { background: white; border: 2px solid #e5e7eb; padding: 15px 25px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .tool-card.active { border-color: #4F46E5; color: #4F46E5; }
+        .drop-zone { max-width: 600px; margin: 0 auto; padding: 40px; border: 2px dashed #9ca3af; border-radius: 12px; background: white; cursor: pointer; }
+        .hidden { display: none !important; }
+        .options-panel { margin: 20px auto; max-width: 600px; display: flex; flex-wrap: wrap; gap: 10px; background: white; padding: 15px; border-radius: 8px; }
+        .options-panel input, .options-panel select { flex: 1; min-width: 120px; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; }
+        .file-list { max-width: 600px; margin: 20px auto; text-align: left; }
+        .file-item { background: white; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .primary-btn { background: #4F46E5; color: white; border: none; padding: 15px; font-size: 16px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
+        .primary-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>Super Converter Pro</h1>
-        <p>100% Client-Side PDF & Image Toolkit</p>
-    </header>
+    <h1>Super Converter Pro</h1>
+    <p>All-in-One Local Processor</p>
 
-    <main>
-        <div class="tool-grid">
-            <button class="tool-card" id="btn-merge">Merge PDF</button>
-            <button class="tool-card" id="btn-resize">Image Resizer</button>
-            <button class="tool-card" id="btn-scan">Smart Scanner</button>
-        </div>
+    <div class="tool-grid">
+        <button class="tool-card active" id="btn-merge" onclick="switchTool('merge')">Merge PDF</button>
+        <button class="tool-card" id="btn-resize" onclick="switchTool('resize')">Image Resizer</button>
+    </div>
 
-                <div id="resize-options" class="resize-options hidden">
-            <input type="number" id="input-width" placeholder="Width (px)">
-            <input type="number" id="input-height" placeholder="Height (px)">
+    <div id="resize-options" class="options-panel hidden">
+        <input type="number" id="inp-w" placeholder="Width (px)">
+        <input type="number" id="inp-h" placeholder="Height (px)">
+        <input type="number" id="inp-size" placeholder="Target Size">
+        <select id="inp-unit"><option value="KB">KB</option><option value="MB">MB</option></select>
+        <select id="inp-fmt"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option></select>
+    </div>
+
+    <div class="drop-zone" onclick="document.getElementById('file-input').click()">
+        <p>Click here to Browse Files</p>
+        <input type="file" id="file-input" multiple hidden onchange="handleFiles(this.files)">
+    </div>
+
+    <div id="staging-area" class="file-list hidden">
+        <div id="file-display"></div>
+        <button id="action-btn" class="primary-btn" onclick="processQueue()">Process Files</button>
+    </div>
+
+    <script>
+        let currentTool = 'merge';
+        let fileQueue = [];
+
+        // 1. UI Logic
+        function switchTool(tool) {
+            currentTool = tool;
+            fileQueue = [];
+            document.getElementById('staging-area').classList.add('hidden');
             
-            <!-- SIZE AUR UNIT SELECTOR EK SATH -->
-            <div style="display: flex; gap: 5px; width: 100%;">
-                <input type="number" id="input-size" placeholder="Target Size" style="width: 60%;">
-                <select id="input-unit" style="width: 40%;">
-                    <option value="KB">KB</option>
-                    <option value="MB">MB</option>
-                </select>
-            </div>
+            document.getElementById('btn-merge').classList.toggle('active', tool === 'merge');
+            document.getElementById('btn-resize').classList.toggle('active', tool === 'resize');
+            document.getElementById('resize-options').classList.toggle('hidden', tool !== 'resize');
+        }
 
-            <select id="input-format">
-                <option value="image/jpeg">Export as JPG</option>
-                <option value="image/png">Export as PNG</option>
-            </select>
-        </div>
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            fileQueue = Array.from(files);
+            
+            let html = '';
+            fileQueue.forEach(f => {
+                html += `<div class="file-item"><span>📄 ${f.name}</span><span>${(f.size/1024).toFixed(1)} KB</span></div>`;
+            });
+            document.getElementById('file-display').innerHTML = html;
+            document.getElementById('staging-area').classList.remove('hidden');
+            document.getElementById('action-btn').innerText = currentTool === 'merge' ? 'Merge PDFs' : 'Compress Images';
+        }
 
+        async function processQueue() {
+            const btn = document.getElementById('action-btn');
+            btn.innerText = "Processing... Please wait ⏳";
+            btn.disabled = true;
 
-        <div id="drop-zone" class="drop-zone">
-            <p>Drag & Drop files here or <span style="color: #4F46E5; cursor: pointer;">Browse</span></p>
-            <input type="file" id="file-input" multiple hidden>
-        </div>
-        
-        <div id="workspace"></div>
+            try {
+                if (currentTool === 'merge') {
+                    await runPdfMerge(fileQueue);
+                } else {
+                    await runImageResizer(fileQueue);
+                }
+                alert("Task Complete! File(s) downloaded.");
+            } catch (err) {
+                alert("Error: " + err.message);
+                console.error(err);
+            }
 
-        <!-- NAYA PROFESSIONAL STAGING AREA -->
-        <div id="file-list-container" class="file-list-container hidden">
-            <div id="file-list" class="file-list"></div>
-            <button id="btn-action" class="primary-btn">Process Files</button>
-        </div>
-    </main>
+            btn.disabled = false;
+            fileQueue = [];
+            document.getElementById('staging-area').classList.add('hidden');
+        }
 
-    <script type="module" src="js/app.js"></script>
+        // 2. PDF Logic
+        async function runPdfMerge(files) {
+            const { PDFDocument } = window.PDFLib;
+            const mergedPdf = await PDFDocument.create();
+            for (let file of files) {
+                const arrBuffer = await file.arrayBuffer();
+                const pdf = await PDFDocument.load(arrBuffer);
+                const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+                pages.forEach(p => mergedPdf.addPage(p));
+            }
+            const bytes = await mergedPdf.save();
+            triggerDownload(new Blob([bytes], { type: 'application/pdf' }), 'Merged_Output.pdf');
+        }
+
+        // 3. Image Logic
+        async function runImageResizer(files) {
+            const sizeVal = document.getElementById('inp-size').value;
+            const unit = document.getElementById('inp-unit').value;
+            const targetKB = (sizeVal && unit === 'MB') ? sizeVal * 1024 : sizeVal;
+            
+            const options = {
+                w: document.getElementById('inp-w').value,
+                h: document.getElementById('inp-h').value,
+                kb: targetKB,
+                fmt: document.getElementById('inp-fmt').value
+            };
+
+            for (let file of files) {
+                if (file.type.startsWith('image/')) {
+                    await processSingle(file, options);
+                }
+            }
+        }
+
+        function processSingle(file, opt) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let finalW = opt.w ? parseInt(opt.w) : img.width;
+                        let finalH = opt.h ? parseInt(opt.h) : img.height;
+                        if (opt.w && !opt.h) finalH = (img.height / img.width) * finalW;
+                        if (opt.h && !opt.w) finalW = (img.width / img.height) * finalH;
+                        
+                        canvas.width = finalW;
+                        canvas.height = finalH;
+                        canvas.getContext('2d').drawImage(img, 0, 0, finalW, finalH);
+
+                        if (opt.kb && opt.fmt === 'image/jpeg') {
+                            compressToSize(canvas, opt.kb, file.name, resolve);
+                        } else {
+                            canvas.toBlob(blob => {
+                                triggerDownload(blob, file.name.replace(/\.[^/.]+$/, "") + (opt.fmt==='image/png'?'.png':'.jpg'));
+                                resolve();
+                            }, opt.fmt, 0.9);
+                        }
+                    };
+                    img.onerror = () => resolve();
+                    img.src = e.target.result;
+                };
+                reader.onerror = () => resolve();
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function compressToSize(canvas, targetKB, name, callback) {
+            let minQ = 0.01, maxQ = 1.0, curQ = 0.5, attempts = 0;
+            const targetBytes = targetKB * 1024;
+            let bestBlob = null, closest = Infinity;
+
+            function attempt() {
+                canvas.toBlob(blob => {
+                    if (!blob) return callback();
+                    attempts++;
+                    const diff = Math.abs(blob.size - targetBytes);
+                    if (diff < closest) { closest = diff; bestBlob = blob; }
+                    
+                    if (diff <= 2048 || attempts >= 15) {
+                        triggerDownload(bestBlob, name.replace(/\.[^/.]+$/, "") + ".jpg");
+                        callback();
+                        return;
+                    }
+                    if (blob.size > targetBytes) maxQ = curQ; else minQ = curQ;
+                    curQ = (minQ + maxQ) / 2;
+                    attempt();
+                }, 'image/jpeg', curQ);
+            }
+            attempt();
+        }
+
+        function triggerDownload(blob, filename) {
+            if (!blob) return;
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
 </body>
 </html>
