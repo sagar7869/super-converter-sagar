@@ -8,7 +8,13 @@
 
 <title>Super Converter Pro - HD Studio</title>
 
+<!-- PDF LIB -->
 <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+
+<!-- PDF JS - PDF RENDERING FOR COMPRESSOR -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<!-- OPENCV -->
 <script async src="https://docs.opencv.org/4.9.0/opencv.js"></script>
 
 <style>
@@ -79,7 +85,7 @@ TOOLS
     margin:0 auto 14px;
 
     display:grid;
-    grid-template-columns:repeat(4,minmax(0,1fr));
+    grid-template-columns:repeat(5,minmax(0,1fr));
     gap:7px;
 }
 
@@ -348,6 +354,144 @@ SPLIT PDF
 
 .split-download-all{
     margin-top:8px;
+}
+
+/* =========================
+COMPRESS PDF
+========================= */
+
+.compress-info{
+    margin-top:9px;
+    padding:11px;
+
+    background:#0f172a;
+    border:1px solid #334155;
+    border-radius:9px;
+
+    color:#94a3b8;
+    font-size:11px;
+    line-height:1.6;
+    text-align:left;
+}
+
+.compress-info strong{
+    color:#c7d2fe;
+}
+
+.compress-method{
+    margin-top:12px;
+    text-align:left;
+}
+
+.compress-method label{
+    display:block;
+    color:#cbd5e1;
+    font-size:11px;
+    font-weight:800;
+    margin-bottom:7px;
+}
+
+.compress-method select,
+.compress-method input{
+    width:100%;
+    min-height:44px;
+
+    background:#0f172a;
+    color:#fff;
+
+    border:1px solid #475569;
+    border-radius:8px;
+
+    padding:8px 10px;
+    outline:none;
+}
+
+.compress-help{
+    margin-top:6px;
+
+    color:#64748b;
+    font-size:10px;
+    line-height:1.55;
+    text-align:left;
+}
+
+.compress-status{
+    margin-top:10px;
+    min-height:18px;
+
+    color:#a5b4fc;
+    font-size:11px;
+    font-weight:700;
+}
+
+.compress-progress{
+    width:100%;
+    height:8px;
+
+    margin-top:9px;
+
+    background:#020617;
+    border:1px solid #334155;
+    border-radius:20px;
+
+    overflow:hidden;
+}
+
+.compress-progress-fill{
+    width:0%;
+    height:100%;
+
+    background:#6366f1;
+
+    transition:
+        width .2s ease;
+}
+
+.compress-result{
+    margin-top:12px;
+}
+
+.compress-result-box{
+    padding:12px;
+
+    background:#0f172a;
+    border:1px solid #334155;
+    border-radius:9px;
+
+    text-align:left;
+
+    color:#cbd5e1;
+    font-size:11px;
+    line-height:1.7;
+}
+
+.compress-result-box strong{
+    color:#fff;
+}
+
+.compress-saved{
+    color:#34d399;
+    font-weight:900;
+}
+
+.compress-warning{
+    color:#fbbf24;
+    font-weight:800;
+}
+
+.compress-note{
+    margin-top:10px;
+
+    padding:9px;
+
+    background:#111827;
+    border:1px solid #334155;
+    border-radius:8px;
+
+    color:#64748b;
+    font-size:9px;
+    line-height:1.55;
+    text-align:left;
 }
 
 /* =========================
@@ -891,7 +1035,7 @@ DESKTOP
 MOBILE TOOL GRID
 ========================= */
 
-@media(max-width:520px){
+@media(max-width:700px){
 
     .tool-grid{
         grid-template-columns:repeat(2,minmax(0,1fr));
@@ -963,6 +1107,13 @@ VERY SMALL PHONES
             class="tool-card"
             onclick="switchTab('split')">
         ✂️ Split PDF
+    </button>
+
+    <!-- NEW COMPRESS TOOL -->
+    <button id="tab-compress"
+            class="tool-card"
+            onclick="switchTab('compress')">
+        📉 Compress PDF
     </button>
 
 </div>
@@ -1326,6 +1477,144 @@ SPLIT PDF
 
 
 <!-- =====================================================
+NEW - COMPRESS PDF
+===================================================== -->
+
+<div id="panel-compress" class="panel hidden">
+
+    <div class="drop-zone"
+         onclick="document.getElementById('compress-input').click()">
+
+        📉 Tap to Select PDF
+
+        <input
+            id="compress-input"
+            type="file"
+            accept="application/pdf"
+            hidden
+            onchange="loadCompressPDF(this.files[0])">
+
+    </div>
+
+
+    <div id="compress-file-info"
+         class="compress-info hidden">
+    </div>
+
+
+    <div id="compress-controls"
+         class="hidden">
+
+        <div class="compress-method">
+
+            <label>
+                Compression Quality
+            </label>
+
+            <select id="compress-quality">
+
+                <option value="high">
+                    💎 High Quality — Better clarity
+                </option>
+
+                <option value="balanced" selected>
+                    ⚖️ Balanced — Recommended
+                </option>
+
+                <option value="maximum">
+                    📉 Maximum Compression — Smallest size
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="compress-help">
+
+            Reduce file size while optimizing for
+            maximum possible PDF image quality.
+
+        </div>
+
+
+        <div class="compress-method">
+
+            <label>
+                Output File Name
+            </label>
+
+            <input
+                id="compress-name"
+                type="text"
+                value="Compressed_Document">
+
+        </div>
+
+
+        <button
+            id="compress-btn"
+            class="primary-btn success-btn"
+            style="margin-top:12px"
+            onclick="executeCompressPDF()">
+
+            📉 COMPRESS PDF
+
+        </button>
+
+
+        <div id="compress-progress"
+             class="compress-progress hidden">
+
+            <div id="compress-progress-fill"
+                 class="compress-progress-fill">
+            </div>
+
+        </div>
+
+
+        <div id="compress-status"
+             class="compress-status">
+        </div>
+
+
+        <div id="compress-result"
+             class="compress-result hidden">
+
+            <div id="compress-size-info"
+                 class="compress-result-box">
+            </div>
+
+
+            <button
+                id="compress-download"
+                class="primary-btn success-btn"
+                style="margin-top:8px"
+                onclick="downloadCompressedPDF()">
+
+                💾 DOWNLOAD COMPRESSED PDF
+
+            </button>
+
+
+            <div class="compress-note">
+
+                ⚠️ Browser compression rebuilds PDF pages
+                as optimized images. Text selection/search,
+                forms, links, bookmarks and some original
+                PDF features may not be preserved.
+                Best suited for scanned or image-heavy PDFs.
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
 FIXED MOBILE SAVE BAR
 ===================================================== -->
 
@@ -1498,6 +1787,18 @@ SMART SCAN EDITOR
 <script>
 
 /* =====================================================
+PDF.JS WORKER
+===================================================== */
+
+if(window.pdfjsLib){
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+}
+
+
+/* =====================================================
 GLOBAL
 ===================================================== */
 
@@ -1553,6 +1854,17 @@ let splitResults=[];
 
 
 /* =====================================================
+COMPRESS PDF GLOBAL
+===================================================== */
+
+let compressPDFFile=null;
+
+let compressedPDFBlob=null;
+
+let compressedPDFName="";
+
+
+/* =====================================================
 TAB
 ===================================================== */
 
@@ -1560,7 +1872,13 @@ function switchTab(tab){
 
     activeTab=tab;
 
-    ["merge","resize","scan","split"].forEach(t=>{
+    [
+        "merge",
+        "resize",
+        "scan",
+        "split",
+        "compress"
+    ].forEach(t=>{
 
         document
             .getElementById(`tab-${t}`)
@@ -4592,10 +4910,6 @@ async function executeSplitPDF(){
 
         let groups=[];
 
-        /* =====================
-        EVERY PAGE
-        ===================== */
-
         if(method==="each"){
 
             for(
@@ -4615,13 +4929,7 @@ async function executeSplitPDF(){
 
             }
 
-        }
-
-        /* =====================
-        CUSTOM RANGE
-        ===================== */
-
-        else{
+        }else{
 
             const rangeInput=
                 document.getElementById(
@@ -4643,10 +4951,6 @@ async function executeSplitPDF(){
             );
 
         }
-
-        /* =====================
-        CREATE FILES
-        ===================== */
 
         for(
             let i=0;
@@ -4692,11 +4996,6 @@ async function executeSplitPDF(){
                 label:group.label
 
             });
-
-            /*
-            Allow browser UI to breathe
-            on large PDFs.
-            */
 
             await sleep(30);
 
@@ -4838,15 +5137,6 @@ async function downloadAllSplitFiles(){
 
     try{
 
-        /*
-        Browser/mobile may block multiple
-        automatic downloads.
-
-        We trigger them with a delay.
-        If blocked, individual Download
-        buttons remain available.
-        */
-
         for(
             let i=0;
             i<splitResults.length;
@@ -4890,6 +5180,740 @@ async function downloadAllSplitFiles(){
     }
 
     btn.disabled=false;
+
+}
+
+
+/* =====================================================
+COMPRESS PDF - LOAD
+===================================================== */
+
+async function loadCompressPDF(file){
+
+    if(!file)return;
+
+    if(
+        file.type!=="application/pdf" &&
+        !file.name.toLowerCase().endsWith(".pdf")
+    ){
+
+        alert(
+            "Please select a PDF file."
+        );
+
+        return;
+
+    }
+
+    compressPDFFile=file;
+    compressedPDFBlob=null;
+    compressedPDFName="";
+
+    const info=
+        document.getElementById(
+            "compress-file-info"
+        );
+
+    const controls=
+        document.getElementById(
+            "compress-controls"
+        );
+
+    const status=
+        document.getElementById(
+            "compress-status"
+        );
+
+    const result=
+        document.getElementById(
+            "compress-result"
+        );
+
+    const progress=
+        document.getElementById(
+            "compress-progress"
+        );
+
+    info.classList.remove("hidden");
+    controls.classList.remove("hidden");
+    result.classList.add("hidden");
+    progress.classList.add("hidden");
+
+    status.innerText=
+        "Reading PDF... ⏳";
+
+    try{
+
+        const bytes=
+            await file.arrayBuffer();
+
+        const pdf=
+            await PDFLib.PDFDocument.load(
+                bytes
+            );
+
+        const total=
+            pdf.getPageCount();
+
+        info.innerHTML=`
+            <strong>${escapeHTML(file.name)}</strong><br>
+            📄 ${total} ${total===1?"page":"pages"}
+            &nbsp; • &nbsp;
+            💾 ${formatBytes(file.size)}
+        `;
+
+        document.getElementById(
+            "compress-name"
+        ).value=
+            file.name.replace(
+                /\.pdf$/i,
+                ""
+            )+"_Compressed";
+
+        status.innerText=
+            `Ready — ${total} pages available.`;
+
+    }catch(error){
+
+        compressPDFFile=null;
+
+        controls.classList.add("hidden");
+
+        info.innerHTML=
+            "Could not read this PDF.";
+
+        status.innerText="";
+
+        alert(
+            "PDF Error: "+
+            error.message
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+COMPRESS PRESETS
+===================================================== */
+
+const COMPRESS_PRESETS={
+
+    high:{
+        quality:.88,
+        maxDimension:2200,
+        label:"High Quality"
+    },
+
+    balanced:{
+        quality:.74,
+        maxDimension:1700,
+        label:"Balanced"
+    },
+
+    maximum:{
+        quality:.58,
+        maxDimension:1300,
+        label:"Maximum Compression"
+    }
+
+};
+
+
+/* =====================================================
+COMPRESS PROGRESS
+===================================================== */
+
+function setCompressProgress(
+    percent
+){
+
+    const progress=
+        document.getElementById(
+            "compress-progress"
+        );
+
+    const fill=
+        document.getElementById(
+            "compress-progress-fill"
+        );
+
+    progress.classList.remove(
+        "hidden"
+    );
+
+    fill.style.width=
+        clamp(
+            percent,
+            0,
+            100
+        )+"%";
+
+}
+
+
+/* =====================================================
+BUILD COMPRESSED PDF
+===================================================== */
+
+async function buildCompressedPDF(
+    pdfJS,
+    totalPages,
+    preset,
+    progressStart,
+    progressEnd,
+    status
+){
+
+    const outputPDF=
+        await PDFLib.PDFDocument.create();
+
+    for(
+        let pageNo=1;
+        pageNo<=totalPages;
+        pageNo++
+    ){
+
+        const page=
+            await pdfJS.getPage(
+                pageNo
+            );
+
+        const baseViewport=
+            page.getViewport({
+                scale:1
+            });
+
+        const maxDim=
+            Math.max(
+                baseViewport.width,
+                baseViewport.height
+            );
+
+        let renderScale=
+            preset.maxDimension/
+            maxDim;
+
+        /*
+        Keep rendering scale within
+        practical browser limits.
+        */
+
+        renderScale=
+            clamp(
+                renderScale,
+                .5,
+                4
+            );
+
+        const viewport=
+            page.getViewport({
+                scale:renderScale
+            });
+
+        const width=
+            Math.max(
+                1,
+                Math.ceil(
+                    viewport.width
+                )
+            );
+
+        const height=
+            Math.max(
+                1,
+                Math.ceil(
+                    viewport.height
+                )
+            );
+
+        const c=
+            document.createElement(
+                "canvas"
+            );
+
+        c.width=width;
+        c.height=height;
+
+        const ctx=
+            c.getContext(
+                "2d",
+                {
+                    alpha:false
+                }
+            );
+
+        /*
+        JPEG does not support transparency.
+        White background gives clean documents.
+        */
+
+        ctx.fillStyle="#ffffff";
+
+        ctx.fillRect(
+            0,
+            0,
+            width,
+            height
+        );
+
+        await page.render({
+
+            canvasContext:ctx,
+
+            viewport:viewport,
+
+            intent:"display"
+
+        }).promise;
+
+        const jpg=
+            await canvasBlob(
+                c,
+                "image/jpeg",
+                preset.quality
+            );
+
+        if(!jpg){
+
+            throw new Error(
+                `Could not convert page ${pageNo} to JPEG.`
+            );
+
+        }
+
+        const jpgBytes=
+            await jpg.arrayBuffer();
+
+        const image=
+            await outputPDF.embedJpg(
+                jpgBytes
+            );
+
+        /*
+        Preserve the rendered page
+        dimensions in the output PDF.
+        */
+
+        const outputPage=
+            outputPDF.addPage([
+                width,
+                height
+            ]);
+
+        outputPage.drawImage(
+            image,
+            {
+                x:0,
+                y:0,
+                width:width,
+                height:height
+            }
+        );
+
+        const localProgress=
+            pageNo/
+            totalPages;
+
+        const overallProgress=
+            progressStart+
+            (
+                progressEnd-
+                progressStart
+            )*
+            localProgress;
+
+        setCompressProgress(
+            overallProgress
+        );
+
+        status.innerText=
+            `Compressing page ${pageNo} of ${totalPages}... ⏳`;
+
+        /*
+        Release canvas memory.
+        */
+
+        c.width=1;
+        c.height=1;
+
+        await sleep(10);
+
+    }
+
+    const bytes=
+        await outputPDF.save({
+            useObjectStreams:true,
+            addDefaultPage:false
+        });
+
+    return new Blob(
+        [bytes],
+        {
+            type:"application/pdf"
+        }
+    );
+
+}
+
+
+/* =====================================================
+EXECUTE COMPRESS PDF
+===================================================== */
+
+async function executeCompressPDF(){
+
+    if(!compressPDFFile){
+
+        alert(
+            "Please select a PDF first."
+        );
+
+        return;
+
+    }
+
+    if(!window.pdfjsLib){
+
+        alert(
+            "PDF compressor library is not loaded. Please check your internet connection and reload the page."
+        );
+
+        return;
+
+    }
+
+    const btn=
+        document.getElementById(
+            "compress-btn"
+        );
+
+    const status=
+        document.getElementById(
+            "compress-status"
+        );
+
+    const result=
+        document.getElementById(
+            "compress-result"
+        );
+
+    const sizeInfo=
+        document.getElementById(
+            "compress-size-info"
+        );
+
+    const selected=
+        document.getElementById(
+            "compress-quality"
+        ).value;
+
+    let filename=
+        document.getElementById(
+            "compress-name"
+        ).value.trim();
+
+    if(!filename){
+
+        filename="Compressed_Document";
+
+    }
+
+    filename=
+        filename.replace(
+            /\.pdf$/i,
+            ""
+        )+".pdf";
+
+    const originalText=
+        btn.innerText;
+
+    btn.disabled=true;
+
+    result.classList.add(
+        "hidden"
+    );
+
+    setCompressProgress(0);
+
+    try{
+
+        status.innerText=
+            "Loading PDF rendering engine... ⏳";
+
+        const bytes=
+            await compressPDFFile.arrayBuffer();
+
+        const pdfJS=
+            await pdfjsLib
+                .getDocument({
+                    data:new Uint8Array(bytes)
+                })
+                .promise;
+
+        const totalPages=
+            pdfJS.numPages;
+
+        /*
+        First try user's selected quality.
+        If result is larger than original,
+        try Maximum Compression automatically.
+        */
+
+        const firstPreset=
+            COMPRESS_PRESETS[selected];
+
+        let firstBlob=
+            await buildCompressedPDF(
+                pdfJS,
+                totalPages,
+                firstPreset,
+                0,
+                selected==="maximum"
+                    ?100
+                    :75,
+                status
+            );
+
+        let finalBlob=
+            firstBlob;
+
+        let finalMode=
+            firstPreset.label;
+
+        /*
+        Automatic stronger compression
+        if the first result is not smaller.
+        */
+
+        if(
+            firstBlob.size>=compressPDFFile.size &&
+            selected!=="maximum"
+        ){
+
+            status.innerText=
+                "Output is not smaller — trying stronger compression... ⏳";
+
+            const maximumPreset=
+                COMPRESS_PRESETS.maximum;
+
+            const secondBlob=
+                await buildCompressedPDF(
+                    pdfJS,
+                    totalPages,
+                    maximumPreset,
+                    75,
+                    100,
+                    status
+                );
+
+            /*
+            Always keep the smaller of
+            the two generated versions.
+            */
+
+            if(
+                secondBlob.size<
+                firstBlob.size
+            ){
+
+                finalBlob=secondBlob;
+                finalMode=
+                    maximumPreset.label;
+
+            }
+
+        }
+
+        compressedPDFBlob=
+            finalBlob;
+
+        compressedPDFName=
+            filename;
+
+        const originalSize=
+            compressPDFFile.size;
+
+        const compressedSize=
+            finalBlob.size;
+
+        const difference=
+            originalSize-
+            compressedSize;
+
+        const reduction=
+            originalSize>0
+            ?(
+                difference/
+                originalSize
+            )*100
+            :0;
+
+        if(compressedSize<originalSize){
+
+            sizeInfo.innerHTML=`
+
+                <strong>Compression Complete ✅</strong>
+
+                <br><br>
+
+                📦 Original Size:
+                <strong>
+                    ${formatBytes(originalSize)}
+                </strong>
+
+                <br>
+
+                📉 Compressed Size:
+                <strong>
+                    ${formatBytes(compressedSize)}
+                </strong>
+
+                <br>
+
+                💾 Saved:
+                <span class="compress-saved">
+                    ${formatBytes(difference)}
+                    (${reduction.toFixed(1)}%)
+                </span>
+
+                <br>
+
+                ⚙️ Mode:
+                <strong>
+                    ${finalMode}
+                </strong>
+
+                <br>
+
+                📄 Pages:
+                <strong>
+                    ${totalPages}
+                </strong>
+
+            `;
+
+            status.innerText=
+                "✅ PDF compressed successfully.";
+
+        }else{
+
+            const increase=
+                compressedSize-
+                originalSize;
+
+            sizeInfo.innerHTML=`
+
+                <strong>Compression Finished ⚠️</strong>
+
+                <br><br>
+
+                📦 Original Size:
+                <strong>
+                    ${formatBytes(originalSize)}
+                </strong>
+
+                <br>
+
+                📉 New PDF Size:
+                <strong>
+                    ${formatBytes(compressedSize)}
+                </strong>
+
+                <br>
+
+                <span class="compress-warning">
+                    The rebuilt PDF is
+                    ${formatBytes(increase)}
+                    larger than the original.
+                    The original PDF may already be optimized.
+                </span>
+
+                <br>
+
+                ⚙️ Mode:
+                <strong>
+                    ${finalMode}
+                </strong>
+
+                <br>
+
+                📄 Pages:
+                <strong>
+                    ${totalPages}
+                </strong>
+
+            `;
+
+            status.innerText=
+                "⚠️ Original PDF was already highly optimized.";
+
+        }
+
+        setCompressProgress(100);
+
+        result.classList.remove(
+            "hidden"
+        );
+
+        btn.innerText=
+            "✅ COMPRESSION COMPLETE";
+
+        setTimeout(
+            ()=>{
+                btn.innerText=
+                    originalText;
+            },
+            1800
+        );
+
+    }catch(error){
+
+        console.error(
+            "Compress PDF Error:",
+            error
+        );
+
+        status.innerText="";
+
+        setCompressProgress(0);
+
+        alert(
+            "Compression Error: "+
+            error.message
+        );
+
+        btn.innerText=
+            originalText;
+
+    }
+
+    btn.disabled=false;
+
+}
+
+
+/* =====================================================
+DOWNLOAD COMPRESSED PDF
+===================================================== */
+
+function downloadCompressedPDF(){
+
+    if(!compressedPDFBlob){
+
+        alert(
+            "Please compress the PDF first."
+        );
+
+        return;
+
+    }
+
+    download(
+        compressedPDFBlob,
+        compressedPDFName
+    );
 
 }
 
