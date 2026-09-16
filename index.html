@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Converter Pro</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Super Converter Pro</h1>
+        <p>100% Client-Side PDF & Image Toolkit</p>
+    </header>
+
+    <main>
+        <!-- Tool Selection Dashboard -->
+        <div class="tool-grid">
+            <button class="tool-card" id="btn-merge">Merge PDF</button>
+            <button class="tool-card" id="btn-resize">Image Resizer</button>
+            <button class="tool-card" id="btn-scan">Smart Scanner</button>
+        </div>
+
+        <!-- Universal Drag and Drop Zone -->
+        <div id="drop-zone" class="drop-zone">
+            <p>Drag & Drop files here or <span style="color: #4F46E5; cursor: pointer;">Browse</span></p>
+            <input type="file" id="file-input" multiple hidden>
+        </div>
+        
+        <div id="workspace"></div>
+    </main>
+
+    <!-- JS module type load karna zaroori hai -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
