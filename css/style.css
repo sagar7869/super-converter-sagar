@@ -62,3 +62,27 @@ header p {
     background: #eef2ff;
     border-color: #4F46E5;
 }
+
+.hidden {
+    display: none !important;
+}
+
+.resize-options {
+    margin: 20px auto;
+    max-width: 600px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.resize-options input, .resize-options select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+}
