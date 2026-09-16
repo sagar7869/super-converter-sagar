@@ -6091,7 +6091,7 @@ async function dbPut(key,file){try{const db=await openAppDB();await new Promise(
 async function dbGet(key){try{const db=await openAppDB();const v=await new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,"readonly");const q=tx.objectStore(DB_STORE).get(key);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)});db.close();return v}catch(e){return null}}
 function saveFieldState(){const data={};document.querySelectorAll("input:not([type=file]),select,textarea").forEach(el=>{if(el.id)data[el.id]=el.value});localStorage.setItem("scp_fields_v2",JSON.stringify(data));}
 function restoreFieldState(){try{const data=JSON.parse(localStorage.getItem("scp_fields_v2")||"{}");Object.entries(data).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.value=v});if(document.getElementById("compress-quality"))toggleCompressTarget()}catch(e){}}
-function bindPersistentInputs(){document.addEventListener("input",e=>{if(e.target.matches("input,select,textarea"))saveFieldState()});document.addEventListener("change",e=>{if(e.target.matches("input,select,textarea"))saveFieldState();if(e.target.type==="file"&&e.target.files[0]){dbPut(e.target.id,e.target.files[0])}})}
+function bindPersistentInputs(){document.addEventListener("input",e=>{if(e.target.matches("input,select,textarea"))saveFieldState()});document.addEventListener("change",e=>{if(e.target.matches("input,select,textarea"))saveFieldState();if(e.target.type==="file"&&e.target.files.length){dbPut(e.target.id,e.target.multiple?Array.from(e.target.files):e.target.files[0]);renderExtraFileCard(e.target.id)}})}
 async function restoreFileInputStatus(){
  const ids=["pdfword-input","wordpdf-input","excelpdf-input","pptpdf-input","pdfjpg-input","jpgpdf-input","sign-input","watermark-input","htmlpdf-input","unlock-input","protect-input","organize-input","pagenum-input","ocr-input"];
  for(const id of ids){
@@ -6101,6 +6101,50 @@ async function restoreFileInputStatus(){
  }
 }
 function extraStatus(id,msg){const e=document.getElementById(id+"-status");if(e)e.innerHTML=msg}
+function formatExtraBytes(n){if(!Number.isFinite(n))return "";if(n<1024)return n+" B";if(n<1024*1024)return (n/1024).toFixed(1)+" KB";return (n/1024/1024).toFixed(2)+" MB";}
+function renderExtraFileCard(id){
+ const input=document.getElementById(id), box=document.getElementById(id.replace("-input","-file-card"));
+ if(!input||!box)return;
+ const files=Array.from(input.files||[]);
+ if(!files.length){box.innerHTML="";return;}
+ const multi=files.length>1;
+ box.innerHTML='<div class="extra-file-card">'+
+   '<div class="extra-file-icon">📄</div><div class="extra-file-meta">'+
+   files.map((f,i)=>'<div class="extra-file-row"><div><div class="extra-file-name">'+escapeHTML(f.name)+'</div><div class="extra-file-size">'+formatExtraBytes(f.size)+'</div></div><button type="button" class="extra-file-remove" data-remove-index="'+i+'" aria-label="Remove file">✕</button></div>').join('')+
+   '<div class="extra-file-size"><b>'+files.length+'</b> file'+(files.length===1?'':'s')+' selected</div></div>'+
+   '<button type="button" class="extra-file-remove" data-clear-all="1">🗑️ Clear</button></div>';
+ box.querySelectorAll('[data-remove-index]').forEach(btn=>btn.addEventListener('click',()=>removeExtraFile(id,Number(btn.dataset.removeIndex))));
+ box.querySelector('[data-clear-all]')?.addEventListener('click',()=>clearExtraFile(id));
+}
+function setExtraFiles(id,fileList){
+ const input=document.getElementById(id);if(!input)return;
+ const files=Array.from(fileList||[]);if(!files.length){clearExtraFile(id);return;}
+ try{const dt=new DataTransfer();files.forEach(f=>dt.items.add(f));input.files=dt.files;}catch(e){try{input.files=fileList}catch(_){}}
+ renderExtraFileCard(id);
+ dbPut(id,input.multiple?files:files[0]);
+ extraStatus(id.replace('-input',''),`✓ ${files.length} file${files.length===1?'':'s'} selected`);
+}
+function removeExtraFile(id,index){
+ const input=document.getElementById(id);if(!input)return;const files=Array.from(input.files||[]).filter((_,i)=>i!==index);
+ if(!files.length){clearExtraFile(id);return;}
+ try{const dt=new DataTransfer();files.forEach(f=>dt.items.add(f));input.files=dt.files;}catch(e){}
+ renderExtraFileCard(id);dbPut(id,input.multiple?files:files[0]);extraStatus(id.replace('-input',''),`✓ ${files.length} file${files.length===1?'':'s'} selected`);
+}
+function clearExtraFile(id){
+ const input=document.getElementById(id);if(input){try{input.value=""}catch(e){}try{const dt=new DataTransfer();input.files=dt.files}catch(e){}}
+ const box=document.getElementById(id.replace('-input','-file-card'));if(box)box.innerHTML="";
+ dbPut(id,null);extraStatus(id.replace('-input',''),"");
+}
+function setupExtraFilePickers(){
+ document.querySelectorAll('.extra-drop[data-pick]').forEach(drop=>{
+   const id=drop.dataset.pick,input=document.getElementById(id);if(!input)return;
+   drop.addEventListener('click',e=>{if(e.target.closest('button'))return;input.click();});
+   ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();e.stopPropagation();drop.classList.add('drag');}));
+   ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();e.stopPropagation();drop.classList.remove('drag');}));
+   drop.addEventListener('drop',e=>{if(e.dataTransfer?.files?.length)setExtraFiles(id,e.dataTransfer.files);});
+   input.addEventListener('change',()=>setExtraFiles(id,input.files));
+ });
+}
 function dlBlob(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
 function selectedFile(id){const e=document.getElementById(id);return e&&e.files&&e.files[0]}
 function selectedFiles(id){const e=document.getElementById(id);return e&&e.files?Array.from(e.files):[]}
