@@ -2,416 +2,385 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Super Converter Pro</title>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: #f3f4f6; margin: 0; padding: 20px; text-align: center; }
-        .tool-grid { display: flex; justify-content: center; gap: 15px; margin: 30px 0; flex-wrap: wrap; }
-        .tool-card { background: white; border: 2px solid #e5e7eb; padding: 15px 25px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .tool-card.active { border-color: #4F46E5; color: #4F46E5; }
-        .drop-zone { max-width: 600px; margin: 0 auto; padding: 40px; border: 2px dashed #9ca3af; border-radius: 12px; background: white; cursor: pointer; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #f8fafc; margin: 0; padding: 15px; text-align: center; color: #1e293b; }
+        
+        h1 { font-size: 22px; margin-bottom: 2px; color: #0f172a; }
+        p.subtitle { font-size: 13px; color: #64748b; margin-top: 0; margin-bottom: 20px; }
+
+        /* Navigation Cards */
+        .tool-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+        .tool-card { background: white; border: 1.5px solid #e2e8f0; padding: 12px 5px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; color: #475569; transition: all 0.2s; }
+        .tool-card.active { border-color: #4f46e5; background: #eef2ff; color: #4f46e5; }
+
+        /* General Containers */
+        .panel { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; max-width: 500px; margin: 0 auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .hidden { display: none !important; }
-        .options-panel { margin: 20px auto; max-width: 600px; display: flex; flex-wrap: wrap; gap: 10px; background: white; padding: 15px; border-radius: 8px; }
-        .options-panel input, .options-panel select { flex: 1; min-width: 120px; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; }
-        .file-list { max-width: 600px; margin: 20px auto; text-align: left; }
-        .file-item { background: white; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 10px; display: flex; justify-content: space-between; }
-        .primary-btn { background: #4F46E5; color: white; border: none; padding: 15px; font-size: 16px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
-        .primary-btn:disabled { background: #9ca3af; cursor: not-allowed; }
         
-        /* ADOBE STYLE SCANNER UI */
-        #scanner-ui { max-width: 600px; margin: 0 auto; background: #1f2937; padding: 15px; border-radius: 12px; position: relative; }
-        .camera-container { position: relative; width: 100%; border-radius: 8px; overflow: hidden; background: #000; }
-        #camera-feed { width: 100%; max-height: 500px; object-fit: cover; display: block; }
-        #flash-btn { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; border: 1px solid white; padding: 8px 12px; border-radius: 20px; cursor: pointer; font-size: 14px; z-index: 10; }
+        /* Dropzone */
+        .drop-zone { border: 2px dashed #cbd5e1; border-radius: 10px; padding: 30px 20px; cursor: pointer; background: #f8fafc; }
+        .drop-zone p { margin: 0; font-size: 14px; color: #475569; }
+
+        /* Options & Buttons */
+        .options-panel { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; text-align: left; }
+        .options-panel label { font-size: 12px; font-weight: 600; color: #475569; }
+        .options-panel input, .options-panel select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; }
         
-        /* Capture Button Layout */
-        .camera-controls { display: flex; justify-content: center; padding: 20px 0; }
-        .capture-btn { width: 70px; height: 70px; border-radius: 50%; background: white; border: 4px solid #9ca3af; cursor: pointer; transition: 0.2s; }
-        .capture-btn:active { transform: scale(0.9); background: #e5e7eb; }
+        .primary-btn { background: #4f46e5; color: white; border: none; padding: 14px; font-size: 15px; border-radius: 10px; cursor: pointer; font-weight: 600; width: 100%; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3); }
+        .primary-btn:active { transform: scale(0.98); }
+        .success-btn { background: #10b981; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3); }
 
-        /* Review Screen Overlay */
-        #review-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #1f2937; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 15px; }
-        #review-image { max-width: 100%; max-height: 70%; object-fit: contain; border-radius: 8px; }
-        .review-toolbar { display: flex; gap: 10px; width: 100%; justify-content: space-around; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; }
-        .icon-btn { background: none; border: none; color: white; font-size: 14px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
-        .icon-btn span { font-size: 20px; }
+        .file-item { background: #f8fafc; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
 
-        /* Thumbnails List */
-        .preview-thumbnails { display: flex; gap: 10px; overflow-x: auto; margin-top: 15px; padding-bottom: 10px; }
-        .thumb-wrap { position: relative; flex-shrink: 0; }
-        .thumb-wrap img { height: 90px; width: 70px; object-fit: cover; border-radius: 4px; border: 2px solid #4F46E5; }
-        .delete-thumb { position: absolute; top: -5px; right: -5px; background: red; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; cursor: pointer; }
-        .success-btn { background: #10b981; margin-top: 15px; }
+        /* --- PROFESSIONAL SCANNER UX --- */
+        #scanner-dashboard { text-align: center; }
+        .scan-welcome-box { padding: 30px 10px; }
+        .scan-welcome-box p { color: #64748b; font-size: 14px; margin-bottom: 20px; }
+
+        /* Active Camera Modal / Full View */
+        #active-camera-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 100; display: flex; flex-direction: column; justify-content: space-between; }
+        .cam-header { display: flex; justify-content: space-between; padding: 15px 20px; align-items: center; background: rgba(0,0,0,0.4); }
+        .cam-header button { background: none; border: none; color: white; font-size: 16px; cursor: pointer; font-weight: 600; }
+        
+        .cam-viewport { position: relative; flex-grow: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        #camera-feed { width: 100%; height: 100%; object-fit: cover; }
+        
+        .cam-footer { padding: 25px; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.6); }
+        .shutter-btn { width: 72px; height: 72px; border-radius: 50%; background: white; border: 4px solid #cbd5e1; cursor: pointer; outline: none; }
+        .shutter-btn:active { background: #e2e8f0; transform: scale(0.95); }
+
+        /* Scanned Pages Grid (Big Previews) */
+        .scanned-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; max-height: 350px; overflow-y: auto; padding: 4px; }
+        .grid-thumb { position: relative; background: #e2e8f0; border-radius: 8px; overflow: hidden; aspect-ratio: 3/4; border: 1px solid #cbd5e1; }
+        .grid-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .grid-thumb button { position: absolute; top: 6px; right: 6px; background: rgba(239, 68, 68, 0.9); color: white; border: none; border-radius: 50%; width: 26px; height: 26px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
     </style>
 </head>
 <body>
+
     <h1>Super Converter Pro</h1>
-    <p>All-in-One Local Processor</p>
+    <p class="subtitle">Fast, Secure & Local Client-Side Processing</p>
 
+    <!-- Navigation Tabs -->
     <div class="tool-grid">
-        <button class="tool-card active" id="btn-merge" onclick="switchTool('merge')">Merge PDF</button>
-        <button class="tool-card" id="btn-resize" onclick="switchTool('resize')">Image Resizer</button>
-        <button class="tool-card" id="btn-scan" onclick="switchTool('scan')">Smart Scanner</button>
+        <button class="tool-card active" id="tab-merge" onclick="switchTab('merge')">Merge PDF</button>
+        <button class="tool-card" id="tab-resize" onclick="switchTab('resize')">Image Resizer</button>
+        <button class="tool-card" id="tab-scan" onclick="switchTab('scan')">Smart Scan</button>
     </div>
 
-    <div id="resize-options" class="options-panel hidden">
-        <input type="number" id="inp-w" placeholder="Width (px)">
-        <input type="number" id="inp-h" placeholder="Height (px)">
-        <input type="number" id="inp-size" placeholder="Target Size">
-        <select id="inp-unit"><option value="KB">KB</option><option value="MB">MB</option></select>
-        <select id="inp-fmt"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option></select>
-    </div>
-
-    <div id="drop-zone-area" class="drop-zone" onclick="document.getElementById('file-input').click()">
-        <p>Click here to Browse Files</p>
-        <input type="file" id="file-input" multiple hidden onchange="handleFiles(this.files)">
-    </div>
-
-    <div id="staging-area" class="file-list hidden">
-        <div id="file-display"></div>
-        <button id="action-btn" class="primary-btn" onclick="processQueue()">Process Files</button>
-    </div>
-
-    <!-- SCANNER MODULE -->
-    <div id="scanner-ui" class="hidden">
-        <div class="camera-container" id="camera-view">
-            <button id="flash-btn" onclick="toggleFlash()">⚡ Flash OFF</button>
-            <video id="camera-feed" autoplay playsinline></video>
-            
-            <div class="camera-controls">
-                <button class="capture-btn" onclick="capturePage()"></button>
-            </div>
+    <!-- 1. MERGE PDF PANEL -->
+    <div id="panel-merge" class="panel">
+        <div class="drop-zone" onclick="document.getElementById('file-input-merge').click()">
+            <p>📂 Tap to select PDF files</p>
+            <input type="file" id="file-input-merge" accept="application/pdf" multiple hidden onchange="handleQueueFiles(this.files, 'pdf')">
         </div>
+        <div id="queue-merge" style="margin-top: 15px;"></div>
+        <button id="btn-process-merge" class="primary-btn hidden" style="margin-top: 15px;" onclick="executeMerge()">Merge & Download PDF</button>
+    </div>
 
-        <!-- ADOBE STYLE REVIEW SCREEN -->
-        <div id="review-screen" class="hidden">
-            <img id="review-image" src="" alt="Captured Frame">
-            <div class="review-toolbar">
-                <button class="icon-btn" onclick="retakePhoto()"><span>✖️</span> Retake</button>
-                <button class="icon-btn" onclick="rotatePhoto()"><span>🔃</span> Rotate</button>
-                <button class="icon-btn" onclick="applyScanFilter()"><span>🪄</span> Filter</button>
-                <button class="icon-btn" onclick="keepPhoto()"><span>✅</span> Keep</button>
+    <!-- 2. IMAGE RESIZER PANEL -->
+    <div id="panel-resize" class="panel hidden">
+        <div class="options-panel">
+            <label>Target Size Constraint:</label>
+            <div style="display: flex; gap: 8px;">
+                <input type="number" id="resize-size" placeholder="e.g. 150" style="flex: 2;">
+                <select id="resize-unit" style="flex: 1;"><option value="KB">KB</option><option value="MB">MB</option></select>
             </div>
+            <label>Export Format:</label>
+            <select id="resize-fmt"><option value="image/jpeg">JPG (Supports KB compression)</option><option value="image/png">PNG</option></select>
         </div>
         
-        <div id="scanned-preview-list" class="preview-thumbnails"></div>
-        <button id="btn-save-scan" class="primary-btn success-btn hidden" onclick="finishScan()">Save PDF & Close Camera</button>
-        <canvas id="hidden-canvas" hidden></canvas>
+        <div class="drop-zone" onclick="document.getElementById('file-input-resize').click()">
+            <p>🖼️ Tap to select Images</p>
+            <input type="file" id="file-input-resize" accept="image/*" multiple hidden onchange="handleQueueFiles(this.files, 'image')">
+        </div>
+        <div id="queue-resize" style="margin-top: 15px;"></div>
+        <button id="btn-process-resize" class="primary-btn hidden" style="margin-top: 15px;" onclick="executeResize()">Compress & Download Images</button>
     </div>
+
+    <!-- 3. SMART SCANNER PANEL (Dashboard View) -->
+    <div id="panel-scan" class="panel hidden">
+        <div id="scanner-dashboard">
+            <div class="scan-welcome-box">
+                <p>Scan multi-page documents instantly using your device camera.</p>
+                <button class="primary-btn" onclick="openCameraModal()">📷 Open Camera Scanner</button>
+            </div>
+            
+            <!-- Grid Preview of Scanned Pages -->
+            <div id="scanned-pages-grid" class="scanned-grid"></div>
+            
+            <button id="btn-save-scans" class="primary-btn success-btn hidden" style="margin-top: 15px;" onclick="generateScannedPDF()">💾 Save as PDF</button>
+        </div>
+    </div>
+
+    <!-- FULLSCREEN CAMERA OVERLAY MODAL -->
+    <div id="active-camera-overlay" class="hidden">
+        <div class="cam-header">
+            <button onclick="toggleFlashLight()" id="flash-toggle-btn">⚡ Flash</button>
+            <span id="page-count-badge" style="color: white; font-weight: 600;">0 Pages</span>
+            <button onclick="closeCameraModal()" style="color: #f87171;">Done / Close</button>
+        </div>
+        
+        <div class="cam-viewport">
+            <video id="camera-feed" autoplay playsinline></video>
+        </div>
+        
+        <div class="cam-footer">
+            <button class="shutter-btn" onclick="captureCameraPhoto()"></button>
+        </div>
+    </div>
+
+    <canvas id="hidden-canvas" hidden></canvas>
 
     <script>
-        // --- 1. GLOBAL STATE ---
-        let currentTool = 'merge';
-        let fileQueue = [];
+        // --- GLOBAL APP STATE ---
+        let activeTab = 'merge';
+        let processingQueue = [];
         
-        let videoStream = null;
-        let imageTrack = null;
-        let isFlashOn = false;
-        let scannedPages = [];
-        let tempCurrentPhoto = null; // Temp storage for review screen
+        // Scanner State
+        let mediaStream = null;
+        let activeVideoTrack = null;
+        let flashState = false;
+        let scannedPagesBuffer = [];
 
-        // --- 2. MAIN UI LOGIC ---
-        function switchTool(tool) {
-            currentTool = tool;
-            fileQueue = [];
-            document.getElementById('staging-area').classList.add('hidden');
+        // --- TAB SWITCHING ---
+        function switchTab(tab) {
+            activeTab = tab;
+            processingQueue = [];
             
-            document.getElementById('btn-merge').classList.toggle('active', tool === 'merge');
-            document.getElementById('btn-resize').classList.toggle('active', tool === 'resize');
-            document.getElementById('btn-scan').classList.toggle('active', tool === 'scan');
-            document.getElementById('resize-options').classList.toggle('hidden', tool !== 'resize');
-
-            if (tool === 'scan') {
-                document.getElementById('drop-zone-area').classList.add('hidden');
-                document.getElementById('scanner-ui').classList.remove('hidden');
-                startCamera();
-            } else {
-                document.getElementById('drop-zone-area').classList.remove('hidden');
-                document.getElementById('scanner-ui').classList.add('hidden');
-                stopCamera();
-            }
-        }
-
-        function handleFiles(files) {
-            if (files.length === 0) return;
-            fileQueue = Array.from(files);
-            let html = '';
-            fileQueue.forEach(f => html += `<div class="file-item"><span>📄 ${f.name}</span><span>${(f.size/1024).toFixed(1)} KB</span></div>`);
-            document.getElementById('file-display').innerHTML = html;
-            document.getElementById('staging-area').classList.remove('hidden');
-            document.getElementById('action-btn').innerText = currentTool === 'merge' ? 'Merge PDFs' : 'Compress Images';
-        }
-
-        async function processQueue() {
-            const btn = document.getElementById('action-btn');
-            btn.innerText = "Processing... Please wait ⏳";
-            btn.disabled = true;
-
-            try {
-                if (currentTool === 'merge') await runPdfMerge(fileQueue);
-                else await runImageResizer(fileQueue);
-                alert("Task Complete! File(s) downloaded.");
-            } catch (err) { alert("Error: " + err.message); }
-
-            btn.disabled = false;
-            fileQueue = [];
-            document.getElementById('staging-area').classList.add('hidden');
-        }
-
-        async function runPdfMerge(files) {
-            const { PDFDocument } = window.PDFLib;
-            const mergedPdf = await PDFDocument.create();
-            for (let file of files) {
-                const arrBuffer = await file.arrayBuffer();
-                const pdf = await PDFDocument.load(arrBuffer);
-                const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-                pages.forEach(p => mergedPdf.addPage(p));
-            }
-            triggerDownload(new Blob([await mergedPdf.save()], { type: 'application/pdf' }), 'Merged_Output.pdf');
-        }
-
-        async function runImageResizer(files) {
-            const sizeVal = document.getElementById('inp-size').value;
-            const unit = document.getElementById('inp-unit').value;
-            const targetKB = (sizeVal && unit === 'MB') ? sizeVal * 1024 : sizeVal;
-            const options = { w: document.getElementById('inp-w').value, h: document.getElementById('inp-h').value, kb: targetKB, fmt: document.getElementById('inp-fmt').value };
-
-            for (let file of files) if (file.type.startsWith('image/')) await processSingleImage(file, options);
-        }
-
-        function processSingleImage(file, opt) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    const img = new Image();
-                    img.onload = () => {
-                        let finalW = opt.w ? parseInt(opt.w) : img.width;
-                        let finalH = opt.h ? parseInt(opt.h) : img.height;
-                        if (opt.w && !opt.h) finalH = (img.height / img.width) * finalW;
-                        if (opt.h && !opt.w) finalW = (img.width / img.height) * finalH;
-                        
-                        if (opt.kb && opt.fmt === 'image/jpeg') smartCompress(img, finalW, finalH, opt.kb, file.name, resolve);
-                        else {
-                            const canvas = document.createElement('canvas');
-                            canvas.width = finalW; canvas.height = finalH;
-                            canvas.getContext('2d').drawImage(img, 0, 0, finalW, finalH);
-                            canvas.toBlob(blob => { triggerDownload(blob, file.name.replace(/\.[^/.]+$/, "") + (opt.fmt==='image/png'?'.png':'.jpg')); resolve(); }, opt.fmt, 0.9);
-                        }
-                    };
-                    img.onerror = () => resolve(); img.src = e.target.result;
-                };
-                reader.onerror = () => resolve(); reader.readAsDataURL(file);
+            ['merge', 'resize', 'scan'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
+                document.getElementById(`panel-${t}`).classList.toggle('hidden', t !== tab);
             });
-        }
-
-        function smartCompress(img, w, h, targetKB, name, callback) {
-            const targetBytes = targetKB * 1024; let scale = 1.0; let bestBlob = null; let closest = Infinity;
-            function tryScale() {
-                const canvas = document.createElement('canvas');
-                canvas.width = Math.max(w * scale, 50); canvas.height = Math.max(h * scale, 50);
-                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-
-                let minQ = 0.1, maxQ = 1.0, curQ = 0.7, attempts = 0;
-                function tryQuality() {
-                    canvas.toBlob(blob => {
-                        if (!blob) return callback();
-                        attempts++; const diff = Math.abs(blob.size - targetBytes);
-                        if (diff < closest) { closest = diff; bestBlob = blob; }
-                        
-                        if (diff <= 3072 || attempts >= 8) {
-                            if (blob.size > targetBytes + 1024 && curQ <= 0.3 && scale > 0.2) { scale -= 0.15; tryScale(); } 
-                            else { triggerDownload(bestBlob, name.replace(/\.[^/.]+$/, "") + ".jpg"); callback(); }
-                            return;
-                        }
-                        if (blob.size > targetBytes) maxQ = curQ; else minQ = curQ;
-                        curQ = (minQ + maxQ) / 2; tryQuality();
-                    }, 'image/jpeg', curQ);
-                }
-                tryQuality();
+            
+            if (tab !== 'scan') {
+                closeCameraModal();
             }
-            tryScale();
         }
 
-        function triggerDownload(blob, filename) {
-            if (!blob) return;
-            const link = document.createElement('a'); link.href = URL.createObjectURL(blob);
-            link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        // --- QUEUE MANAGEMENT (MERGE & RESIZE) ---
+        function handleQueueFiles(files, type) {
+            if (files.length === 0) return;
+            processingQueue = Array.from(files);
+            
+            let html = '';
+            processingQueue.forEach(f => {
+                html += `<div class="file-item"><span>📄 ${f.name}</span><span style="color:#64748b; font-size:12px;">${(f.size/1024).toFixed(1)} KB</span></div>`;
+            });
+            
+            if (type === 'pdf') {
+                document.getElementById('queue-merge').innerHTML = html;
+                document.getElementById('btn-process-merge').classList.remove('hidden');
+            } else {
+                document.getElementById('queue-resize').innerHTML = html;
+                document.getElementById('btn-process-resize').classList.remove('hidden');
+            }
         }
 
-        // --- 4. ADVANCED SCANNER MODULE ---
-        
-        async function startCamera() {
+        // --- EXECUTING MERGE ---
+        async function executeMerge() {
+            const btn = document.getElementById('btn-process-merge');
+            btn.innerText = "Merging... ⏳"; btn.disabled = true;
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                const video = document.getElementById('camera-feed');
-                video.srcObject = stream;
-                videoStream = stream;
-                imageTrack = stream.getVideoTracks()[0];
-                
-                // Check if Flash (Torch) is supported
-                const capabilities = imageTrack.getCapabilities();
-                if (!capabilities.torch) {
-                    document.getElementById('flash-btn').style.display = 'none';
-                } else {
-                    document.getElementById('flash-btn').style.display = 'block';
+                const { PDFDocument } = window.PDFLib;
+                const mergedPdf = await PDFDocument.create();
+                for (let file of processingQueue) {
+                    const buffer = await file.arrayBuffer();
+                    const pdf = await PDFDocument.load(buffer);
+                    const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+                    pages.forEach(p => mergedPdf.addPage(p));
                 }
-            } catch (err) { alert("Camera start fail: " + err.message); }
+                const bytes = await mergedPdf.save();
+                triggerDownload(new Blob([bytes], {type: 'application/pdf'}), 'Merged_Document.pdf');
+                alert("PDF Merged Successfully!");
+            } catch(e) { alert("Error merging: " + e.message); }
+            btn.innerText = "Merge & Download PDF"; btn.disabled = false;
+            processingQueue = []; document.getElementById('queue-merge').innerHTML = '';
+            document.getElementById('btn-process-merge').classList.add('hidden');
         }
 
-        function stopCamera() {
-            if (videoStream) {
-                videoStream.getTracks().forEach(track => {
-                    track.stop(); // Stops hardware camera
+        // --- EXECUTING RESIZE ---
+        async function executeResize() {
+            const btn = document.getElementById('btn-process-resize');
+            btn.innerText = "Compressing... ⏳"; btn.disabled = true;
+            
+            const sizeVal = document.getElementById('resize-size').value;
+            const unit = document.getElementById('resize-unit').value;
+            const fmt = document.getElementById('resize-fmt').value;
+            const targetKB = (sizeVal && unit === 'MB') ? sizeVal * 1024 : sizeVal;
+
+            for (let file of processingQueue) {
+                if (!file.type.startsWith('image/')) continue;
+                await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = img.width; canvas.height = img.height;
+                            canvas.getContext('2d').drawImage(img, 0, 0);
+                            
+                            if (targetKB && fmt === 'image/jpeg') {
+                                smartCompressImage(canvas, targetKB, file.name, resolve);
+                            } else {
+                                canvas.toBlob(blob => {
+                                    triggerDownload(blob, file.name.replace(/\.[^/.]+$/, "") + (fmt==='image/png'?'.png':'.jpg'));
+                                    resolve();
+                                }, fmt, 0.9);
+                            }
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
                 });
-                videoStream = null;
-                document.getElementById('camera-feed').srcObject = null;
             }
-            if (isFlashOn) toggleFlash(); // Turn off flash safely
+            alert("Images Processed!");
+            btn.innerText = "Compress & Download Images"; btn.disabled = false;
+            processingQueue = []; document.getElementById('queue-resize').innerHTML = '';
+            document.getElementById('btn-process-resize').classList.add('hidden');
         }
 
-        async function toggleFlash() {
-            if (!imageTrack) return;
-            isFlashOn = !isFlashOn;
+        function smartCompressImage(canvas, targetKB, name, callback) {
+            const targetBytes = targetKB * 1024;
+            let minQ = 0.05, maxQ = 1.0, curQ = 0.6, attempts = 0;
+            let bestBlob = null, closest = Infinity;
+
+            function loop() {
+                canvas.toBlob(blob => {
+                    if(!blob) return callback();
+                    attempts++;
+                    const diff = Math.abs(blob.size - targetBytes);
+                    if(diff < closest) { closest = diff; bestBlob = blob; }
+                    if(diff <= 2048 || attempts >= 10) {
+                        triggerDownload(bestBlob, name.replace(/\.[^/.]+$/, "") + ".jpg");
+                        callback(); return;
+                    }
+                    if(blob.size > targetBytes) maxQ = curQ; else minQ = curQ;
+                    curQ = (minQ + maxQ) / 2;
+                    loop();
+                }, 'image/jpeg', curQ);
+            }
+            loop();
+        }
+
+        // --- SCANNER LOGIC (PROFESSIONAL WORKFLOW) ---
+        async function openCameraModal() {
+            document.getElementById('active-camera-overlay').classList.remove('hidden');
             try {
-                await imageTrack.applyConstraints({ advanced: [{ torch: isFlashOn }] });
-                document.getElementById('flash-btn').innerText = isFlashOn ? "⚡ Flash ON" : "⚡ Flash OFF";
-                document.getElementById('flash-btn').style.color = isFlashOn ? "#facc15" : "white";
-            } catch (e) { alert("Flash feature is not supported on this device's browser."); }
+                mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                const video = document.getElementById('camera-feed');
+                video.srcObject = mediaStream;
+                activeVideoTrack = mediaStream.getVideoTracks()[0];
+                
+                // Hide flash button if torch unsupported
+                if (!activeVideoTrack.getCapabilities().torch) {
+                    document.getElementById('flash-toggle-btn').style.display = 'none';
+                }
+            } catch(err) {
+                alert("Camera Access Denied or Unavailable: " + err.message);
+                closeCameraModal();
+            }
         }
 
-        // Click photo & show Review Screen
-        function capturePage() {
+        function closeCameraModal() {
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
+            if (flashState) toggleFlashLight();
+            document.getElementById('active-camera-overlay').classList.add('hidden');
+            renderScannerGrid();
+        }
+
+        async function toggleFlashLight() {
+            if(!activeVideoTrack) return;
+            flashState = !flashState;
+            try {
+                await activeVideoTrack.applyConstraints({ advanced: [{ torch: flashState }] });
+                document.getElementById('flash-toggle-btn').style.color = flashState ? "#facc15" : "white";
+            } catch(e) { console.log("Torch error"); }
+        }
+
+        function captureCameraPhoto() {
             const video = document.getElementById('camera-feed');
             const canvas = document.getElementById('hidden-canvas');
-            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
             canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
             
-            tempCurrentPhoto = canvas.toDataURL('image/jpeg', 0.9);
+            scannedPagesBuffer.push(canvas.toDataURL('image/jpeg', 0.9));
+            document.getElementById('page-count-badge').innerText = scannedPagesBuffer.length + " Pages";
             
-            document.getElementById('review-image').src = tempCurrentPhoto;
-            document.getElementById('camera-view').classList.add('hidden');
-            document.getElementById('review-screen').classList.remove('hidden');
+            // Brief shutter feedback animation
+            navigator.vibrate && navigator.vibrate(50);
         }
 
-        // Review Action: Retake
-        function retakePhoto() {
-            tempCurrentPhoto = null;
-            document.getElementById('review-screen').classList.add('hidden');
-            document.getElementById('camera-view').classList.remove('hidden');
-        }
-
-        // Review Action: Keep
-        function keepPhoto() {
-            scannedPages.push(tempCurrentPhoto);
-            tempCurrentPhoto = null;
-            document.getElementById('review-screen').classList.add('hidden');
-            document.getElementById('camera-view').classList.remove('hidden');
-            updateScannerUI();
-        }
-
-        // Review Action: Rotate 90 deg
-        function rotatePhoto() {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.getElementById('hidden-canvas');
-                canvas.width = img.height; // Swap W and H
-                canvas.height = img.width;
-                const ctx = canvas.getContext('2d');
-                ctx.translate(canvas.width / 2, canvas.height / 2);
-                ctx.rotate(90 * Math.PI / 180);
-                ctx.drawImage(img, -img.width / 2, -img.height / 2);
-                
-                tempCurrentPhoto = canvas.toDataURL('image/jpeg', 0.9);
-                document.getElementById('review-image').src = tempCurrentPhoto;
-            };
-            img.src = tempCurrentPhoto;
-        }
-
-        // Review Action: Document Filter (High Contrast B&W effect)
-        function applyScanFilter() {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.getElementById('hidden-canvas');
-                canvas.width = img.width; canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                // Apply a CSS filter on canvas drawing
-                ctx.filter = 'grayscale(100%) contrast(150%) brightness(120%)';
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                
-                tempCurrentPhoto = canvas.toDataURL('image/jpeg', 0.9);
-                document.getElementById('review-image').src = tempCurrentPhoto;
-            };
-            img.src = tempCurrentPhoto;
-        }
-
-        // Thumbnails UI and Delete
-        function updateScannerUI() {
-            const previewContainer = document.getElementById('scanned-preview-list');
-            previewContainer.innerHTML = '';
+        function renderScannerGrid() {
+            const grid = document.getElementById('scanned-pages-grid');
+            grid.innerHTML = '';
             
-            scannedPages.forEach((dataUrl, index) => {
-                previewContainer.innerHTML += `
-                <div class="thumb-wrap">
-                    <img src="${dataUrl}" alt="Page">
-                    <button class="delete-thumb" onclick="deletePage(${index})">X</button>
-                </div>`;
+            scannedPagesBuffer.forEach((imgUrl, idx) => {
+                grid.innerHTML += `
+                    <div class="grid-thumb">
+                        <img src="${imgUrl}" alt="Page">
+                        <button onclick="removeScannedPage(${idx})">×</button>
+                    </div>`;
             });
 
-            if (scannedPages.length > 0) {
-                document.getElementById('btn-save-scan').classList.remove('hidden');
+            const saveBtn = document.getElementById('btn-save-scans');
+            if(scannedPagesBuffer.length > 0) {
+                saveBtn.classList.remove('hidden');
             } else {
-                document.getElementById('btn-save-scan').classList.add('hidden');
+                saveBtn.classList.add('hidden');
             }
         }
 
-        // Delete specific page from array
-        function deletePage(index) {
-            scannedPages.splice(index, 1);
-            updateScannerUI();
+        function removeScannedPage(index) {
+            scannedPagesBuffer.splice(index, 1);
+            renderScannerGrid();
         }
 
-        // Finish and close Camera
-        async function finishScan() {
-            if (scannedPages.length === 0) return;
-            const fileName = prompt("Enter File Name:", "Scanned_Document");
-            if (!fileName) return;
+        async function generateScannedPDF() {
+            const fileName = prompt("Enter Document File Name:", "Scanned_Document");
+            if(!fileName) return;
 
-            const btn = document.getElementById('btn-save-scan');
-            btn.innerText = "Generating PDF... ⏳"; btn.disabled = true;
+            const btn = document.getElementById('btn-save-scans');
+            btn.innerText = "Building PDF... ⏳"; btn.disabled = true;
 
             try {
                 const { PDFDocument } = window.PDFLib;
                 const pdfDoc = await PDFDocument.create();
 
-                for (let imgDataUrl of scannedPages) {
-                    const imgBytes = await fetch(imgDataUrl).then(res => res.arrayBuffer());
-                    const pdfImage = await pdfDoc.embedJpg(imgBytes);
-                    const page = pdfDoc.addPage([pdfImage.width, pdfImage.height]);
-                    page.drawImage(pdfImage, { x: 0, y: 0, width: pdfImage.width, height: pdfImage.height });
+                for(let url of scannedPagesBuffer) {
+                    const bytes = await fetch(url).then(res => res.arrayBuffer());
+                    const img = await pdfDoc.embedJpg(bytes);
+                    const page = pdfDoc.addPage([img.width, img.height]);
+                    page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
                 }
 
-                const blob = new Blob([await pdfDoc.save()], { type: 'application/pdf' });
-                triggerDownload(blob, fileName + ".pdf");
+                const pdfBytes = await pdfDoc.save();
+                triggerDownload(new Blob([pdfBytes], {type: 'application/pdf'}), fileName + ".pdf");
                 
-                // IMPORTANT: Turn off camera after save!
-                stopCamera();
-                alert("Scan Complete! PDF Downloaded & Camera Turned Off.");
-                
-            } catch (err) {
-                alert("Error generating PDF: " + err.message);
+                alert("PDF Generated & Downloaded!");
+                scannedPagesBuffer = [];
+                renderScannerGrid();
+            } catch(e) {
+                alert("Error: " + e.message);
             }
+            btn.innerText = "💾 Save as PDF"; btn.disabled = false;
+        }
 
-            // Reset UI
-            scannedPages = [];
-            updateScannerUI();
-            btn.classList.add('hidden');
-            btn.innerText = "Save PDF & Close Camera";
-            btn.disabled = false;
-            
-            // Switch back to merge screen to clear everything safely
-            switchTool('merge');
+        function triggerDownload(blob, filename) {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
 </body>
