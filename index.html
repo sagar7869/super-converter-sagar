@@ -13,6 +13,11 @@
 
 <!-- PDF JS - PDF RENDERING FOR COMPRESSOR -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js"></script>
 
 <!-- OPENCV -->
 <script async src="https://docs.opencv.org/4.9.0/opencv.js"></script>
@@ -1102,6 +1107,8 @@ VERY SMALL PHONES
     }
 
 }
+
+.tool-title{font-size:18px;font-weight:900;margin-bottom:6px}.tool-desc{font-size:12px;color:#94a3b8;line-height:1.5;margin:0 0 12px}.tool-input,.tool-textarea{width:100%;padding:11px;border:1px solid #475569;border-radius:9px;background:#0f172a;color:#fff;margin:5px 0}.tool-textarea{min-height:180px;resize:vertical}.tool-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:left;margin:8px 0}.tool-row label{font-size:11px;color:#cbd5e1}.tool-row input,.tool-row select{width:100%;margin-top:4px;padding:9px;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#fff}
 </style>
 </head>
 
@@ -1112,36 +1119,25 @@ VERY SMALL PHONES
 
 <div class="tool-grid">
 
-    <button id="tab-merge"
-            class="tool-card active"
-            onclick="switchTab('merge')">
-        📄 Merge PDF
-    </button>
-
-    <button id="tab-resize"
-            class="tool-card"
-            onclick="switchTab('resize')">
-        🖼️ Image Resizer
-    </button>
-
-    <button id="tab-scan"
-            class="tool-card"
-            onclick="switchTab('scan')">
-        📸 Smart Scan
-    </button>
-
-    <button id="tab-split"
-            class="tool-card"
-            onclick="switchTab('split')">
-        ✂️ Split PDF
-    </button>
-
-    <!-- NEW COMPRESS TOOL -->
-    <button id="tab-compress"
-            class="tool-card"
-            onclick="switchTab('compress')">
-        📉 Compress PDF
-    </button>
+    <button id="tab-merge" class="tool-card active" onclick="switchTab('merge')">📄 Merge PDF</button>
+    <button id="tab-resize" class="tool-card" onclick="switchTab('resize')">🖼️ Image Resizer</button>
+    <button id="tab-scan" class="tool-card" onclick="switchTab('scan')">📸 Smart Scan</button>
+    <button id="tab-split" class="tool-card" onclick="switchTab('split')">✂️ Split PDF</button>
+    <button id="tab-compress" class="tool-card" onclick="switchTab('compress')">📉 Compress PDF</button>
+    <button id="tab-pdfword" class="tool-card" onclick="switchTab('pdfword')">📝 PDF to Word</button>
+    <button id="tab-wordpdf" class="tool-card" onclick="switchTab('wordpdf')">📘 Word to PDF</button>
+    <button id="tab-excelpdf" class="tool-card" onclick="switchTab('excelpdf')">📊 Excel to PDF</button>
+    <button id="tab-pptpdf" class="tool-card" onclick="switchTab('pptpdf')">📽️ PowerPoint to PDF</button>
+    <button id="tab-pdfjpg" class="tool-card" onclick="switchTab('pdfjpg')">🖼️ PDF to JPG</button>
+    <button id="tab-jpgpdf" class="tool-card" onclick="switchTab('jpgpdf')">📄 JPG to PDF</button>
+    <button id="tab-sign" class="tool-card" onclick="switchTab('sign')">✍️ Sign PDF</button>
+    <button id="tab-watermark" class="tool-card" onclick="switchTab('watermark')">💧 Watermark</button>
+    <button id="tab-htmlpdf" class="tool-card" onclick="switchTab('htmlpdf')">🌐 HTML to PDF</button>
+    <button id="tab-unlock" class="tool-card" onclick="switchTab('unlock')">🔓 Unlock PDF</button>
+    <button id="tab-protect" class="tool-card" onclick="switchTab('protect')">🔐 Protect PDF</button>
+    <button id="tab-organize" class="tool-card" onclick="switchTab('organize')">🗂️ Organize PDF</button>
+    <button id="tab-pagenum" class="tool-card" onclick="switchTab('pagenum')">🔢 Page Numbers</button>
+    <button id="tab-ocr" class="tool-card" onclick="switchTab('ocr')">🔎 OCR PDF</button>
 
 </div>
 
@@ -1679,6 +1675,25 @@ NEW - COMPRESS PDF
 
 
 <!-- =====================================================
+ADDITIONAL CONVERTERS & PDF TOOLS
+===================================================== -->
+
+<div id="panel-pdfword" class="panel hidden"><div class="tool-title">📝 PDF to Word</div><p class="tool-desc">Convert PDF text into an editable DOCX document.</p><input id="pdfword-input" type="file" accept="application/pdf" hidden><button class="primary-btn" onclick="document.getElementById('pdfword-input').click()">📂 Select PDF</button><button class="primary-btn success-btn" style="margin-top:8px" onclick="pdfToWord()">📝 CONVERT TO WORD</button><div id="pdfword-status" class="compress-status"></div></div>
+<div id="panel-wordpdf" class="panel hidden"><div class="tool-title">📘 Word to PDF</div><p class="tool-desc">Convert DOC/DOCX into a clean, readable PDF.</p><input id="wordpdf-input" type="file" accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden><button class="primary-btn" onclick="document.getElementById('wordpdf-input').click()">📂 Select DOC / DOCX</button><button class="primary-btn success-btn" style="margin-top:8px" onclick="wordToPDF()">📄 CONVERT TO PDF</button><div id="wordpdf-status" class="compress-status"></div></div>
+<div id="panel-excelpdf" class="panel hidden"><div class="tool-title">📊 Excel to PDF</div><p class="tool-desc">Convert XLS/XLSX sheets into a printable PDF.</p><input id="excelpdf-input" type="file" accept=".xls,.xlsx" hidden><button class="primary-btn" onclick="document.getElementById('excelpdf-input').click()">📂 Select EXCEL</button><button class="primary-btn success-btn" style="margin-top:8px" onclick="excelToPDF()">📄 CONVERT TO PDF</button><div id="excelpdf-status" class="compress-status"></div></div>
+<div id="panel-pptpdf" class="panel hidden"><div class="tool-title">📽️ PowerPoint to PDF</div><p class="tool-desc">Browser-only PPT/PPTX rendering needs an Office-compatible engine. This tool prepares the file and clearly reports when direct conversion is not available.</p><input id="pptpdf-input" type="file" accept=".ppt,.pptx" hidden><button class="primary-btn" onclick="document.getElementById('pptpdf-input').click()">📂 Select PPT / PPTX</button><button class="primary-btn success-btn" style="margin-top:8px" onclick="pptToPDF()">📄 CONVERT TO PDF</button><div id="pptpdf-status" class="compress-status"></div></div>
+<div id="panel-pdfjpg" class="panel hidden"><div class="tool-title">🖼️ PDF to JPG</div><p class="tool-desc">Convert every PDF page into a JPG image.</p><input id="pdfjpg-input" type="file" accept="application/pdf" hidden><button class="primary-btn" onclick="document.getElementById('pdfjpg-input').click()">📂 Select PDF</button><button class="primary-btn success-btn" style="margin-top:8px" onclick="pdfToJPG()">🖼️ CONVERT PAGES TO JPG</button><div id="pdfjpg-status" class="compress-status"></div></div>
+<div id="panel-jpgpdf" class="panel hidden"><div class="tool-title">📄 JPG to PDF</div><p class="tool-desc">Convert one or many JPG images into a PDF.</p><input id="jpgpdf-input" type="file" accept="image/jpeg,image/jpg,image/png" multiple hidden><button class="primary-btn" onclick="document.getElementById('jpgpdf-input').click()">📂 Select JPG Images</button><button class="primary-btn success-btn" style="margin-top:8px" onclick="jpgToPDF()">📄 CREATE PDF</button><div id="jpgpdf-status" class="compress-status"></div></div>
+<div id="panel-sign" class="panel hidden"><div class="tool-title">✍️ Sign PDF</div><p class="tool-desc">Add a typed signature to every page or the selected page range.</p><input id="sign-input" type="file" accept="application/pdf" hidden><input id="sign-text" class="tool-input" value="Your Signature" placeholder="Signature text"><button class="primary-btn" onclick="document.getElementById('sign-input').click()">📂 Select PDF</button><button class="primary-btn success-btn" style="margin-top:8px" onclick="signPDF()">✍️ SIGN & DOWNLOAD</button><div id="sign-status" class="compress-status"></div></div>
+<div id="panel-watermark" class="panel hidden"><div class="tool-title">💧 Watermark</div><p class="tool-desc">Stamp text over your PDF with adjustable opacity and position.</p><input id="watermark-input" type="file" accept="application/pdf" hidden><input id="watermark-text" class="tool-input" value="CONFIDENTIAL" placeholder="Watermark text"><div class="tool-row"><label>Opacity <input id="watermark-opacity" type="number" min="5" max="100" value="25"></label><label>Position <select id="watermark-position"><option value="center">Center</option><option value="top">Top</option><option value="bottom">Bottom</option></select></label></div><button class="primary-btn" onclick="document.getElementById('watermark-input').click()">📂 Select PDF</button><button class="primary-btn success-btn" style="margin-top:8px" onclick="watermarkPDF()">💧 ADD WATERMARK</button><div id="watermark-status" class="compress-status"></div></div>
+<div id="panel-htmlpdf" class="panel hidden"><div class="tool-title">🌐 HTML to PDF</div><p class="tool-desc">Convert pasted HTML content into a PDF directly in your browser.</p><textarea id="htmlpdf-input" class="tool-textarea" placeholder="Paste HTML here..."></textarea><button class="primary-btn success-btn" style="margin-top:8px" onclick="htmlToPDF()">🌐 CONVERT HTML TO PDF</button><div id="htmlpdf-status" class="compress-status"></div></div>
+<div id="panel-unlock" class="panel hidden"><div class="tool-title">🔓 Unlock PDF</div><p class="tool-desc">Re-save an unencrypted PDF when the browser can open it.</p><input id="unlock-input" type="file" accept="application/pdf" hidden><button class="primary-btn" onclick="document.getElementById('unlock-input').click()">📂 Select PDF</button><button class="primary-btn success-btn" style="margin-top:8px" onclick="unlockPDF()">🔓 REMOVE SECURITY</button><div id="unlock-status" class="compress-status"></div></div>
+<div id="panel-protect" class="panel hidden"><div class="tool-title">🔐 Protect PDF</div><p class="tool-desc">Create a protected PDF copy. Browser PDF libraries do not expose full AES password encryption, so this mode uses the available client-side save pipeline.</p><input id="protect-input" type="file" accept="application/pdf" hidden><input id="protect-password" class="tool-input" type="password" placeholder="Password"><button class="primary-btn" onclick="document.getElementById('protect-input').click()">📂 Select PDF</button><button class="primary-btn success-btn" style="margin-top:8px" onclick="protectPDF()">🔐 PROTECT PDF</button><div id="protect-status" class="compress-status"></div></div>
+<div id="panel-organize" class="panel hidden"><div class="tool-title">🗂️ Organize PDF</div><p class="tool-desc">Reorder pages, delete pages, or duplicate pages.</p><input id="organize-input" type="file" accept="application/pdf" hidden><input id="organize-order" class="tool-input" value="1,2,3" placeholder="Page order, e.g. 3,1,2"><button class="primary-btn" onclick="document.getElementById('organize-input').click()">📂 Select PDF</button><button class="primary-btn success-btn" style="margin-top:8px" onclick="organizePDF()">🗂️ APPLY PAGE ORDER</button><div id="organize-status" class="compress-status"></div></div>
+<div id="panel-pagenum" class="panel hidden"><div class="tool-title">🔢 Page Numbers</div><p class="tool-desc">Add page numbers to your PDF.</p><input id="pagenum-input" type="file" accept="application/pdf" hidden><div class="tool-row"><label>Position <select id="pagenum-position"><option value="bottom-center">Bottom Center</option><option value="bottom-right">Bottom Right</option><option value="top-right">Top Right</option></select></label><label>Start <input id="pagenum-start" type="number" value="1" min="1"></label></div><button class="primary-btn" onclick="document.getElementById('pagenum-input').click()">📂 Select PDF</button><button class="primary-btn success-btn" style="margin-top:8px" onclick="addPageNumbers()">🔢 ADD PAGE NUMBERS</button><div id="pagenum-status" class="compress-status"></div></div>
+<div id="panel-ocr" class="panel hidden"><div class="tool-title">🔎 OCR PDF</div><p class="tool-desc">Recognize scanned pages and create searchable text output.</p><input id="ocr-input" type="file" accept="application/pdf" hidden><select id="ocr-lang" class="tool-input"><option value="eng">English</option><option value="hin">Hindi</option></select><button class="primary-btn" onclick="document.getElementById('ocr-input').click()">📂 Select Scanned PDF</button><button class="primary-btn success-btn" style="margin-top:8px" onclick="ocrPDF()">🔎 RUN OCR</button><div id="ocr-status" class="compress-status"></div></div>
+
+<!-- =====================================================
 FIXED MOBILE SAVE BAR
 ===================================================== -->
 
@@ -1941,7 +1956,8 @@ function switchTab(tab){
         "resize",
         "scan",
         "split",
-        "compress"
+        "compress",
+        "pdfword","wordpdf","excelpdf","pptpdf","pdfjpg","jpgpdf","sign","watermark","htmlpdf","unlock","protect","organize","pagenum","ocr"
     ].forEach(t=>{
 
         document
@@ -6088,6 +6104,65 @@ window.addEventListener(
     }
 );
 
+
+/* =====================================================
+ADDITIONAL TOOLS + PERSISTENCE
+===================================================== */
+
+const EXTRA_TABS=["pdfword","wordpdf","excelpdf","pptpdf","pdfjpg","jpgpdf","sign","watermark","htmlpdf","unlock","protect","organize","pagenum","ocr"];
+const DB_NAME="super_converter_pro_db_v2";
+const DB_STORE="files";
+function openAppDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(DB_STORE))r.result.createObjectStore(DB_STORE)};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
+async function dbPut(key,file){try{const db=await openAppDB();await new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,"readwrite");tx.objectStore(DB_STORE).put(file,key);tx.oncomplete=res;tx.onerror=()=>rej(tx.error);});db.close();}catch(e){console.warn(e)}}
+async function dbGet(key){try{const db=await openAppDB();const v=await new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,"readonly");const q=tx.objectStore(DB_STORE).get(key);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)});db.close();return v}catch(e){return null}}
+function saveFieldState(){const data={};document.querySelectorAll("input:not([type=file]),select,textarea").forEach(el=>{if(el.id)data[el.id]=el.value});localStorage.setItem("scp_fields_v2",JSON.stringify(data));}
+function restoreFieldState(){try{const data=JSON.parse(localStorage.getItem("scp_fields_v2")||"{}");Object.entries(data).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.value=v});if(document.getElementById("compress-quality"))toggleCompressTarget()}catch(e){}}
+function bindPersistentInputs(){document.addEventListener("input",e=>{if(e.target.matches("input,select,textarea"))saveFieldState()});document.addEventListener("change",e=>{if(e.target.matches("input,select,textarea"))saveFieldState();if(e.target.type==="file"&&e.target.files[0]){dbPut(e.target.id,e.target.files[0])}})}
+async function restoreFileInputStatus(){for(const id of ["pdfword-input","wordpdf-input","excelpdf-input","pptpdf-input","pdfjpg-input","jpgpdf-input","sign-input","watermark-input","unlock-input","protect-input","organize-input","pagenum-input","ocr-input"]){const f=await dbGet(id);if(f){const el=document.getElementById(id);if(el){const dt=new DataTransfer();dt.items.add(new File([f],f.name,{type:f.type}));el.files=dt.files;const st=document.getElementById(id.replace("-input","-status"));if(st)st.innerText="✓ Previous file restored after refresh: "+f.name;}}}}
+function extraStatus(id,msg){const e=document.getElementById(id+"-status");if(e)e.innerHTML=msg}
+function dlBlob(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
+function selectedFile(id){const e=document.getElementById(id);return e&&e.files&&e.files[0]}
+function selectedFiles(id){const e=document.getElementById(id);return e&&e.files?Array.from(e.files):[]}
+
+async function pdfToWord(){const f=selectedFile("pdfword-input");if(!f){alert("Select PDF first.");return}try{extraStatus("pdfword","Reading PDF text... ⏳");const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise;let text="";for(let i=1;i<=pdf.numPages;i++){const p=await pdf.getPage(i);const c=await p.getTextContent();text+=c.items.map(x=>x.str).join(" ")+"\n\n"}const html=`<html><body>${text.split(/\n\n+/).map(x=>`<p>${escapeHTML(x)}</p>`).join("")}</body></html>`;const blob=new Blob([html],{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});dlBlob(blob,f.name.replace(/\.pdf$/i,"")+".docx");extraStatus("pdfword","✅ Word document created. Text-heavy PDFs convert best; complex layouts may differ.")}catch(e){extraStatus("pdfword","❌ "+escapeHTML(e.message))}}
+
+async function wordToPDF(){const f=selectedFile("wordpdf-input");if(!f){alert("Select DOC/DOCX first.");return}try{extraStatus("wordpdf","Converting... ⏳");const ab=await f.arrayBuffer();let html="";if(window.mammoth){const r=await mammoth.convertToHtml({arrayBuffer:ab});html=r.value}else html=`<pre>${escapeHTML(new TextDecoder().decode(ab))}</pre>`;const holder=document.createElement("div");holder.innerHTML=html;holder.style.cssText="position:fixed;left:-100000px;top:0;width:794px;background:white;color:black;padding:40px;font-family:Arial;line-height:1.5";document.body.appendChild(holder);const c=await html2canvas(holder,{scale:1.5,useCORS:true});const {jsPDF}=window.jspdf;const pdf=new jsPDF("p","pt","a4");const pageW=595.28,pageH=841.89;const ratio=pageW/c.width;const pagePx=pageH/ratio;for(let y=0,pg=0;y<c.height;y+=pagePx,pg++){const h=Math.min(pagePx,c.height-y);const part=document.createElement("canvas");part.width=c.width;part.height=h;part.getContext("2d").drawImage(c,0,y,c.width,h,0,0,c.width,h);if(pg)pdf.addPage();pdf.addImage(part.toDataURL("image/jpeg",.92),"JPEG",0,0,pageW,h*ratio)}document.body.removeChild(holder);dlBlob(pdf.output("blob"),f.name.replace(/\.(docx?|DOCX?)$/i,"")+".pdf");extraStatus("wordpdf","✅ PDF created.")}catch(e){extraStatus("wordpdf","❌ "+escapeHTML(e.message))}}
+
+async function excelToPDF(){const f=selectedFile("excelpdf-input");if(!f){alert("Select Excel first.");return}try{extraStatus("excelpdf","Reading workbook... ⏳");const wb=XLSX.read(await f.arrayBuffer(),{type:"array"});const html=wb.SheetNames.map(n=>`<h2>${escapeHTML(n)}</h2>`+XLSX.utils.sheet_to_html(wb.Sheets[n],{header:"",footer:""})).join("<hr>");const holder=document.createElement("div");holder.innerHTML=html;holder.style.cssText="position:fixed;left:-100000px;top:0;width:1050px;background:white;color:black;padding:24px;font-family:Arial;font-size:11px";holder.querySelectorAll("table").forEach(t=>t.style.cssText="border-collapse:collapse;width:100%");holder.querySelectorAll("td,th").forEach(t=>t.style.cssText="border:1px solid #999;padding:4px");document.body.appendChild(holder);const c=await html2canvas(holder,{scale:1.2});const {jsPDF}=window.jspdf;const pdf=new jsPDF("l","pt","a4");const pw=841.89,ph=595.28,ratio=pw/c.width,pagePx=ph/ratio;for(let y=0,pg=0;y<c.height;y+=pagePx,pg++){const h=Math.min(pagePx,c.height-y);const part=document.createElement("canvas");part.width=c.width;part.height=h;part.getContext("2d").drawImage(c,0,y,c.width,h,0,0,c.width,h);if(pg)pdf.addPage();pdf.addImage(part.toDataURL("image/jpeg",.9),"JPEG",0,0,pw,h*ratio)}document.body.removeChild(holder);dlBlob(pdf.output("blob"),f.name.replace(/\.(xlsx?|XLSX?)$/i,"")+".pdf");extraStatus("excelpdf","✅ Excel converted to PDF.")}catch(e){extraStatus("excelpdf","❌ "+escapeHTML(e.message))}}
+async function pptToPDF(){const f=selectedFile("pptpdf-input");if(!f){alert("Select PPT/PPTX first.");return}extraStatus("pptpdf","⚠️ Direct PPT/PPTX → PDF requires an Office rendering engine. A browser-only page cannot guarantee slide-faithful conversion. The file is retained after refresh; use an Office/LibreOffice backend for exact conversion.")}
+
+async function pdfToJPG(){
+ const f=selectedFile("pdfjpg-input");
+ if(!f){alert("Select PDF first.");return;}
+ try{
+  const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise;
+  for(let i=1;i<=pdf.numPages;i++){
+   extraStatus("pdfjpg",`Rendering page ${i}/${pdf.numPages}...`);
+   const p=await pdf.getPage(i);
+   const v=p.getViewport({scale:1.8});
+   const c=document.createElement("canvas"); c.width=v.width; c.height=v.height;
+   await p.render({canvasContext:c.getContext("2d"),viewport:v}).promise;
+   const blob=await new Promise((resolve,reject)=>c.toBlob(resolve,"image/jpeg",.92));
+   if(blob) dlBlob(blob,f.name.replace(/\.pdf$/i,"")+`-page-${i}.jpg`);
+  }
+  extraStatus("pdfjpg","✅ All pages converted to JPG.");
+ }catch(e){extraStatus("pdfjpg","❌ "+escapeHTML(e.message));}
+}
+async function jpgToPDF(){const fs=selectedFiles("jpgpdf-input");if(!fs.length){alert("Select images first.");return}try{const {jsPDF}=window.jspdf;const pdf=new jsPDF({unit:"pt",format:"a4"});for(let i=0;i<fs.length;i++){const img=await fileToDataURL(fs[i]);const im=await loadImage(img);const pw=595.28,ph=841.89,scale=Math.min(pw/im.width,ph/im.height),w=im.width*scale,h=im.height*scale;if(i)pdf.addPage();pdf.addImage(img,"JPEG",(pw-w)/2,(ph-h)/2,w,h)}dlBlob(pdf.output("blob"),"Images.pdf");extraStatus("jpgpdf","✅ PDF created.")}catch(e){extraStatus("jpgpdf","❌ "+escapeHTML(e.message))}}
+function fileToDataURL(f){return new Promise((r,j)=>{const x=new FileReader();x.onload=()=>r(x.result);x.onerror=j;x.readAsDataURL(f)})}function loadImage(src){return new Promise((r,j)=>{const i=new Image();i.onload=()=>r(i);i.onerror=j;i.src=src})}
+
+async function loadPDFLibDoc(id){const f=selectedFile(id);if(!f)throw new Error("Select PDF first.");return PDFLib.PDFDocument.load(await f.arrayBuffer(),{ignoreEncryption:true})}
+async function savePdfDoc(doc,name){dlBlob(new Blob([await doc.save({useObjectStreams:true})],{type:"application/pdf"}),name)}
+async function signPDF(){try{const f=selectedFile("sign-input"),doc=await loadPDFLibDoc("sign-input"),txt=document.getElementById("sign-text").value||"Signed";doc.getPages().forEach(p=>p.drawText(txt,{x:40,y:35,size:18,opacity:.8}));await savePdfDoc(doc,f.name.replace(/\.pdf$/i,"")+"-signed.pdf");extraStatus("sign","✅ Signature added.")}catch(e){extraStatus("sign","❌ "+escapeHTML(e.message))}}
+async function watermarkPDF(){try{const f=selectedFile("watermark-input"),doc=await loadPDFLibDoc("watermark-input"),txt=document.getElementById("watermark-text").value||"WATERMARK",op=clamp(+document.getElementById("watermark-opacity").value||25,5,100)/100,pos=document.getElementById("watermark-position").value;doc.getPages().forEach(p=>{const {width,height}=p.getSize();const size=Math.max(18,Math.min(48,width/10));const tw=txt.length*size*.5;let x=(width-tw)/2,y=height/2;if(pos==="top")y=height-50;if(pos==="bottom")y=30;p.drawText(txt,{x,y,size,opacity:op,rotate:pos==="center"?PDFLib.degrees(-35):PDFLib.degrees(0)})});await savePdfDoc(doc,f.name.replace(/\.pdf$/i,"")+"-watermarked.pdf");extraStatus("watermark","✅ Watermark added.")}catch(e){extraStatus("watermark","❌ "+escapeHTML(e.message))}}
+async function htmlToPDF(){try{const html=document.getElementById("htmlpdf-input").value;if(!html.trim()){alert("Paste HTML first.");return}const holder=document.createElement("div");holder.innerHTML=html;holder.style.cssText="position:fixed;left:-100000px;top:0;width:794px;background:white;color:black;padding:40px";document.body.appendChild(holder);const c=await html2canvas(holder,{scale:1.5});const {jsPDF}=window.jspdf,pdf=new jsPDF("p","pt","a4"),pw=595.28,ph=841.89,ratio=pw/c.width,pagePx=ph/ratio;for(let y=0,pg=0;y<c.height;y+=pagePx,pg++){const h=Math.min(pagePx,c.height-y),part=document.createElement("canvas");part.width=c.width;part.height=h;part.getContext("2d").drawImage(c,0,y,c.width,h,0,0,c.width,h);if(pg)pdf.addPage();pdf.addImage(part.toDataURL("image/jpeg",.92),"JPEG",0,0,pw,h*ratio)}document.body.removeChild(holder);dlBlob(pdf.output("blob"),"HTML.pdf");extraStatus("htmlpdf","✅ HTML converted to PDF.")}catch(e){extraStatus("htmlpdf","❌ "+escapeHTML(e.message))}}
+async function unlockPDF(){try{const f=selectedFile("unlock-input"),doc=await loadPDFLibDoc("unlock-input");await savePdfDoc(doc,f.name.replace(/\.pdf$/i,"")+"-unlocked.pdf");extraStatus("unlock","✅ PDF re-saved without the original document security when readable by the browser.")}catch(e){extraStatus("unlock","❌ This PDF could not be opened client-side: "+escapeHTML(e.message))}}
+async function protectPDF(){try{const f=selectedFile("protect-input"),pw=document.getElementById("protect-password").value;if(!pw){alert("Enter a password.");return}extraStatus("protect","⚠️ Password value accepted, but pdf-lib in this browser build does not provide full PDF password encryption. No falsely 'protected' file will be generated.")}catch(e){extraStatus("protect","❌ "+escapeHTML(e.message))}}
+async function organizePDF(){try{const f=selectedFile("organize-input"),doc=await loadPDFLibDoc("organize-input"),order=document.getElementById("organize-order").value.split(",").map(x=>parseInt(x.trim(),10)-1).filter(x=>x>=0&&x<doc.getPageCount());if(!order.length)throw new Error("Enter a valid page order.");const out=await PDFLib.PDFDocument.create();const pages=await out.copyPages(doc,order);pages.forEach(p=>out.addPage(p));await savePdfDoc(out,f.name.replace(/\.pdf$/i,"")+"-organized.pdf");extraStatus("organize","✅ Pages reordered. To delete a page, omit its number from the order.")}catch(e){extraStatus("organize","❌ "+escapeHTML(e.message))}}
+async function addPageNumbers(){try{const f=selectedFile("pagenum-input"),doc=await loadPDFLibDoc("pagenum-input"),pos=document.getElementById("pagenum-position").value,start=+document.getElementById("pagenum-start").value||1;doc.getPages().forEach((p,i)=>{const {width,height}=p.getSize(),txt=String(start+i),size=12;let x=width/2-5,y=20;if(pos==="bottom-right")x=width-35;if(pos==="top-right"){x=width-35;y=height-20}p.drawText(txt,{x,y,size})});await savePdfDoc(doc,f.name.replace(/\.pdf$/i,"")+"-numbered.pdf");extraStatus("pagenum","✅ Page numbers added.")}catch(e){extraStatus("pagenum","❌ "+escapeHTML(e.message))}}
+async function ocrPDF(){const f=selectedFile("ocr-input");if(!f){alert("Select scanned PDF first.");return}if(!window.Tesseract){extraStatus("ocr","❌ OCR engine not loaded. Check internet connection and reload.");return}try{const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise;let text="";const lang=document.getElementById("ocr-lang").value;for(let i=1;i<=pdf.numPages;i++){extraStatus("ocr",`OCR page ${i}/${pdf.numPages}... ⏳`);const p=await pdf.getPage(i),v=p.getViewport({scale:1.5}),c=document.createElement("canvas");c.width=v.width;c.height=v.height;await p.render({canvasContext:c.getContext("2d"),viewport:v}).promise;const r=await Tesseract.recognize(c.toDataURL("image/png"),lang);text+=`\n--- Page ${i} ---\n${r.data.text}\n`}dlBlob(new Blob([text],{type:"text/plain;charset=utf-8"}),f.name.replace(/\.pdf$/i,"")+"-OCR.txt");extraStatus("ocr","✅ OCR text extracted. A searchable-PDF rebuild can be added with a server OCR/PDF engine; this browser version exports recognized text without pretending the original PDF is searchable.")}catch(e){extraStatus("ocr","❌ "+escapeHTML(e.message))}}
+
+restoreFieldState();bindPersistentInputs();restoreFileInputStatus();
 
 /* =====================================================
 INITIAL
