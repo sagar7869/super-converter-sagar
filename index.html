@@ -6092,7 +6092,14 @@ async function dbGet(key){try{const db=await openAppDB();const v=await new Promi
 function saveFieldState(){const data={};document.querySelectorAll("input:not([type=file]),select,textarea").forEach(el=>{if(el.id)data[el.id]=el.value});localStorage.setItem("scp_fields_v2",JSON.stringify(data));}
 function restoreFieldState(){try{const data=JSON.parse(localStorage.getItem("scp_fields_v2")||"{}");Object.entries(data).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.value=v});if(document.getElementById("compress-quality"))toggleCompressTarget()}catch(e){}}
 function bindPersistentInputs(){document.addEventListener("input",e=>{if(e.target.matches("input,select,textarea"))saveFieldState()});document.addEventListener("change",e=>{if(e.target.matches("input,select,textarea"))saveFieldState();if(e.target.type==="file"&&e.target.files[0]){dbPut(e.target.id,e.target.files[0])}})}
-async function restoreFileInputStatus(){for(const id of ["pdfword-input","wordpdf-input","excelpdf-input","pptpdf-input","pdfjpg-input","jpgpdf-input","sign-input","watermark-input","unlock-input","protect-input","organize-input","pagenum-input","ocr-input"]){const f=await dbGet(id);if(f){const el=document.getElementById(id);if(el){const dt=new DataTransfer();dt.items.add(new File([f],f.name,{type:f.type}));el.files=dt.files;const st=document.getElementById(id.replace("-input","-status"));if(st)st.innerText="✓ Previous file restored after refresh: "+f.name; el.dispatchEvent(new Event('change',{bubbles:true}));}}}}
+async function restoreFileInputStatus(){
+ const ids=["pdfword-input","wordpdf-input","excelpdf-input","pptpdf-input","pdfjpg-input","jpgpdf-input","sign-input","watermark-input","htmlpdf-input","unlock-input","protect-input","organize-input","pagenum-input","ocr-input"];
+ for(const id of ids){
+  const saved=await dbGet(id);if(!saved)continue;const input=document.getElementById(id);if(!input)continue;
+  const files=Array.isArray(saved)?saved:[saved];
+  try{const dt=new DataTransfer();files.forEach(f=>dt.items.add(new File([f],f.name,{type:f.type||"application/octet-stream",lastModified:f.lastModified||Date.now()})));input.files=dt.files;renderExtraFileCard(id);extraStatus(id.replace("-input",""),`✓ Previous file${files.length>1?"s":""} restored: ${files.length}`);}catch(e){console.warn("Restore failed",id,e)}
+ }
+}
 function extraStatus(id,msg){const e=document.getElementById(id+"-status");if(e)e.innerHTML=msg}
 function dlBlob(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
 function selectedFile(id){const e=document.getElementById(id);return e&&e.files&&e.files[0]}
@@ -6135,7 +6142,7 @@ async function organizePDF(){try{const f=selectedFile("organize-input"),doc=awai
 async function addPageNumbers(){try{const f=selectedFile("pagenum-input"),doc=await loadPDFLibDoc("pagenum-input"),pos=document.getElementById("pagenum-position").value,start=+document.getElementById("pagenum-start").value||1;doc.getPages().forEach((p,i)=>{const {width,height}=p.getSize(),txt=String(start+i),size=12;let x=width/2-5,y=20;if(pos==="bottom-right")x=width-35;if(pos==="top-right"){x=width-35;y=height-20}p.drawText(txt,{x,y,size})});await savePdfDoc(doc,f.name.replace(/\.pdf$/i,"")+"-numbered.pdf");extraStatus("pagenum","✅ Page numbers added.")}catch(e){extraStatus("pagenum","❌ "+escapeHTML(e.message))}}
 async function ocrPDF(){const f=selectedFile("ocr-input");if(!f){alert("Select scanned PDF first.");return}if(!window.Tesseract){extraStatus("ocr","❌ OCR engine not loaded. Check internet connection and reload.");return}try{const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise;let text="";const lang=document.getElementById("ocr-lang").value;for(let i=1;i<=pdf.numPages;i++){extraStatus("ocr",`OCR page ${i}/${pdf.numPages}... ⏳`);const p=await pdf.getPage(i),v=p.getViewport({scale:1.5}),c=document.createElement("canvas");c.width=v.width;c.height=v.height;await p.render({canvasContext:c.getContext("2d"),viewport:v}).promise;const r=await Tesseract.recognize(c.toDataURL("image/png"),lang);text+=`\n--- Page ${i} ---\n${r.data.text}\n`}dlBlob(new Blob([text],{type:"text/plain;charset=utf-8"}),f.name.replace(/\.pdf$/i,"")+"-OCR.txt");extraStatus("ocr","✅ OCR text extracted. A searchable-PDF rebuild can be added with a server OCR/PDF engine; this browser version exports recognized text without pretending the original PDF is searchable.")}catch(e){extraStatus("ocr","❌ "+escapeHTML(e.message))}}
 
-restoreFieldState();bindPersistentInputs();restoreFileInputStatus();
+restoreFieldState();bindPersistentInputs();setupExtraFilePickers();restoreFileInputStatus();
 
 /* =====================================================
 INITIAL
