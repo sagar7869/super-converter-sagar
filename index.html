@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover">
 
 <title>Super Converter Pro - HD Studio</title>
 
@@ -12,100 +14,189 @@
 <style>
 *{
     box-sizing:border-box;
-    font-family:Segoe UI,Tahoma,Verdana,sans-serif;
     -webkit-tap-highlight-color:transparent;
+    font-family:Segoe UI,Tahoma,Verdana,sans-serif;
+}
+
+html{
+    width:100%;
+    min-height:100%;
+    background:#020617;
 }
 
 body{
     margin:0;
-    padding:15px;
-    padding-bottom:130px;
+    width:100%;
+    min-height:100dvh;
+    padding:
+        max(12px,env(safe-area-inset-top))
+        12px
+        calc(125px + env(safe-area-inset-bottom));
     background:#0f172a;
     color:#f8fafc;
     text-align:center;
+    overflow-x:hidden;
 }
 
+button,
+input,
+select{
+    font:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+button:disabled{
+    opacity:.55;
+    cursor:not-allowed;
+}
+
+/* =========================
+HEADER
+========================= */
+
 h1{
-    font-size:20px;
-    margin:0 0 2px;
+    font-size:21px;
+    line-height:1.2;
+    margin:2px 0 3px;
 }
 
 .subtitle{
     color:#94a3b8;
     font-size:12px;
-    margin:0 0 15px;
+    margin:0 0 14px;
 }
 
+/* =========================
+TOOLS
+========================= */
+
 .tool-grid{
+    width:100%;
+    max-width:600px;
+    margin:0 auto 14px;
+
     display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:6px;
-    margin-bottom:15px;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:7px;
 }
 
 .tool-card{
+    min-height:48px;
     border:1px solid #334155;
     background:#1e293b;
     color:#94a3b8;
-    border-radius:8px;
-    padding:10px 3px;
-    font-weight:bold;
+    border-radius:10px;
+    padding:8px 4px;
+    font-weight:700;
     font-size:12px;
 }
 
 .tool-card.active{
     background:#312e81;
     border-color:#6366f1;
-    color:#a5b4fc;
+    color:#c7d2fe;
 }
 
+/* =========================
+PANEL
+========================= */
+
 .panel{
-    max-width:520px;
-    margin:auto;
-    padding:15px;
-    border-radius:12px;
+    width:100%;
+    max-width:600px;
+    margin:0 auto;
+    padding:14px;
+    border-radius:14px;
     background:#1e293b;
     border:1px solid #334155;
-    box-shadow:0 10px 25px rgba(0,0,0,.3);
+    box-shadow:0 10px 30px rgba(0,0,0,.28);
 }
 
 .hidden{
     display:none!important;
 }
 
-.drop-zone{
-    background:#0f172a;
-    border:2px dashed #475569;
-    border-radius:10px;
-    padding:25px 15px;
-    cursor:pointer;
-}
+/* =========================
+COMMON BUTTON
+========================= */
 
 .primary-btn{
     width:100%;
+    min-height:48px;
     border:0;
-    border-radius:8px;
-    padding:14px;
+    border-radius:10px;
+    padding:12px 14px;
     background:#6366f1;
-    color:white;
-    font-size:15px;
-    font-weight:bold;
+    color:#fff;
+    font-size:14px;
+    font-weight:800;
+}
+
+.primary-btn:active{
+    transform:scale(.985);
 }
 
 .success-btn{
     background:#10b981;
 }
 
+.danger-btn{
+    background:#ef4444;
+}
+
+/* =========================
+DROP ZONE
+========================= */
+
+.drop-zone{
+    width:100%;
+    background:#0f172a;
+    border:2px dashed #475569;
+    border-radius:12px;
+    padding:28px 14px;
+    cursor:pointer;
+    color:#cbd5e1;
+    font-size:14px;
+    font-weight:700;
+}
+
+.drop-zone:active{
+    background:#172033;
+}
+
+/* =========================
+QUEUE
+========================= */
+
 .file-item{
     display:flex;
+    align-items:center;
     justify-content:space-between;
-    padding:9px;
+    gap:10px;
+
+    padding:10px;
     background:#0f172a;
     border:1px solid #334155;
-    border-radius:6px;
-    margin-top:6px;
-    font-size:12px;
+    border-radius:8px;
+    margin-top:7px;
+
+    font-size:11px;
+    text-align:left;
 }
+
+.file-item span:first-child{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+/* =========================
+OPTIONS
+========================= */
 
 .options-panel{
     text-align:left;
@@ -118,252 +209,590 @@ h1{
 .options-panel label{
     color:#cbd5e1;
     font-size:11px;
-    font-weight:bold;
+    font-weight:800;
 }
 
 .options-panel input,
 .options-panel select,
 .pdf-options select{
     width:100%;
+    min-height:42px;
     background:#0f172a;
     color:white;
     border:1px solid #475569;
-    border-radius:6px;
-    padding:9px;
+    border-radius:8px;
+    padding:8px 10px;
+    outline:none;
 }
 
-/* CAMERA */
+/* =========================
+SCAN START
+========================= */
 
 .camera-box{
+    width:100%;
     background:#0f172a;
-    border:1px dashed #6366f1;
-    border-radius:10px;
-    padding:24px 10px;
+    border:2px dashed #6366f1;
+    border-radius:12px;
+    padding:28px 12px;
     cursor:pointer;
+}
+
+.camera-icon{
+    font-size:34px;
+    margin-bottom:7px;
 }
 
 .camera-title{
     color:#a5b4fc;
-    font-weight:bold;
+    font-weight:800;
     font-size:16px;
 }
 
 .camera-sub{
     color:#94a3b8;
     font-size:11px;
-    margin-top:5px;
+    margin-top:6px;
+    line-height:1.5;
 }
 
-/* SCANNED PAGES */
+/* =========================
+SCANNED PAGES
+========================= */
+
+.scan-heading{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin:18px 0 8px;
+}
+
+.scan-heading-title{
+    font-size:13px;
+    font-weight:800;
+}
+
+.page-count{
+    color:#a5b4fc;
+    font-size:11px;
+    font-weight:700;
+}
 
 .scanned-grid{
     display:grid;
-    grid-template-columns:repeat(2,1fr);
+    grid-template-columns:repeat(2,minmax(0,1fr));
     gap:10px;
-    margin-top:12px;
 }
 
 .grid-thumb{
     position:relative;
+    width:100%;
     aspect-ratio:3/4;
     overflow:hidden;
     background:#020617;
     border:1px solid #334155;
-    border-radius:8px;
+    border-radius:10px;
 }
 
 .grid-thumb img{
+    display:block;
     width:100%;
     height:100%;
     object-fit:cover;
+    cursor:pointer;
 }
 
 .delete-page{
     position:absolute;
-    top:5px;
-    right:5px;
-    width:26px;
-    height:26px;
+    top:6px;
+    right:6px;
+
+    width:30px;
+    height:30px;
+
     border:0;
     border-radius:50%;
+
     background:#ef4444;
-    color:white;
-    font-weight:bold;
+    color:#fff;
+
+    font-size:18px;
+    font-weight:900;
+    line-height:30px;
+    padding:0;
 }
 
 .page-number{
     position:absolute;
-    bottom:5px;
-    left:5px;
-    padding:3px 7px;
-    background:rgba(0,0,0,.75);
-    border-radius:10px;
+    bottom:6px;
+    left:6px;
+
+    padding:4px 8px;
+    background:rgba(0,0,0,.78);
+    border-radius:20px;
     font-size:10px;
 }
 
-/* SAVE */
+/* =========================
+SAVE AREA
+========================= */
 
 .save-box{
-    margin-top:15px;
+    margin-top:14px;
     padding:12px;
-    background:#0f172a;
-    border:1px solid #334155;
-    border-radius:10px;
+
+    background:#0b1220;
+    border:1px solid #475569;
+    border-radius:12px;
+}
+
+.save-title{
+    font-size:12px;
+    font-weight:800;
+    text-align:left;
+    margin-bottom:9px;
 }
 
 .pdf-options{
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:6px;
-    margin-bottom:8px;
+    gap:7px;
+    margin-bottom:9px;
 }
 
-/* EDITOR */
+/*
+IMPORTANT:
+sticky save bar for mobile/browser
+*/
+
+#scan-save-bar{
+    position:fixed;
+
+    left:10px;
+    right:10px;
+
+    bottom:max(10px,env(safe-area-inset-bottom));
+
+    z-index:500;
+
+    max-width:580px;
+    margin:0 auto;
+
+    padding:9px;
+
+    background:rgba(15,23,42,.96);
+    border:1px solid #475569;
+    border-radius:14px;
+
+    box-shadow:
+        0 10px 35px rgba(0,0,0,.55);
+
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+}
+
+.save-bar-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    margin-bottom:7px;
+
+    font-size:11px;
+}
+
+.save-bar-pages{
+    color:#cbd5e1;
+    font-weight:700;
+}
+
+.save-bar-status{
+    color:#a5b4fc;
+    font-weight:800;
+}
+
+.save-bar-btn{
+    width:100%;
+    min-height:50px;
+
+    border:0;
+    border-radius:10px;
+
+    background:#10b981;
+    color:#fff;
+
+    font-size:15px;
+    font-weight:900;
+
+    box-shadow:0 5px 18px rgba(16,185,129,.25);
+}
+
+/* =========================
+EDITOR
+========================= */
 
 #review-workspace{
     position:fixed;
     inset:0;
+
     width:100vw;
-    height:100vh;
+    height:100dvh;
+
     background:#020617;
-    z-index:999;
+
+    z-index:1000;
+
     display:flex;
     flex-direction:column;
-    padding:8px;
+
+    overflow:hidden;
+
+    padding:
+        max(7px,env(safe-area-inset-top))
+        8px
+        max(8px,env(safe-area-inset-bottom));
 }
 
 .review-header{
-    display:flex;
-    justify-content:space-between;
+    width:100%;
+    min-height:42px;
+
+    display:grid;
+    grid-template-columns:70px 1fr 70px;
     align-items:center;
-    height:38px;
+
     flex-shrink:0;
 }
 
 .editor-title{
+    text-align:center;
     font-size:14px;
-    font-weight:bold;
+    font-weight:900;
 }
 
 .cancel-btn{
     border:0;
-    background:none;
+    background:#1e293b;
     color:#f87171;
-    font-weight:bold;
+
+    border-radius:8px;
+    min-height:34px;
+
+    font-size:11px;
+    font-weight:800;
 }
+
+.editor-add{
+    border:0;
+    background:#1e293b;
+    color:#a5b4fc;
+
+    border-radius:8px;
+    min-height:34px;
+
+    font-size:11px;
+    font-weight:800;
+}
+
+/* =========================
+EDITOR AREA
+========================= */
 
 .editor-area{
     position:relative;
+
+    width:100%;
     flex:1;
     min-height:0;
+
     display:flex;
     justify-content:center;
     align-items:center;
+
     overflow:hidden;
-    background:#020617;
-    border-radius:10px;
+
+    background:
+        radial-gradient(
+            circle at center,
+            #172033 0,
+            #020617 72%
+        );
+
+    border-radius:12px;
+
+    touch-action:none;
 }
 
 #editor-canvas{
+    display:block;
+
     max-width:100%;
     max-height:100%;
+
+    width:auto;
+    height:auto;
+
     touch-action:none;
+
+    user-select:none;
+    -webkit-user-select:none;
 }
 
 .editor-message{
     position:absolute;
+
     top:8px;
     left:50%;
+
     transform:translateX(-50%);
-    background:rgba(15,23,42,.9);
+
+    max-width:90%;
+
+    background:rgba(15,23,42,.88);
     color:#cbd5e1;
+
     font-size:10px;
+
     padding:6px 10px;
     border-radius:20px;
+
     pointer-events:none;
+
     white-space:nowrap;
 }
 
-/* MODE */
+/* =========================
+CONTROL SCROLL AREA
+========================= */
+
+.editor-controls{
+    width:100%;
+    flex-shrink:0;
+
+    padding-top:7px;
+
+    background:#020617;
+}
+
+/* =========================
+MODE BAR
+========================= */
 
 .mode-bar{
+    width:100%;
+
     display:grid;
     grid-template-columns:1fr 1fr;
+
     gap:6px;
-    margin:6px 0;
+
+    margin-bottom:6px;
 }
 
 .mode-btn{
-    background:#334155;
-    color:#f8fafc;
-    border:0;
-    padding:9px;
-    border-radius:7px;
+    min-height:42px;
+
+    background:#1e293b;
+    color:#e2e8f0;
+
+    border:1px solid #334155;
+    border-radius:8px;
+
     font-size:11px;
-    font-weight:bold;
+    font-weight:800;
 }
 
 .mode-btn.active{
     background:#4f46e5;
+    border-color:#818cf8;
 }
 
-/* FILTER */
+/* =========================
+FILTER BAR
+========================= */
+
+.filter-scroll{
+    width:100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+
+    scrollbar-width:none;
+
+    margin-bottom:6px;
+}
+
+.filter-scroll::-webkit-scrollbar{
+    display:none;
+}
 
 .filter-bar{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:5px;
+    display:flex;
+    gap:6px;
+
+    width:max-content;
+    min-width:100%;
 }
 
 .filter-btn{
-    border:0;
-    background:#334155;
+    flex:0 0 auto;
+
+    min-width:75px;
+    min-height:40px;
+
+    border:1px solid #334155;
+    background:#1e293b;
     color:#e2e8f0;
-    padding:9px 2px;
-    border-radius:7px;
+
+    padding:8px 10px;
+
+    border-radius:8px;
+
     font-size:10px;
-    font-weight:bold;
+    font-weight:800;
 }
 
 .filter-btn.active{
     background:#4f46e5;
+    border-color:#818cf8;
 }
 
-/* EDITOR BUTTONS */
+/* =========================
+EDITOR BUTTONS
+========================= */
 
 .editor-buttons{
+    width:100%;
+
     display:grid;
-    grid-template-columns:1fr 1fr 1fr;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+
     gap:6px;
-    margin-top:6px;
-    flex-shrink:0;
 }
 
 .editor-buttons button{
-    border:0;
-    border-radius:7px;
-    padding:11px 3px;
-    background:#334155;
-    color:white;
-    font-weight:bold;
-    font-size:11px;
+    min-height:43px;
+
+    border:1px solid #334155;
+    border-radius:8px;
+
+    padding:7px 3px;
+
+    background:#1e293b;
+    color:#fff;
+
+    font-size:10px;
+    font-weight:800;
 }
 
 .editor-buttons .keep{
+    grid-column:1 / -1;
+
     background:#10b981;
+    border-color:#10b981;
+
+    min-height:48px;
+
+    font-size:13px;
 }
 
-@media(max-height:650px){
+/* =========================
+SMALL HEIGHT DEVICES
+========================= */
+
+@media(max-height:700px){
+
+    #review-workspace{
+        padding-top:4px;
+    }
+
+    .review-header{
+        min-height:35px;
+    }
+
+    .editor-area{
+        border-radius:8px;
+    }
+
     .editor-message{
         display:none;
     }
 
-    .filter-btn{
-        padding:6px 2px;
+    .mode-btn,
+    .filter-btn,
+    .editor-buttons button{
+        min-height:36px;
+        padding:5px 3px;
+    }
+
+    .editor-buttons .keep{
+        min-height:40px;
+    }
+}
+
+/* =========================
+DESKTOP
+========================= */
+
+@media(min-width:700px){
+
+    body{
+        padding-left:20px;
+        padding-right:20px;
+    }
+
+    .panel{
+        padding:18px;
+    }
+
+    #review-workspace{
+        padding:12px;
+    }
+
+    .review-header{
+        max-width:1000px;
+        width:100%;
+        margin:auto;
+    }
+
+    .editor-area{
+        max-width:1000px;
+        width:100%;
+        margin:0 auto;
+    }
+
+    .editor-controls{
+        max-width:1000px;
+        width:100%;
+        margin:0 auto;
+    }
+
+}
+
+/* =========================
+VERY SMALL PHONES
+========================= */
+
+@media(max-width:360px){
+
+    body{
+        padding-left:8px;
+        padding-right:8px;
+    }
+
+    .tool-card{
+        font-size:10px;
+    }
+
+    .panel{
+        padding:10px;
     }
 
     .editor-buttons button{
-        padding:8px 2px;
+        font-size:9px;
+    }
+
+    .filter-btn{
+        min-width:68px;
     }
 }
 </style>
@@ -375,17 +804,25 @@ h1{
 <p class="subtitle">HD Document Studio</p>
 
 <div class="tool-grid">
-    <button id="tab-merge" class="tool-card active" onclick="switchTab('merge')">
-        Merge PDF
+
+    <button id="tab-merge"
+            class="tool-card active"
+            onclick="switchTab('merge')">
+        📄 Merge PDF
     </button>
 
-    <button id="tab-resize" class="tool-card" onclick="switchTab('resize')">
-        Image Resizer
+    <button id="tab-resize"
+            class="tool-card"
+            onclick="switchTab('resize')">
+        🖼️ Image Resizer
     </button>
 
-    <button id="tab-scan" class="tool-card" onclick="switchTab('scan')">
-        Smart Scan
+    <button id="tab-scan"
+            class="tool-card"
+            onclick="switchTab('scan')">
+        📸 Smart Scan
     </button>
+
 </div>
 
 
@@ -398,7 +835,7 @@ MERGE PDF
     <div class="drop-zone"
          onclick="document.getElementById('merge-input').click()">
 
-        📂 Tap to select PDF files
+        📂 Tap to Select PDF Files
 
         <input
             id="merge-input"
@@ -435,11 +872,12 @@ IMAGE RESIZER
 
         <label>Target Size</label>
 
-        <div style="display:flex;gap:6px">
+        <div style="display:flex;gap:7px">
 
             <input
                 id="resize-size"
                 type="number"
+                min="1"
                 placeholder="e.g. 150">
 
             <select id="resize-unit">
@@ -452,8 +890,15 @@ IMAGE RESIZER
         <label>Export Format</label>
 
         <select id="resize-format">
-            <option value="image/jpeg">JPG</option>
-            <option value="image/png">PNG</option>
+
+            <option value="image/jpeg">
+                JPG
+            </option>
+
+            <option value="image/png">
+                PNG
+            </option>
+
         </select>
 
     </div>
@@ -461,7 +906,7 @@ IMAGE RESIZER
     <div class="drop-zone"
          onclick="document.getElementById('resize-input').click()">
 
-        🖼️ Tap to select Images
+        🖼️ Tap to Select Images
 
         <input
             id="resize-input"
@@ -497,12 +942,16 @@ SMART SCAN
     <div class="camera-box"
          onclick="document.getElementById('camera-input').click()">
 
+        <div class="camera-icon">
+            📸
+        </div>
+
         <div class="camera-title">
-            📸 Scan Document
+            Scan Document
         </div>
 
         <div class="camera-sub">
-            Open phone camera and capture document in HD
+            Open camera and capture your document in HD
         </div>
 
         <input
@@ -515,10 +964,9 @@ SMART SCAN
 
     </div>
 
-
     <button
-        style="margin-top:8px;width:100%"
         class="primary-btn"
+        style="margin-top:8px"
         onclick="document.getElementById('gallery-input').click()">
 
         🖼️ Select From Gallery
@@ -534,39 +982,70 @@ SMART SCAN
         onchange="handleGallery(this.files)">
 
 
-    <p style="font-size:12px;color:#94a3b8">
-        Scanned Pages
-    </p>
+    <div class="scan-heading">
 
-    <div id="scanned-grid" class="scanned-grid"></div>
+        <div class="scan-heading-title">
+            Scanned Pages
+        </div>
+
+        <div id="page-count"
+             class="page-count">
+            0 Pages
+        </div>
+
+    </div>
+
+    <div id="scanned-grid"
+         class="scanned-grid">
+    </div>
 
 
-    <!-- ALWAYS VISIBLE WHEN PAGE EXISTS -->
+    <!-- Normal save box remains available on page -->
 
-    <div id="save-box" class="save-box hidden">
+    <div id="save-box"
+         class="save-box hidden">
 
-        <div style="font-size:12px;font-weight:bold;margin-bottom:8px">
+        <div class="save-title">
             📄 PDF Settings
         </div>
 
         <div class="pdf-options">
 
             <select id="pdf-size">
-                <option value="original">Original Size</option>
-                <option value="a4">A4</option>
-                <option value="letter">Letter</option>
+
+                <option value="original">
+                    Original Size
+                </option>
+
+                <option value="a4">
+                    A4
+                </option>
+
+                <option value="letter">
+                    Letter
+                </option>
+
             </select>
 
             <select id="pdf-quality">
-                <option value="0.98">Maximum HD</option>
-                <option value="0.92">High Quality</option>
-                <option value="0.82">Balanced</option>
+
+                <option value="0.98">
+                    Maximum HD
+                </option>
+
+                <option value="0.92">
+                    High Quality
+                </option>
+
+                <option value="0.82">
+                    Balanced
+                </option>
+
             </select>
 
         </div>
 
         <button
-            id="save-pdf-btn"
             class="primary-btn success-btn"
             onclick="saveScannedPDF()">
 
@@ -580,22 +1059,63 @@ SMART SCAN
 
 
 <!-- =====================================================
+FIXED MOBILE SAVE BAR
+===================================================== -->
+
+<div id="scan-save-bar"
+     class="hidden">
+
+    <div class="save-bar-top">
+
+        <span id="save-bar-pages"
+              class="save-bar-pages">
+            0 Pages
+        </span>
+
+        <span class="save-bar-status">
+            PDF Ready
+        </span>
+
+    </div>
+
+    <button
+        id="save-pdf-btn"
+        class="save-bar-btn"
+        onclick="saveScannedPDF()">
+
+        💾 SAVE AS PDF
+
+    </button>
+
+</div>
+
+
+<!-- =====================================================
 SMART SCAN EDITOR
 ===================================================== -->
 
-<div id="review-workspace" class="hidden">
+<div id="review-workspace"
+     class="hidden">
 
     <div class="review-header">
-
-        <div class="editor-title">
-            ✨ Smart Scan Editor
-        </div>
 
         <button
             class="cancel-btn"
             onclick="closeEditor()">
 
-            Cancel
+            ✕ Cancel
+
+        </button>
+
+        <div class="editor-title">
+            ✨ Smart Scan
+        </div>
+
+        <button
+            class="editor-add"
+            onclick="keepPage()">
+
+            ✓ Keep
 
         </button>
 
@@ -607,98 +1127,107 @@ SMART SCAN EDITOR
         <canvas id="editor-canvas"></canvas>
 
         <div class="editor-message">
-            Drag the blue corners freely
+            Drag corners or draw a crop area
         </div>
 
     </div>
 
 
-    <!-- CROP MODE -->
+    <div class="editor-controls">
 
-    <div class="mode-bar">
+        <!-- CROP MODE -->
 
-        <button
-            id="perspective-mode"
-            class="mode-btn active"
-            onclick="setCropMode('perspective')">
+        <div class="mode-bar">
 
-            🔷 4-Corner Crop
+            <button
+                id="perspective-mode"
+                class="mode-btn active"
+                onclick="setCropMode('perspective')">
 
-        </button>
+                🔷 4-Corner
 
-        <button
-            id="free-mode"
-            class="mode-btn"
-            onclick="setCropMode('free')">
+            </button>
 
-            ✂️ Free Crop
+            <button
+                id="free-mode"
+                class="mode-btn"
+                onclick="setCropMode('free')">
 
-        </button>
+                ✂️ Free Crop
 
-    </div>
+            </button>
 
-
-    <!-- FILTERS -->
-
-    <div class="filter-bar">
-
-        <button
-            class="filter-btn active"
-            onclick="setFilter('original',this)">
-
-            Original
-
-        </button>
-
-        <button
-            class="filter-btn"
-            onclick="setFilter('auto',this)">
-
-            Auto
-
-        </button>
-
-        <button
-            class="filter-btn"
-            onclick="setFilter('bw',this)">
-
-            B&W
-
-        </button>
-
-        <button
-            class="filter-btn"
-            onclick="setFilter('gray',this)">
-
-            Gray
-
-        </button>
-
-    </div>
+        </div>
 
 
-    <div class="editor-buttons">
+        <!-- FILTERS -->
 
-        <button onclick="rotateImage()">
-            🔄 Rotate
-        </button>
+        <div class="filter-scroll">
 
-        <button onclick="autoDetect()">
-            🤖 Auto Detect
-        </button>
+            <div class="filter-bar">
 
-        <button onclick="resetCrop()">
-            ↩ Reset
-        </button>
+                <button
+                    class="filter-btn active"
+                    onclick="setFilter('original',this)">
 
-        <button
-            class="keep"
-            style="grid-column:span 3"
-            onclick="keepPage()">
+                    Original
 
-            ✅ KEEP PAGE
+                </button>
 
-        </button>
+                <button
+                    class="filter-btn"
+                    onclick="setFilter('auto',this)">
+
+                    ✨ Auto
+
+                </button>
+
+                <button
+                    class="filter-btn"
+                    onclick="setFilter('bw',this)">
+
+                    ⚫ B&W
+
+                </button>
+
+                <button
+                    class="filter-btn"
+                    onclick="setFilter('gray',this)">
+
+                    ◻ Gray
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- EDIT BUTTONS -->
+
+        <div class="editor-buttons">
+
+            <button onclick="rotateImage()">
+                🔄 Rotate
+            </button>
+
+            <button onclick="autoDetect()">
+                🤖 Auto Detect
+            </button>
+
+            <button onclick="resetCrop()">
+                ↩ Reset
+            </button>
+
+            <button
+                class="keep"
+                onclick="keepPage()">
+
+                ✅ KEEP PAGE & SAVE
+
+            </button>
+
+        </div>
 
     </div>
 
@@ -712,6 +1241,7 @@ GLOBAL
 ===================================================== */
 
 let activeTab="merge";
+
 let queue=[];
 
 let scannedPages=[];
@@ -739,10 +1269,17 @@ let freeCrop={
 };
 
 let dragCorner=-1;
+
 let dragFree=false;
+
+let drawingFree=false;
+
 let dragStart=null;
 
-const canvas=document.getElementById("editor-canvas");
+let freeStart=null;
+
+const canvas=
+    document.getElementById("editor-canvas");
 
 
 /* =====================================================
@@ -755,13 +1292,23 @@ function switchTab(tab){
 
     ["merge","resize","scan"].forEach(t=>{
 
-        document.getElementById(`tab-${t}`)
-            .classList.toggle("active",t===tab);
+        document
+            .getElementById(`tab-${t}`)
+            .classList.toggle(
+                "active",
+                t===tab
+            );
 
-        document.getElementById(`panel-${t}`)
-            .classList.toggle("hidden",t!==tab);
+        document
+            .getElementById(`panel-${t}`)
+            .classList.toggle(
+                "hidden",
+                t!==tab
+            );
 
     });
+
+    updateSaveUI();
 
 }
 
@@ -781,24 +1328,36 @@ function handleQueueFiles(files,type){
         html+=`
         <div class="file-item">
             <span>${escapeHTML(file.name)}</span>
-            <span>${(file.size/1024).toFixed(1)} KB</span>
+            <span>${formatBytes(file.size)}</span>
         </div>`;
 
     });
 
     if(type==="pdf"){
 
-        document.getElementById("merge-queue").innerHTML=html;
+        document.getElementById(
+            "merge-queue"
+        ).innerHTML=html;
 
-        document.getElementById("merge-btn")
-            .classList.remove("hidden");
+        document.getElementById(
+            "merge-btn"
+        ).classList.toggle(
+            "hidden",
+            queue.length===0
+        );
 
     }else{
 
-        document.getElementById("resize-queue").innerHTML=html;
+        document.getElementById(
+            "resize-queue"
+        ).innerHTML=html;
 
-        document.getElementById("resize-btn")
-            .classList.remove("hidden");
+        document.getElementById(
+            "resize-btn"
+        ).classList.toggle(
+            "hidden",
+            queue.length===0
+        );
 
     }
 
@@ -811,53 +1370,71 @@ MERGE
 
 async function executeMerge(){
 
-    const btn=document.getElementById("merge-btn");
+    const btn=
+        document.getElementById("merge-btn");
+
+    if(!queue.length)return;
 
     btn.disabled=true;
     btn.innerText="Merging...";
 
     try{
 
-        const pdfDoc=await PDFLib.PDFDocument.create();
+        const pdfDoc=
+            await PDFLib.PDFDocument.create();
 
         for(const file of queue){
 
-            const bytes=await file.arrayBuffer();
+            const bytes=
+                await file.arrayBuffer();
 
-            const src=await PDFLib.PDFDocument.load(bytes);
+            const src=
+                await PDFLib.PDFDocument.load(bytes);
 
-            const pages=await pdfDoc.copyPages(
-                src,
-                src.getPageIndices()
+            const pages=
+                await pdfDoc.copyPages(
+                    src,
+                    src.getPageIndices()
+                );
+
+            pages.forEach(
+                p=>pdfDoc.addPage(p)
             );
-
-            pages.forEach(p=>pdfDoc.addPage(p));
 
         }
 
-        const output=await pdfDoc.save();
+        const output=
+            await pdfDoc.save();
 
         download(
-            new Blob([output],{type:"application/pdf"}),
+            new Blob(
+                [output],
+                {type:"application/pdf"}
+            ),
             "Merged_Document.pdf"
         );
 
         alert("PDF merged successfully!");
 
+        queue=[];
+
+        document.getElementById(
+            "merge-queue"
+        ).innerHTML="";
+
+        btn.classList.add("hidden");
+
     }catch(error){
 
-        alert(error.message);
+        alert(
+            "Merge Error: "+
+            error.message
+        );
 
     }
 
     btn.disabled=false;
     btn.innerText="Merge & Download PDF";
-
-    queue=[];
-
-    document.getElementById("merge-queue").innerHTML="";
-
-    btn.classList.add("hidden");
 
 }
 
@@ -868,84 +1445,137 @@ RESIZER
 
 async function executeResize(){
 
-    const btn=document.getElementById("resize-btn");
+    const btn=
+        document.getElementById("resize-btn");
 
-    btn.disabled=true;
-    btn.innerText="Processing...";
+    const size=
+        parseFloat(
+            document.getElementById(
+                "resize-size"
+            ).value
+        );
 
-    const size=parseFloat(
-        document.getElementById("resize-size").value
-    );
+    if(!size || size<=0){
 
-    const unit=document.getElementById("resize-unit").value;
+        alert("Please enter target size.");
 
-    const format=document.getElementById("resize-format").value;
+        return;
+
+    }
+
+    const unit=
+        document.getElementById(
+            "resize-unit"
+        ).value;
+
+    const format=
+        document.getElementById(
+            "resize-format"
+        ).value;
 
     const targetKB=
         unit==="MB"
         ?size*1024
         :size;
 
-    for(const file of queue){
+    btn.disabled=true;
+    btn.innerText="Processing...";
 
-        const img=await loadImageFromFile(file);
+    try{
 
-        const c=document.createElement("canvas");
+        for(const file of queue){
 
-        c.width=img.naturalWidth;
-        c.height=img.naturalHeight;
+            const img=
+                await loadImageFromFile(file);
 
-        c.getContext("2d").drawImage(img,0,0);
-
-        if(targetKB && format==="image/jpeg"){
-
-            await new Promise(resolve=>{
-
-                compressImage(
-                    c,
-                    targetKB,
-                    file.name,
-                    resolve
+            const c=
+                document.createElement(
+                    "canvas"
                 );
 
-            });
+            c.width=img.naturalWidth;
+            c.height=img.naturalHeight;
 
-        }else{
+            c.getContext("2d")
+                .drawImage(img,0,0);
 
-            const blob=await canvasBlob(
-                c,
-                format,
-                .9
-            );
+            if(
+                targetKB &&
+                format==="image/jpeg"
+            ){
 
-            download(
-                blob,
-                file.name.replace(/\.[^/.]+/,"")+
-                (format==="image/png"?".png":".jpg")
-            );
+                await new Promise(resolve=>{
+
+                    compressImage(
+                        c,
+                        targetKB,
+                        file.name,
+                        resolve
+                    );
+
+                });
+
+            }else{
+
+                const blob=
+                    await canvasBlob(
+                        c,
+                        format,
+                        .9
+                    );
+
+                download(
+                    blob,
+                    file.name.replace(
+                        /\.[^/.]+$/,
+                        ""
+                    )+
+                    (
+                        format==="image/png"
+                        ?".png"
+                        :".jpg"
+                    )
+                );
+
+            }
 
         }
 
+        alert("Images processed successfully!");
+
+        queue=[];
+
+        document.getElementById(
+            "resize-queue"
+        ).innerHTML="";
+
+        btn.classList.add("hidden");
+
+    }catch(error){
+
+        alert(
+            "Resize Error: "+
+            error.message
+        );
+
     }
 
-    alert("Images processed!");
-
-    queue=[];
-
-    document.getElementById("resize-queue").innerHTML="";
-
-    btn.classList.add("hidden");
-
     btn.disabled=false;
-
-    btn.innerText="Compress & Download Images";
+    btn.innerText=
+        "Compress & Download Images";
 
 }
 
 
-function compressImage(canvas,targetKB,name,done){
+function compressImage(
+    canvas,
+    targetKB,
+    name,
+    done
+){
 
-    const target=targetKB*1024;
+    const target=
+        targetKB*1024;
 
     let low=.05;
     let high=1;
@@ -957,48 +1587,67 @@ function compressImage(canvas,targetKB,name,done){
 
     function test(){
 
-        canvas.toBlob(blob=>{
+        canvas.toBlob(
+            blob=>{
 
-            count++;
+                count++;
 
-            if(!blob){
+                if(!blob){
 
-                done();
-                return;
+                    done();
+                    return;
 
-            }
+                }
 
-            const diff=Math.abs(blob.size-target);
+                const diff=
+                    Math.abs(
+                        blob.size-target
+                    );
 
-            if(diff<bestDiff){
+                if(diff<bestDiff){
 
-                bestDiff=diff;
-                best=blob;
+                    bestDiff=diff;
+                    best=blob;
 
-            }
+                }
 
-            if(count>=12 || diff<2048){
+                if(
+                    count>=12 ||
+                    diff<2048
+                ){
 
-                download(
-                    best,
-                    name.replace(/\.[^/.]+/,"")+".jpg"
-                );
+                    download(
+                        best,
+                        name.replace(
+                            /\.[^/.]+$/,
+                            ""
+                        )+".jpg"
+                    );
 
-                done();
-                return;
+                    done();
 
-            }
+                    return;
 
-            if(blob.size>target)
-                high=q;
-            else
-                low=q;
+                }
 
-            q=(low+high)/2;
+                if(blob.size>target){
 
-            test();
+                    high=q;
 
-        },"image/jpeg",q);
+                }else{
+
+                    low=q;
+
+                }
+
+                q=(low+high)/2;
+
+                test();
+
+            },
+            "image/jpeg",
+            q
+        );
 
     }
 
@@ -1008,7 +1657,7 @@ function compressImage(canvas,targetKB,name,done){
 
 
 /* =====================================================
-OPEN SCAN
+SCAN INPUT
 ===================================================== */
 
 function handleScanFile(file){
@@ -1022,37 +1671,65 @@ function handleScanFile(file){
 
 function handleGallery(files){
 
-    if(!files.length)return;
+    if(!files || !files.length)return;
+
+    /*
+    Current page opens first image.
+    */
 
     openScanner(files[0]);
 
 }
 
 
+/* =====================================================
+OPEN SCANNER
+===================================================== */
+
 function openScanner(file){
 
-    const reader=new FileReader();
+    const reader=
+        new FileReader();
 
     reader.onload=e=>{
 
-        const img=new Image();
+        const img=
+            new Image();
 
         img.onload=()=>{
 
-            const max=3000;
+            /*
+            Keep working canvas reasonably HD
+            while avoiding mobile memory crash.
+            */
+
+            const MAX=3000;
 
             let w=img.naturalWidth;
             let h=img.naturalHeight;
 
-            const scale=Math.min(
-                1,
-                max/Math.max(w,h)
-            );
+            const scale=
+                Math.min(
+                    1,
+                    MAX/Math.max(w,h)
+                );
 
-            sourceCanvas=document.createElement("canvas");
+            sourceCanvas=
+                document.createElement(
+                    "canvas"
+                );
 
-            sourceCanvas.width=Math.round(w*scale);
-            sourceCanvas.height=Math.round(h*scale);
+            sourceCanvas.width=
+                Math.max(
+                    1,
+                    Math.round(w*scale)
+                );
+
+            sourceCanvas.height=
+                Math.max(
+                    1,
+                    Math.round(h*scale)
+                );
 
             sourceCanvas
                 .getContext("2d")
@@ -1068,18 +1745,49 @@ function openScanner(file){
 
             filterMode="original";
 
+            updateFilterButtons();
+
             resetCrop();
 
-            document.getElementById("review-workspace")
-                .classList.remove("hidden");
+            document
+                .getElementById(
+                    "review-workspace"
+                )
+                .classList.remove(
+                    "hidden"
+                );
 
-            autoDetect();
+            /*
+            Draw first.
+            Auto detection then runs.
+            */
 
             drawEditor();
+
+            setTimeout(
+                ()=>autoDetect(),
+                100
+            );
+
+        };
+
+        img.onerror=()=>{
+
+            alert(
+                "Could not open this image."
+            );
 
         };
 
         img.src=e.target.result;
+
+    };
+
+    reader.onerror=()=>{
+
+        alert(
+            "Could not read image."
+        );
 
     };
 
@@ -1089,7 +1797,7 @@ function openScanner(file){
 
 
 /* =====================================================
-RESET
+RESET CROP
 ===================================================== */
 
 function resetCrop(){
@@ -1108,6 +1816,10 @@ function resetCrop(){
         bottom:.97
     };
 
+    dragCorner=-1;
+    dragFree=false;
+    drawingFree=false;
+
     drawEditor();
 
 }
@@ -1121,19 +1833,106 @@ function setCropMode(mode){
 
     cropMode=mode;
 
-    document.getElementById("perspective-mode")
+    document
+        .getElementById(
+            "perspective-mode"
+        )
         .classList.toggle(
             "active",
             mode==="perspective"
         );
 
-    document.getElementById("free-mode")
+    document
+        .getElementById(
+            "free-mode"
+        )
         .classList.toggle(
             "active",
             mode==="free"
         );
 
     drawEditor();
+
+}
+
+
+/* =====================================================
+EDITOR SIZE
+===================================================== */
+
+function getEditorSize(){
+
+    const area=
+        document.querySelector(
+            ".editor-area"
+        );
+
+    const rect=
+        area.getBoundingClientRect();
+
+    const maxW=
+        Math.max(
+            100,
+            rect.width-10
+        );
+
+    const maxH=
+        Math.max(
+            100,
+            rect.height-10
+        );
+
+    const scale=
+        Math.min(
+            maxW/sourceCanvas.width,
+            maxH/sourceCanvas.height,
+            1
+        );
+
+    return{
+        width:Math.max(
+            1,
+            Math.round(
+                sourceCanvas.width*scale
+            )
+        ),
+
+        height:Math.max(
+            1,
+            Math.round(
+                sourceCanvas.height*scale
+            )
+        )
+    };
+
+}
+
+
+/* =====================================================
+FILTER PREVIEW
+===================================================== */
+
+function createFilteredCanvas(){
+
+    const c=
+        document.createElement(
+            "canvas"
+        );
+
+    c.width=sourceCanvas.width;
+    c.height=sourceCanvas.height;
+
+    const ctx=c.getContext("2d");
+
+    ctx.drawImage(
+        sourceCanvas,
+        0,
+        0
+    );
+
+    applyFilter(c);
+
+    return c;
 
 }
 
@@ -1146,25 +1945,14 @@ function drawEditor(){
 
     if(!sourceCanvas)return;
 
-    const maxW=window.innerWidth-16;
-    const maxH=window.innerHeight*.58;
+    const size=
+        getEditorSize();
 
-    const scale=Math.min(
-        maxW/sourceCanvas.width,
-        maxH/sourceCanvas.height
-    );
+    canvas.width=size.width;
+    canvas.height=size.height;
 
-    canvas.width=Math.max(
-        1,
-        Math.round(sourceCanvas.width*scale)
-    );
-
-    canvas.height=Math.max(
-        1,
-        Math.round(sourceCanvas.height*scale)
-    );
-
-    const ctx=canvas.getContext("2d");
+    const ctx=
+        canvas.getContext("2d");
 
     ctx.clearRect(
         0,
@@ -1173,8 +1961,15 @@ function drawEditor(){
         canvas.height
     );
 
+    /*
+    THIS FIXES THE FILTER PREVIEW ISSUE.
+    */
+
+    const preview=
+        createFilteredCanvas();
+
     ctx.drawImage(
-        sourceCanvas,
+        preview,
         0,
         0,
         canvas.width,
@@ -1200,12 +1995,22 @@ PERSPECTIVE OVERLAY
 
 function drawPerspectiveOverlay(ctx){
 
-    const p=corners.map(c=>({
-        x:c.x*canvas.width,
-        y:c.y*canvas.height
-    }));
+    const p=
+        corners.map(c=>({
 
-    ctx.fillStyle="rgba(0,0,0,.52)";
+            x:c.x*canvas.width,
+            y:c.y*canvas.height
+
+        }));
+
+    /*
+    Dark outside area.
+    */
+
+    ctx.save();
+
+    ctx.fillStyle=
+        "rgba(0,0,0,.55)";
 
     ctx.fillRect(
         0,
@@ -1214,14 +2019,24 @@ function drawPerspectiveOverlay(ctx){
         canvas.height
     );
 
-    ctx.save();
+    /*
+    Restore selected area
+    */
 
     ctx.beginPath();
 
-    ctx.moveTo(p[0].x,p[0].y);
+    ctx.moveTo(
+        p[0].x,
+        p[0].y
+    );
 
     p.slice(1).forEach(point=>{
-        ctx.lineTo(point.x,point.y);
+
+        ctx.lineTo(
+            point.x,
+            point.y
+        );
+
     });
 
     ctx.closePath();
@@ -1229,7 +2044,7 @@ function drawPerspectiveOverlay(ctx){
     ctx.clip();
 
     ctx.drawImage(
-        sourceCanvas,
+        createFilteredCanvas(),
         0,
         0,
         canvas.width,
@@ -1238,39 +2053,44 @@ function drawPerspectiveOverlay(ctx){
 
     ctx.restore();
 
-    ctx.strokeStyle="#6366f1";
+    /*
+    Border
+    */
+
+    ctx.strokeStyle="#818cf8";
     ctx.lineWidth=3;
 
     ctx.beginPath();
 
-    ctx.moveTo(p[0].x,p[0].y);
+    ctx.moveTo(
+        p[0].x,
+        p[0].y
+    );
 
     p.slice(1).forEach(point=>{
-        ctx.lineTo(point.x,point.y);
+
+        ctx.lineTo(
+            point.x,
+            point.y
+        );
+
     });
 
     ctx.closePath();
 
     ctx.stroke();
 
+    /*
+    Corner handles
+    */
+
     p.forEach(point=>{
 
-        ctx.beginPath();
-
-        ctx.arc(
+        drawHandle(
+            ctx,
             point.x,
-            point.y,
-            12,
-            0,
-            Math.PI*2
+            point.y
         );
-
-        ctx.fillStyle="#6366f1";
-        ctx.fill();
-
-        ctx.strokeStyle="#fff";
-        ctx.lineWidth=2;
-        ctx.stroke();
 
     });
 
@@ -1278,23 +2098,39 @@ function drawPerspectiveOverlay(ctx){
 
 
 /* =====================================================
-FREE CROP
+FREE CROP OVERLAY
 ===================================================== */
 
 function drawFreeOverlay(ctx){
 
-    const x=freeCrop.left*canvas.width;
-    const y=freeCrop.top*canvas.height;
+    const x=
+        freeCrop.left*
+        canvas.width;
+
+    const y=
+        freeCrop.top*
+        canvas.height;
 
     const w=
-        (freeCrop.right-freeCrop.left)*
+        (
+            freeCrop.right-
+            freeCrop.left
+        )*
         canvas.width;
 
     const h=
-        (freeCrop.bottom-freeCrop.top)*
+        (
+            freeCrop.bottom-
+            freeCrop.top
+        )*
         canvas.height;
 
-    ctx.fillStyle="rgba(0,0,0,.52)";
+    /*
+    Dark entire canvas.
+    */
+
+    ctx.fillStyle=
+        "rgba(0,0,0,.55)";
 
     ctx.fillRect(
         0,
@@ -1303,300 +2139,623 @@ function drawFreeOverlay(ctx){
         canvas.height
     );
 
-    ctx.clearRect(
+    /*
+    Show selected image area again.
+    */
+
+    ctx.save();
+
+    ctx.beginPath();
+
+    ctx.rect(
         x,
         y,
         w,
         h
     );
+
+    ctx.clip();
 
     ctx.drawImage(
-        sourceCanvas,
-        x,
-        y,
-        w,
-        h,
+        createFilteredCanvas(),
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    ctx.restore();
+
+    /*
+    Crop border
+    */
+
+    ctx.strokeStyle="#818cf8";
+    ctx.lineWidth=3;
+
+    ctx.strokeRect(
         x,
         y,
         w,
         h
     );
 
-    ctx.strokeStyle="#6366f1";
-    ctx.lineWidth=3;
+    /*
+    Rule of thirds
+    */
 
-    ctx.strokeRect(x,y,w,h);
+    ctx.strokeStyle=
+        "rgba(255,255,255,.35)";
 
-    [
-        [x,y],
-        [x+w,y],
-        [x+w,y+h],
-        [x,y+h]
-    ].forEach(p=>{
+    ctx.lineWidth=1;
+
+    for(let i=1;i<3;i++){
+
+        const xx=
+            x+(w*i/3);
+
+        const yy=
+            y+(h*i/3);
 
         ctx.beginPath();
 
-        ctx.arc(
-            p[0],
-            p[1],
-            12,
-            0,
-            Math.PI*2
+        ctx.moveTo(
+            xx,
+            y
         );
 
-        ctx.fillStyle="#6366f1";
-        ctx.fill();
+        ctx.lineTo(
+            xx,
+            y+h
+        );
 
-        ctx.strokeStyle="white";
         ctx.stroke();
 
-    });
+        ctx.beginPath();
+
+        ctx.moveTo(
+            x,
+            yy
+        );
+
+        ctx.lineTo(
+            x+w,
+            yy
+        );
+
+        ctx.stroke();
+
+    }
+
+    /*
+    Handles
+    */
+
+    drawHandle(
+        ctx,
+        x,
+        y
+    );
+
+    drawHandle(
+        ctx,
+        x+w,
+        y
+    );
+
+    drawHandle(
+        ctx,
+        x+w,
+        y+h
+    );
+
+    drawHandle(
+        ctx,
+        x,
+        y+h
+    );
 
 }
 
 
 /* =====================================================
-POINTER
+HANDLE
+===================================================== */
+
+function drawHandle(ctx,x,y){
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x,
+        y,
+        11,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fillStyle="#6366f1";
+    ctx.fill();
+
+    ctx.strokeStyle="#fff";
+    ctx.lineWidth=2;
+    ctx.stroke();
+
+}
+
+
+/* =====================================================
+POINTER POSITION
 ===================================================== */
 
 function pointer(e){
 
-    const r=canvas.getBoundingClientRect();
+    const r=
+        canvas.getBoundingClientRect();
 
-    return {
-        x:Math.max(
+    return{
+
+        x:clamp(
+            (e.clientX-r.left)/r.width,
             0,
-            Math.min(
-                1,
-                (e.clientX-r.left)/r.width
-            )
+            1
         ),
 
-        y:Math.max(
+        y:clamp(
+            (e.clientY-r.top)/r.height,
             0,
-            Math.min(
-                1,
-                (e.clientY-r.top)/r.height
-            )
+            1
         )
+
     };
 
 }
 
 
-canvas.addEventListener("pointerdown",e=>{
+/* =====================================================
+DISTANCE
+===================================================== */
 
-    const p=pointer(e);
+function distance(a,b){
 
-    if(cropMode==="perspective"){
+    return Math.hypot(
+        a.x-b.x,
+        a.y-b.y
+    );
 
-        let nearest=-1;
-        let distance=.07;
+}
 
-        corners.forEach((c,i)=>{
 
-            const d=Math.hypot(
-                c.x-p.x,
-                c.y-p.y
+/* =====================================================
+FREE CROP HANDLE
+===================================================== */
+
+function getFreeCorner(p){
+
+    const handles=[
+        {
+            index:0,
+            x:freeCrop.left,
+            y:freeCrop.top
+        },
+
+        {
+            index:1,
+            x:freeCrop.right,
+            y:freeCrop.top
+        },
+
+        {
+            index:2,
+            x:freeCrop.right,
+            y:freeCrop.bottom
+        },
+
+        {
+            index:3,
+            x:freeCrop.left,
+            y:freeCrop.bottom
+        }
+    ];
+
+    let found=-1;
+    let best=.06;
+
+    handles.forEach(h=>{
+
+        const d=
+            Math.hypot(
+                h.x-p.x,
+                h.y-p.y
             );
 
-            if(d<distance){
+        if(d<best){
 
-                nearest=i;
-                distance=d;
-
-            }
-
-        });
-
-        dragCorner=nearest;
-
-    }else{
-
-        const left=freeCrop.left;
-        const right=freeCrop.right;
-        const top=freeCrop.top;
-        const bottom=freeCrop.bottom;
-
-        const nearLeft=Math.abs(p.x-left)<.07;
-        const nearRight=Math.abs(p.x-right)<.07;
-        const nearTop=Math.abs(p.y-top)<.07;
-        const nearBottom=Math.abs(p.y-bottom)<.07;
-
-        if(nearLeft && nearTop)
-            dragCorner=0;
-
-        else if(nearRight && nearTop)
-            dragCorner=1;
-
-        else if(nearRight && nearBottom)
-            dragCorner=2;
-
-        else if(nearLeft && nearBottom)
-            dragCorner=3;
-
-        else if(
-            p.x>left &&
-            p.x<right &&
-            p.y>top &&
-            p.y<bottom
-        ){
-
-            dragFree=true;
-
-            dragStart={
-                x:p.x,
-                y:p.y,
-                left,
-                right,
-                top,
-                bottom
-            };
+            best=d;
+            found=h.index;
 
         }
 
+    });
+
+    return found;
+
+}
+
+
+/* =====================================================
+POINTER DOWN
+===================================================== */
+
+canvas.addEventListener(
+    "pointerdown",
+    e=>{
+
+        e.preventDefault();
+
+        const p=
+            pointer(e);
+
+        if(cropMode==="perspective"){
+
+            let nearest=-1;
+            let best=.07;
+
+            corners.forEach(
+                (c,i)=>{
+
+                    const d=
+                        distance(c,p);
+
+                    if(d<best){
+
+                        best=d;
+                        nearest=i;
+
+                    }
+
+                }
+            );
+
+            dragCorner=nearest;
+
+        }else{
+
+            /*
+            First check corner.
+            */
+
+            const corner=
+                getFreeCorner(p);
+
+            if(corner>=0){
+
+                dragCorner=corner;
+
+            }else{
+
+                /*
+                If inside current crop,
+                move entire crop.
+                */
+
+                const inside=
+                    p.x>freeCrop.left &&
+                    p.x<freeCrop.right &&
+                    p.y>freeCrop.top &&
+                    p.y<freeCrop.bottom;
+
+                if(inside){
+
+                    dragFree=true;
+
+                    dragStart={
+                        x:p.x,
+                        y:p.y,
+                        left:freeCrop.left,
+                        right:freeCrop.right,
+                        top:freeCrop.top,
+                        bottom:freeCrop.bottom
+                    };
+
+                }else{
+
+                    /*
+                    IMPORTANT:
+                    Touch/click anywhere outside
+                    starts a brand new free crop.
+                    */
+
+                    drawingFree=true;
+
+                    freeStart={
+                        x:p.x,
+                        y:p.y
+                    };
+
+                    freeCrop={
+                        left:p.x,
+                        top:p.y,
+                        right:p.x,
+                        bottom:p.y
+                    };
+
+                }
+
+            }
+
+        }
+
+        try{
+            canvas.setPointerCapture(
+                e.pointerId
+            );
+        }catch{}
+
+        drawEditor();
+
     }
-
-    canvas.setPointerCapture(e.pointerId);
-
-});
+);
 
 
-canvas.addEventListener("pointermove",e=>{
+/* =====================================================
+POINTER MOVE
+===================================================== */
 
-    const p=pointer(e);
+canvas.addEventListener(
+    "pointermove",
+    e=>{
 
-    if(cropMode==="perspective"){
+        e.preventDefault();
 
-        if(dragCorner<0)return;
+        const p=
+            pointer(e);
 
-        corners[dragCorner].x=p.x;
-        corners[dragCorner].y=p.y;
+        if(cropMode==="perspective"){
 
-    }else{
+            if(dragCorner<0)return;
+
+            corners[dragCorner].x=p.x;
+            corners[dragCorner].y=p.y;
+
+            drawEditor();
+
+            return;
+
+        }
+
+
+        /* =========================
+        FREE CROP RESIZE
+        ========================= */
 
         if(dragCorner>=0){
 
             if(dragCorner===0){
 
-                freeCrop.left=Math.min(
-                    p.x,
-                    freeCrop.right-.02
-                );
+                freeCrop.left=
+                    Math.min(
+                        p.x,
+                        freeCrop.right-.02
+                    );
 
-                freeCrop.top=Math.min(
-                    p.y,
-                    freeCrop.bottom-.02
-                );
+                freeCrop.top=
+                    Math.min(
+                        p.y,
+                        freeCrop.bottom-.02
+                    );
 
             }
 
             if(dragCorner===1){
 
-                freeCrop.right=Math.max(
-                    p.x,
-                    freeCrop.left+.02
-                );
+                freeCrop.right=
+                    Math.max(
+                        p.x,
+                        freeCrop.left+.02
+                    );
 
-                freeCrop.top=Math.min(
-                    p.y,
-                    freeCrop.bottom-.02
-                );
+                freeCrop.top=
+                    Math.min(
+                        p.y,
+                        freeCrop.bottom-.02
+                    );
 
             }
 
             if(dragCorner===2){
 
-                freeCrop.right=Math.max(
-                    p.x,
-                    freeCrop.left+.02
-                );
+                freeCrop.right=
+                    Math.max(
+                        p.x,
+                        freeCrop.left+.02
+                    );
 
-                freeCrop.bottom=Math.max(
-                    p.y,
-                    freeCrop.top+.02
-                );
+                freeCrop.bottom=
+                    Math.max(
+                        p.y,
+                        freeCrop.top+.02
+                    );
 
             }
 
             if(dragCorner===3){
 
-                freeCrop.left=Math.min(
-                    p.x,
-                    freeCrop.right-.02
-                );
+                freeCrop.left=
+                    Math.min(
+                        p.x,
+                        freeCrop.right-.02
+                    );
 
-                freeCrop.bottom=Math.max(
-                    p.y,
-                    freeCrop.top+.02
-                );
+                freeCrop.bottom=
+                    Math.max(
+                        p.y,
+                        freeCrop.top+.02
+                    );
 
             }
 
+            drawEditor();
+
+            return;
+
         }
+
+
+        /* =========================
+        MOVE FREE CROP
+        ========================= */
 
         if(dragFree && dragStart){
 
-            const dx=p.x-dragStart.x;
-            const dy=p.y-dragStart.y;
+            const dx=
+                p.x-dragStart.x;
 
-            let width=
-                dragStart.right-dragStart.left;
+            const dy=
+                p.y-dragStart.y;
 
-            let height=
-                dragStart.bottom-dragStart.top;
+            const width=
+                dragStart.right-
+                dragStart.left;
 
-            let left=dragStart.left+dx;
-            let top=dragStart.top+dy;
+            const height=
+                dragStart.bottom-
+                dragStart.top;
 
-            left=Math.max(
+            let left=
+                dragStart.left+dx;
+
+            let top=
+                dragStart.top+dy;
+
+            left=clamp(
+                left,
                 0,
-                Math.min(1-width,left)
+                1-width
             );
 
-            top=Math.max(
+            top=clamp(
+                top,
                 0,
-                Math.min(1-height,top)
+                1-height
             );
 
             freeCrop.left=left;
-            freeCrop.right=left+width;
+            freeCrop.right=
+                left+width;
 
             freeCrop.top=top;
-            freeCrop.bottom=top+height;
+            freeCrop.bottom=
+                top+height;
+
+            drawEditor();
+
+            return;
+
+        }
+
+
+        /* =========================
+        DRAW NEW FREE CROP
+        ========================= */
+
+        if(drawingFree && freeStart){
+
+            freeCrop.left=
+                Math.min(
+                    freeStart.x,
+                    p.x
+                );
+
+            freeCrop.right=
+                Math.max(
+                    freeStart.x,
+                    p.x
+                );
+
+            freeCrop.top=
+                Math.min(
+                    freeStart.y,
+                    p.y
+                );
+
+            freeCrop.bottom=
+                Math.max(
+                    freeStart.y,
+                    p.y
+                );
+
+            drawEditor();
 
         }
 
     }
-
-    drawEditor();
-
-});
+);
 
 
-canvas.addEventListener("pointerup",e=>{
+/* =====================================================
+POINTER UP
+===================================================== */
 
-    dragCorner=-1;
-    dragFree=false;
-    dragStart=null;
+canvas.addEventListener(
+    "pointerup",
+    e=>{
 
-    try{
-        canvas.releasePointerCapture(e.pointerId);
-    }catch{}
+        dragCorner=-1;
+        dragFree=false;
+        drawingFree=false;
 
-});
+        dragStart=null;
+        freeStart=null;
+
+        try{
+
+            canvas.releasePointerCapture(
+                e.pointerId
+            );
+
+        }catch{}
+
+        drawEditor();
+
+    }
+);
+
+canvas.addEventListener(
+    "pointercancel",
+    e=>{
+
+        dragCorner=-1;
+        dragFree=false;
+        drawingFree=false;
+
+        dragStart=null;
+        freeStart=null;
+
+    }
+);
 
 
 /* =====================================================
 FILTER
 ===================================================== */
 
-function setFilter(mode,button){
+function setFilter(
+    mode,
+    button
+){
 
     filterMode=mode;
 
-    document.querySelectorAll(".filter-btn")
-        .forEach(b=>b.classList.remove("active"));
+    document
+        .querySelectorAll(
+            ".filter-btn"
+        )
+        .forEach(
+            b=>b.classList.remove(
+                "active"
+            )
+        );
 
     button.classList.add("active");
 
@@ -1606,34 +2765,79 @@ function setFilter(mode,button){
 
 
 /* =====================================================
-FILTER PROCESSING
+FILTER BUTTON RESET
+===================================================== */
+
+function updateFilterButtons(){
+
+    const buttons=
+        document.querySelectorAll(
+            ".filter-btn"
+        );
+
+    buttons.forEach(b=>{
+        b.classList.remove("active");
+    });
+
+    const map={
+        original:0,
+        auto:1,
+        bw:2,
+        gray:3
+    };
+
+    if(buttons[map[filterMode]]){
+
+        buttons[
+            map[filterMode]
+        ].classList.add("active");
+
+    }
+
+}
+
+
+/* =====================================================
+FILTER PROCESS
 ===================================================== */
 
 function applyFilter(c){
 
-    if(filterMode==="original")return;
+    if(filterMode==="original")
+        return;
 
-    const ctx=c.getContext("2d");
+    const ctx=
+        c.getContext("2d");
 
-    const data=ctx.getImageData(
-        0,
-        0,
-        c.width,
-        c.height
-    );
+    const image=
+        ctx.getImageData(
+            0,
+            0,
+            c.width,
+            c.height
+        );
 
-    const d=data.data;
+    const d=image.data;
 
-    for(let i=0;i<d.length;i+=4){
+    for(
+        let i=0;
+        i<d.length;
+        i+=4
+    ){
 
-        const r=d[i];
-        const g=d[i+1];
-        const b=d[i+2];
+        let r=d[i];
+        let g=d[i+1];
+        let b=d[i+2];
 
-        let gray=
+        const gray=
             .299*r+
             .587*g+
             .114*b;
+
+
+        /* =================
+        GRAY
+        ================= */
 
         if(filterMode==="gray"){
 
@@ -1643,16 +2847,22 @@ function applyFilter(c){
 
         }
 
-        if(filterMode==="bw"){
+
+        /* =================
+        B&W
+        ================= */
+
+        else if(filterMode==="bw"){
 
             /*
-            Adaptive-ish document threshold
+            Higher contrast document
+            threshold.
             */
 
-            let value=
+            const value=
                 gray>155
                 ?255
-                :Math.max(0,gray*.35);
+                :0;
 
             d[i]=value;
             d[i+1]=value;
@@ -1660,19 +2870,29 @@ function applyFilter(c){
 
         }
 
-        if(filterMode==="auto"){
+
+        /* =================
+        AUTO
+        ================= */
+
+        else if(filterMode==="auto"){
 
             /*
-            Contrast + brightness
+            Contrast enhancement
+            + slight brightness.
             */
 
             let value=
-                (gray-128)*1.35+128;
+                (gray-128)*1.35+
+                128+
+                5;
 
-            value=Math.max(
-                0,
-                Math.min(255,value)
-            );
+            value=
+                clamp(
+                    value,
+                    0,
+                    255
+                );
 
             d[i]=value;
             d[i+1]=value;
@@ -1682,7 +2902,11 @@ function applyFilter(c){
 
     }
 
-    ctx.putImageData(data,0,0);
+    ctx.putImageData(
+        image,
+        0,
+        0
+    );
 
 }
 
@@ -1693,44 +2917,71 @@ FINAL CROP
 
 function createFinalCrop(){
 
-    const src=sourceCanvas;
+    const src=
+        sourceCanvas;
+
+    /*
+    FREE CROP
+    */
 
     if(cropMode==="free"){
 
-        const x=Math.round(
-            freeCrop.left*src.width
-        );
+        const x=
+            Math.round(
+                freeCrop.left*
+                src.width
+            );
 
-        const y=Math.round(
-            freeCrop.top*src.height
-        );
+        const y=
+            Math.round(
+                freeCrop.top*
+                src.height
+            );
 
-        const w=Math.round(
-            (freeCrop.right-freeCrop.left)*
-            src.width
-        );
+        const w=
+            Math.max(
+                1,
+                Math.round(
+                    (
+                        freeCrop.right-
+                        freeCrop.left
+                    )*
+                    src.width
+                )
+            );
 
-        const h=Math.round(
-            (freeCrop.bottom-freeCrop.top)*
-            src.height
-        );
+        const h=
+            Math.max(
+                1,
+                Math.round(
+                    (
+                        freeCrop.bottom-
+                        freeCrop.top
+                    )*
+                    src.height
+                )
+            );
 
-        const out=document.createElement("canvas");
+        const out=
+            document.createElement(
+                "canvas"
+            );
 
-        out.width=Math.max(1,w);
-        out.height=Math.max(1,h);
+        out.width=w;
+        out.height=h;
 
-        out.getContext("2d").drawImage(
-            src,
-            x,
-            y,
-            w,
-            h,
-            0,
-            0,
-            w,
-            h
-        );
+        out.getContext("2d")
+            .drawImage(
+                src,
+                x,
+                y,
+                w,
+                h,
+                0,
+                0,
+                w,
+                h
+            );
 
         applyFilter(out);
 
@@ -1739,12 +2990,17 @@ function createFinalCrop(){
     }
 
 
-    /* 4 CORNER */
+    /*
+    4 CORNER PERSPECTIVE
+    */
 
-    const p=corners.map(c=>({
-        x:c.x*src.width,
-        y:c.y*src.height
-    }));
+    const p=
+        corners.map(c=>({
+
+            x:c.x*src.width,
+            y:c.y*src.height
+
+        }));
 
     const tl=p[0];
     const tr=p[1];
@@ -1752,55 +3008,82 @@ function createFinalCrop(){
     const bl=p[3];
 
     const width=Math.max(
-        Math.hypot(tr.x-tl.x,tr.y-tl.y),
-        Math.hypot(br.x-bl.x,br.y-bl.y)
+        Math.hypot(
+            tr.x-tl.x,
+            tr.y-tl.y
+        ),
+        Math.hypot(
+            br.x-bl.x,
+            br.y-bl.y
+        )
     );
 
     const height=Math.max(
-        Math.hypot(bl.x-tl.x,bl.y-tl.y),
-        Math.hypot(br.x-tr.x,br.y-tr.y)
+        Math.hypot(
+            bl.x-tl.x,
+            bl.y-tl.y
+        ),
+        Math.hypot(
+            br.x-tr.x,
+            br.y-tr.y
+        )
     );
 
-    const outW=Math.round(width);
-    const outH=Math.round(height);
+    const outW=
+        Math.max(
+            1,
+            Math.round(width)
+        );
+
+    const outH=
+        Math.max(
+            1,
+            Math.round(height)
+        );
 
 
-    /* OpenCV perspective */
+    /*
+    OpenCV perspective correction
+    */
 
     if(
-        typeof cv!=="undefined" &&
+        window.cv &&
         cv.Mat
     ){
 
         try{
 
-            const srcMat=cv.imread(src);
+            const srcMat=
+                cv.imread(src);
 
-            const dstMat=new cv.Mat();
+            const dstMat=
+                new cv.Mat();
 
-            const srcPts=cv.matFromArray(
-                4,
-                1,
-                cv.CV_32FC2,
-                [
-                    tl.x,tl.y,
-                    tr.x,tr.y,
-                    br.x,br.y,
-                    bl.x,bl.y
-                ]
-            );
+            const srcPts=
+                cv.matFromArray(
+                    4,
+                    1,
+                    cv.CV_32FC2,
+                    [
+                        tl.x,tl.y,
+                        tr.x,tr.y,
+                        br.x,br.y,
+                        bl.x,bl.y
+                    ]
+                );
 
-            const dstPts=cv.matFromArray(
-                4,
-                1,
-                cv.CV_32FC2,
-                [
-                    0,0,
-                    outW,0,
-                    outW,outH,
-                    0,outH
-                ]
-            );
+            const dstPts=
+                cv.matFromArray(
+                    4,
+                    1,
+                    cv.CV_32FC2,
+                    [
+                        0,0,
+                        outW,0,
+                        outW,outH,
+                        0,outH
+                    ]
+                );
 
             const matrix=
                 cv.getPerspectiveTransform(
@@ -1812,18 +3095,27 @@ function createFinalCrop(){
                 srcMat,
                 dstMat,
                 matrix,
-                new cv.Size(outW,outH),
+                new cv.Size(
+                    outW,
+                    outH
+                ),
                 cv.INTER_LINEAR,
                 cv.BORDER_REPLICATE,
                 new cv.Scalar()
             );
 
-            const out=document.createElement("canvas");
+            const out=
+                document.createElement(
+                    "canvas"
+                );
 
             out.width=outW;
             out.height=outH;
 
-            cv.imshow(out,dstMat);
+            cv.imshow(
+                out,
+                dstMat
+            );
 
             applyFilter(out);
 
@@ -1837,31 +3129,70 @@ function createFinalCrop(){
 
         }catch(error){
 
-            console.log(error);
+            console.log(
+                "Perspective correction:",
+                error
+            );
 
         }
 
     }
 
 
-    /* fallback */
+    /*
+    Fallback if OpenCV isn't ready
+    */
 
-    const out=document.createElement("canvas");
+    const out=
+        document.createElement(
+            "canvas"
+        );
 
     out.width=outW;
     out.height=outH;
 
-    out.getContext("2d").drawImage(
-        src,
-        Math.min(tl.x,bl.x),
-        Math.min(tl.y,tr.y),
-        Math.max(tr.x,br.x)-Math.min(tl.x,bl.x),
-        Math.max(bl.y,br.y)-Math.min(tl.y,tr.y),
-        0,
-        0,
-        outW,
-        outH
-    );
+    const minX=
+        Math.min(
+            tl.x,
+            bl.x
+        );
+
+    const minY=
+        Math.min(
+            tl.y,
+            tr.y
+        );
+
+    const maxX=
+        Math.max(
+            tr.x,
+            br.x
+        );
+
+    const maxY=
+        Math.max(
+            bl.y,
+            br.y
+        );
+
+    out.getContext("2d")
+        .drawImage(
+            src,
+            minX,
+            minY,
+            Math.max(
+                1,
+                maxX-minX
+            ),
+            Math.max(
+                1,
+                maxY-minY
+            ),
+            0,
+            0,
+            outW,
+            outH
+        );
 
     applyFilter(out);
 
@@ -1876,50 +3207,106 @@ KEEP PAGE
 
 function keepPage(){
 
-    if(!sourceCanvas)return;
+    if(!sourceCanvas){
 
-    const finalCanvas=createFinalCrop();
-
-    const url=finalCanvas.toDataURL(
-        "image/jpeg",
-        .97
-    );
-
-    if(editingIndex>=0){
-
-        scannedPages[editingIndex]=url;
-
-    }else{
-
-        scannedPages.push(url);
+        return;
 
     }
 
-    closeEditor();
+    try{
 
-    renderPages();
+        const finalCanvas=
+            createFinalCrop();
+
+        const url=
+            finalCanvas.toDataURL(
+                "image/jpeg",
+                .97
+            );
+
+        if(editingIndex>=0){
+
+            scannedPages[
+                editingIndex
+            ]=url;
+
+        }else{
+
+            scannedPages.push(url);
+
+        }
+
+        closeEditor();
+
+        renderPages();
+
+        /*
+        Switch to Scan tab
+        */
+
+        switchTab("scan");
+
+        /*
+        Small feedback
+        */
+
+        setTimeout(
+            ()=>{
+                const count=
+                    scannedPages.length;
+
+                console.log(
+                    `${count} page saved`
+                );
+            },
+            50
+        );
+
+    }catch(error){
+
+        alert(
+            "Could not save page: "+
+            error.message
+        );
+
+    }
 
 }
 
 
 /* =====================================================
-EDIT EXISTING
+EDIT PAGE
 ===================================================== */
 
 function editPage(index){
 
-    const img=new Image();
+    if(
+        !scannedPages[index]
+    )return;
+
+    const img=
+        new Image();
 
     img.onload=()=>{
 
-        sourceCanvas=document.createElement("canvas");
+        sourceCanvas=
+            document.createElement(
+                "canvas"
+            );
 
-        sourceCanvas.width=img.naturalWidth;
-        sourceCanvas.height=img.naturalHeight;
+        sourceCanvas.width=
+            img.naturalWidth;
+
+        sourceCanvas.height=
+            img.naturalHeight;
 
         sourceCanvas
             .getContext("2d")
-            .drawImage(img,0,0);
+            .drawImage(
+                img,
+                0,
+                0
+            );
 
         editingIndex=index;
 
@@ -1927,16 +3314,24 @@ function editPage(index){
 
         cropMode="perspective";
 
+        updateFilterButtons();
+
         resetCrop();
 
-        document.getElementById("review-workspace")
-            .classList.remove("hidden");
+        document
+            .getElementById(
+                "review-workspace"
+            )
+            .classList.remove(
+                "hidden"
+            );
 
         drawEditor();
 
     };
 
-    img.src=scannedPages[index];
+    img.src=
+        scannedPages[index];
 
 }
 
@@ -1949,27 +3344,24 @@ function autoDetect(){
 
     if(!sourceCanvas){
 
-        drawEditor();
         return;
 
     }
 
     /*
-    Reset first
+    Default crop first.
     */
 
     resetCrop();
 
     /*
-    OpenCV may still be loading.
+    OpenCV may not be loaded yet.
     */
 
     if(
-        typeof cv==="undefined" ||
+        !window.cv ||
         !cv.Mat
     ){
-
-        drawEditor();
 
         return;
 
@@ -1977,9 +3369,13 @@ function autoDetect(){
 
     try{
 
-        const src=cv.imread(sourceCanvas);
+        const src=
+            cv.imread(
+                sourceCanvas
+            );
 
-        const gray=new cv.Mat();
+        const gray=
+            new cv.Mat();
 
         cv.cvtColor(
             src,
@@ -1987,7 +3383,8 @@ function autoDetect(){
             cv.COLOR_RGBA2GRAY
         );
 
-        const blur=new cv.Mat();
+        const blur=
+            new cv.Mat();
 
         cv.GaussianBlur(
             gray,
@@ -1996,7 +3393,8 @@ function autoDetect(){
             0
         );
 
-        const edges=new cv.Mat();
+        const edges=
+            new cv.Mat();
 
         cv.Canny(
             blur,
@@ -2005,9 +3403,11 @@ function autoDetect(){
             150
         );
 
-        const contours=new cv.MatVector();
+        const contours=
+            new cv.MatVector();
 
-        const hierarchy=new cv.Mat();
+        const hierarchy=
+            new cv.Mat();
 
         cv.findContours(
             edges,
@@ -2020,11 +3420,19 @@ function autoDetect(){
         let best=null;
         let bestArea=0;
 
-        for(let i=0;i<contours.size();i++){
+        for(
+            let i=0;
+            i<contours.size();
+            i++
+        ){
 
-            const contour=contours.get(i);
+            const contour=
+                contours.get(i);
 
-            const area=cv.contourArea(contour);
+            const area=
+                cv.contourArea(
+                    contour
+                );
 
             if(area>bestArea){
 
@@ -2034,7 +3442,8 @@ function autoDetect(){
                         true
                     );
 
-                const approx=new cv.Mat();
+                const approx=
+                    new cv.Mat();
 
                 cv.approxPolyDP(
                     contour,
@@ -2051,7 +3460,11 @@ function autoDetect(){
                     .15
                 ){
 
-                    if(best)best.delete();
+                    if(best){
+
+                        best.delete();
+
+                    }
 
                     best=approx;
                     bestArea=area;
@@ -2072,23 +3485,44 @@ function autoDetect(){
 
             let points=[];
 
-            for(let i=0;i<4;i++){
+            for(
+                let i=0;
+                i<4;
+                i++
+            ){
 
                 points.push({
+
                     x:best.intAt(i,0),
                     y:best.intAt(i,1)
+
                 });
 
             }
 
-            points=orderPoints(points);
+            points=
+                orderPoints(points);
 
-            corners=points.map(p=>({
+            corners=
+                points.map(p=>({
 
-                x:p.x/sourceCanvas.width,
-                y:p.y/sourceCanvas.height
+                    x:
+                        clamp(
+                            p.x/
+                            sourceCanvas.width,
+                            0,
+                            1
+                        ),
 
-            }));
+                    y:
+                        clamp(
+                            p.y/
+                            sourceCanvas.height,
+                            0,
+                            1
+                        )
+
+                }));
 
             best.delete();
 
@@ -2116,31 +3550,55 @@ function autoDetect(){
 
 
 /* =====================================================
-POINT ORDER
+ORDER POINTS
 ===================================================== */
 
 function orderPoints(points){
 
-    const sum=p=>p.x+p.y;
-    const diff=p=>p.x-p.y;
+    const sum=
+        p=>p.x+p.y;
 
-    const tl=points.reduce(
-        (a,b)=>sum(a)<sum(b)?a:b
-    );
+    const diff=
+        p=>p.x-p.y;
 
-    const br=points.reduce(
-        (a,b)=>sum(a)>sum(b)?a:b
-    );
+    const tl=
+        points.reduce(
+            (a,b)=>
+                sum(a)<sum(b)
+                ?a
+                :b
+        );
 
-    const tr=points.reduce(
-        (a,b)=>diff(a)>diff(b)?a:b
-    );
+    const br=
+        points.reduce(
+            (a,b)=>
+                sum(a)>sum(b)
+                ?a
+                :b
+        );
 
-    const bl=points.reduce(
-        (a,b)=>diff(a)<diff(b)?a:b
-    );
+    const tr=
+        points.reduce(
+            (a,b)=>
+                diff(a)>diff(b)
+                ?a
+                :b
+        );
 
-    return[tl,tr,br,bl];
+    const bl=
+        points.reduce(
+            (a,b)=>
+                diff(a)<diff(b)
+                ?a
+                :b
+        );
+
+    return[
+        tl,
+        tr,
+        br,
+        bl
+    ];
 
 }
 
@@ -2153,21 +3611,31 @@ function rotateImage(){
 
     if(!sourceCanvas)return;
 
-    const old=sourceCanvas;
+    const old=
+        sourceCanvas;
 
-    const out=document.createElement("canvas");
+    const out=
+        document.createElement(
+            "canvas"
+        );
 
-    out.width=old.height;
-    out.height=old.width;
+    out.width=
+        old.height;
 
-    const ctx=out.getContext("2d");
+    out.height=
+        old.width;
+
+    const ctx=
+        out.getContext("2d");
 
     ctx.translate(
         out.width/2,
         out.height/2
     );
 
-    ctx.rotate(Math.PI/2);
+    ctx.rotate(
+        Math.PI/2
+    );
 
     ctx.drawImage(
         old,
@@ -2183,16 +3651,26 @@ function rotateImage(){
 
 
 /* =====================================================
-CLOSE
+CLOSE EDITOR
 ===================================================== */
 
 function closeEditor(){
 
     sourceCanvas=null;
+
     editingIndex=-1;
 
-    document.getElementById("review-workspace")
-        .classList.add("hidden");
+    dragCorner=-1;
+    dragFree=false;
+    drawingFree=false;
+
+    document
+        .getElementById(
+            "review-workspace"
+        )
+        .classList.add(
+            "hidden"
+        );
 
 }
 
@@ -2204,48 +3682,100 @@ RENDER PAGES
 function renderPages(){
 
     const grid=
-        document.getElementById("scanned-grid");
+        document.getElementById(
+            "scanned-grid"
+        );
 
     grid.innerHTML="";
 
-    scannedPages.forEach((url,index)=>{
+    scannedPages.forEach(
+        (url,index)=>{
 
-        grid.innerHTML+=`
+            const item=
+                document.createElement(
+                    "div"
+                );
 
-        <div class="grid-thumb">
+            item.className=
+                "grid-thumb";
 
-            <img
-                src="${url}"
-                onclick="editPage(${index})">
+            const img=
+                document.createElement(
+                    "img"
+                );
 
-            <div class="page-number">
-                Page ${index+1}
-            </div>
+            img.src=url;
 
-            <button
-                class="delete-page"
-                onclick="event.stopPropagation();deletePage(${index})">
+            img.alt=
+                `Scanned Page ${index+1}`;
 
-                ×
+            img.onclick=()=>{
+                editPage(index);
+            };
 
-            </button>
+            const number=
+                document.createElement(
+                    "div"
+                );
 
-        </div>`;
+            number.className=
+                "page-number";
 
-    });
+            number.innerText=
+                `Page ${index+1}`;
 
-    document.getElementById("save-box")
-        .classList.toggle(
-            "hidden",
-            scannedPages.length===0
-        );
+            const del=
+                document.createElement(
+                    "button"
+                );
+
+            del.className=
+                "delete-page";
+
+            del.innerText="×";
+
+            del.onclick=e=>{
+
+                e.stopPropagation();
+
+                deletePage(index);
+
+            };
+
+            item.appendChild(img);
+            item.appendChild(number);
+            item.appendChild(del);
+
+            grid.appendChild(item);
+
+        }
+    );
+
+    updateSaveUI();
 
 }
 
 
+/* =====================================================
+DELETE PAGE
+===================================================== */
+
 function deletePage(index){
 
-    scannedPages.splice(index,1);
+    if(
+        !confirm(
+            `Delete Page ${index+1}?`
+        )
+    ){
+
+        return;
+
+    }
+
+    scannedPages.splice(
+        index,
+        1
+    );
 
     renderPages();
 
@@ -2253,31 +3783,115 @@ function deletePage(index){
 
 
 /* =====================================================
-SAVE PDF
+SAVE UI
+===================================================== */
+
+function updateSaveUI(){
+
+    const hasPages=
+        scannedPages.length>0;
+
+    const saveBox=
+        document.getElementById(
+            "save-box"
+        );
+
+    const saveBar=
+        document.getElementById(
+            "scan-save-bar"
+        );
+
+    const pageCount=
+        document.getElementById(
+            "page-count"
+        );
+
+    const saveBarPages=
+        document.getElementById(
+            "save-bar-pages"
+        );
+
+    const text=
+        `${scannedPages.length} `+
+        (
+            scannedPages.length===1
+            ?"Page"
+            :"Pages"
+        );
+
+    pageCount.innerText=text;
+
+    saveBarPages.innerText=text;
+
+    /*
+    Normal save box only on Scan page.
+    */
+
+    saveBox.classList.toggle(
+        "hidden",
+        !hasPages
+    );
+
+    /*
+    Fixed save bar visible only
+    when scan tab is active and
+    pages exist.
+    */
+
+    saveBar.classList.toggle(
+        "hidden",
+        !hasPages ||
+        activeTab!=="scan"
+    );
+
+}
+
+
+/* =====================================================
+SAVE SCANNED PDF
 ===================================================== */
 
 async function saveScannedPDF(){
 
     if(!scannedPages.length){
 
-        alert("Please scan at least one page.");
+        alert(
+            "Please scan at least one page."
+        );
 
         return;
 
     }
 
-    const filename=prompt(
-        "Enter PDF file name:",
-        "HD_Scanned_Document"
-    );
+    let filename=
+        prompt(
+            "Enter PDF file name:",
+            "HD_Scanned_Document"
+        );
 
     if(!filename)return;
 
+    filename=
+        filename.trim();
+
+    if(!filename){
+
+        filename=
+            "HD_Scanned_Document";
+
+    }
+
     const btn=
-        document.getElementById("save-pdf-btn");
+        document.getElementById(
+            "save-pdf-btn"
+        );
+
+    const originalText=
+        btn.innerText;
 
     btn.disabled=true;
-    btn.innerText="Creating PDF... ⏳";
+    btn.innerText=
+        "Creating PDF... ⏳";
 
     try{
 
@@ -2285,26 +3899,46 @@ async function saveScannedPDF(){
             await PDFLib.PDFDocument.create();
 
         const pageSize=
-            document.getElementById("pdf-size").value;
+            document.getElementById(
+                "pdf-size"
+            ).value;
 
         const quality=
             parseFloat(
-                document.getElementById("pdf-quality").value
+                document.getElementById(
+                    "pdf-quality"
+                ).value
             );
 
-        for(const url of scannedPages){
+        for(
+            const url of scannedPages
+        ){
 
             const img=
                 await loadImage(url);
 
-            const c=
-                document.createElement("canvas");
+            /*
+            Re-compress based on selected
+            PDF quality.
+            */
 
-            c.width=img.naturalWidth;
-            c.height=img.naturalHeight;
+            const c=
+                document.createElement(
+                    "canvas"
+                );
+
+            c.width=
+                img.naturalWidth;
+
+            c.height=
+                img.naturalHeight;
 
             c.getContext("2d")
-                .drawImage(img,0,0);
+                .drawImage(
+                    img,
+                    0,
+                    0
+                );
 
             const blob=
                 await canvasBlob(
@@ -2313,36 +3947,62 @@ async function saveScannedPDF(){
                     quality
                 );
 
+            if(!blob){
+
+                throw new Error(
+                    "Image conversion failed."
+                );
+
+            }
+
             const bytes=
                 await blob.arrayBuffer();
 
             const embedded=
-                await pdf.embedJpg(bytes);
+                await pdf.embedJpg(
+                    bytes
+                );
 
-            let width=embedded.width;
-            let height=embedded.height;
+            let width=
+                embedded.width;
+
+            let height=
+                embedded.height;
+
+
+            /* =====================
+            A4
+            ===================== */
 
             if(pageSize==="a4"){
 
                 const A4W=595;
                 const A4H=842;
 
-                const scale=Math.min(
-                    A4W/width,
-                    A4H/height
-                );
+                const scale=
+                    Math.min(
+                        A4W/width,
+                        A4H/height
+                    );
 
                 width*=scale;
                 height*=scale;
 
                 const page=
-                    pdf.addPage([A4W,A4H]);
+                    pdf.addPage([
+                        A4W,
+                        A4H
+                    ]);
 
                 page.drawImage(
                     embedded,
                     {
-                        x:(A4W-width)/2,
-                        y:(A4H-height)/2,
+                        x:
+                            (A4W-width)/2,
+
+                        y:
+                            (A4H-height)/2,
+
                         width,
                         height
                     }
@@ -2351,28 +4011,41 @@ async function saveScannedPDF(){
                 continue;
 
             }
+
+
+            /* =====================
+            LETTER
+            ===================== */
 
             if(pageSize==="letter"){
 
                 const W=612;
                 const H=792;
 
-                const scale=Math.min(
-                    W/width,
-                    H/height
-                );
+                const scale=
+                    Math.min(
+                        W/width,
+                        H/height
+                    );
 
                 width*=scale;
                 height*=scale;
 
                 const page=
-                    pdf.addPage([W,H]);
+                    pdf.addPage([
+                        W,
+                        H
+                    ]);
 
                 page.drawImage(
                     embedded,
                     {
-                        x:(W-width)/2,
-                        y:(H-height)/2,
+                        x:
+                            (W-width)/2,
+
+                        y:
+                            (H-height)/2,
+
                         width,
                         height
                     }
@@ -2381,6 +4054,26 @@ async function saveScannedPDF(){
                 continue;
 
             }
+
+
+            /* =====================
+            ORIGINAL
+            ===================== */
+
+            const maxPoints=900;
+
+            const scale=
+                Math.min(
+                    1,
+                    maxPoints/
+                    Math.max(
+                        width,
+                        height
+                    )
+                );
+
+            width*=scale;
+            height*=scale;
 
             const page=
                 pdf.addPage([
@@ -2400,17 +4093,32 @@ async function saveScannedPDF(){
 
         }
 
-        const bytes=await pdf.save();
+        const bytes=
+            await pdf.save();
 
         download(
             new Blob(
                 [bytes],
-                {type:"application/pdf"}
+                {
+                    type:
+                    "application/pdf"
+                }
             ),
-            filename+".pdf"
+            filename.endsWith(".pdf")
+                ?filename
+                :filename+".pdf"
         );
 
-        alert("PDF saved successfully!");
+        btn.innerText=
+            "✅ PDF SAVED";
+
+        setTimeout(
+            ()=>{
+                btn.innerText=
+                    "💾 SAVE AS PDF";
+            },
+            1800
+        );
 
     }catch(error){
 
@@ -2419,10 +4127,12 @@ async function saveScannedPDF(){
             error.message
         );
 
+        btn.innerText=
+            originalText;
+
     }
 
     btn.disabled=false;
-    btn.innerText="💾 SAVE AS PDF";
 
 }
 
@@ -2433,69 +4143,105 @@ HELPERS
 
 function loadImageFromFile(file){
 
-    return new Promise((resolve,reject)=>{
+    return new Promise(
+        (resolve,reject)=>{
 
-        const reader=new FileReader();
+            const reader=
+                new FileReader();
 
-        reader.onload=e=>{
+            reader.onload=e=>{
 
-            const img=new Image();
+                const img=
+                    new Image();
 
-            img.onload=()=>resolve(img);
+                img.onload=()=>{
+                    resolve(img);
+                };
 
-            img.onerror=reject;
+                img.onerror=reject;
 
-            img.src=e.target.result;
+                img.src=
+                    e.target.result;
 
-        };
+            };
 
-        reader.onerror=reject;
+            reader.onerror=reject;
 
-        reader.readAsDataURL(file);
+            reader.readAsDataURL(file);
 
-    });
+        }
+    );
 
 }
 
 
 function loadImage(url){
 
-    return new Promise((resolve,reject)=>{
+    return new Promise(
+        (resolve,reject)=>{
 
-        const img=new Image();
+            const img=
+                new Image();
 
-        img.onload=()=>resolve(img);
+            img.onload=()=>{
+                resolve(img);
+            };
 
-        img.onerror=reject;
+            img.onerror=reject;
 
-        img.src=url;
+            img.src=url;
 
-    });
+        }
+    );
 
 }
 
 
-function canvasBlob(canvas,type,quality){
+function canvasBlob(
+    canvas,
+    type,
+    quality
+){
 
-    return new Promise(resolve=>{
+    return new Promise(
+        resolve=>{
 
-        canvas.toBlob(
-            resolve,
-            type,
-            quality
+            canvas.toBlob(
+                resolve,
+                type,
+                quality
+            );
+
+        }
+    );
+
+}
+
+
+function download(
+    blob,
+    name
+){
+
+    if(!blob){
+
+        alert(
+            "Could not create file."
         );
 
-    });
+        return;
 
-}
+    }
 
-
-function download(blob,name){
-
-    const a=document.createElement("a");
+    const a=
+        document.createElement(
+            "a"
+        );
 
     const url=
-        URL.createObjectURL(blob);
+        URL.createObjectURL(
+            blob
+        );
 
     a.href=url;
     a.download=name;
@@ -2507,8 +4253,10 @@ function download(blob,name){
     a.remove();
 
     setTimeout(
-        ()=>URL.revokeObjectURL(url),
-        1000
+        ()=>{
+            URL.revokeObjectURL(url);
+        },
+        1500
     );
 
 }
@@ -2516,14 +4264,119 @@ function download(blob,name){
 
 function escapeHTML(text){
 
-    return text
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
+    return String(text)
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
 
 }
+
+
+function formatBytes(bytes){
+
+    if(bytes<1024){
+
+        return bytes+" B";
+
+    }
+
+    if(bytes<1024*1024){
+
+        return(
+            bytes/1024
+        ).toFixed(1)+" KB";
+
+    }
+
+    return(
+        bytes/(1024*1024)
+    ).toFixed(1)+" MB";
+
+}
+
+
+function clamp(
+    value,
+    min,
+    max
+){
+
+    return Math.max(
+        min,
+        Math.min(
+            max,
+            value
+        )
+    );
+
+}
+
+
+/* =====================================================
+WINDOW RESIZE
+===================================================== */
+
+let resizeTimer=null;
+
+window.addEventListener(
+    "resize",
+    ()=>{
+
+        clearTimeout(
+            resizeTimer
+        );
+
+        resizeTimer=
+            setTimeout(
+                ()=>{
+
+                    if(
+                        sourceCanvas &&
+                        !document
+                            .getElementById(
+                                "review-workspace"
+                            )
+                            .classList.contains(
+                                "hidden"
+                            )
+                    ){
+
+                        drawEditor();
+
+                    }
+
+                },
+                120
+            );
+
+    }
+);
+
+
+/* =====================================================
+INITIAL
+===================================================== */
+
+renderPages();
+
+updateSaveUI();
 
 </script>
 
