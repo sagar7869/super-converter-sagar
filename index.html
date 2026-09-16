@@ -20,15 +20,25 @@
             <button class="tool-card" id="btn-scan">Smart Scanner</button>
         </div>
 
-        <div id="resize-options" class="resize-options hidden">
+                <div id="resize-options" class="resize-options hidden">
             <input type="number" id="input-width" placeholder="Width (px)">
             <input type="number" id="input-height" placeholder="Height (px)">
-            <input type="number" id="input-kb" placeholder="Target Size (KB)">
+            
+            <!-- SIZE AUR UNIT SELECTOR EK SATH -->
+            <div style="display: flex; gap: 5px; width: 100%;">
+                <input type="number" id="input-size" placeholder="Target Size" style="width: 60%;">
+                <select id="input-unit" style="width: 40%;">
+                    <option value="KB">KB</option>
+                    <option value="MB">MB</option>
+                </select>
+            </div>
+
             <select id="input-format">
                 <option value="image/jpeg">Export as JPG</option>
                 <option value="image/png">Export as PNG</option>
             </select>
         </div>
+
 
         <div id="drop-zone" class="drop-zone">
             <p>Drag & Drop files here or <span style="color: #4F46E5; cursor: pointer;">Browse</span></p>
