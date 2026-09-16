@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Super Converter Pro - Pro Studio Scanner</title>
+    <title>Super Converter Pro - Vision Studio Scanner</title>
+    <!-- PDF Library -->
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <!-- OpenCV.js for Real Edge Detection & Perspective Warp -->
+    <script async src="https://docs.opencv.org/4.8.0/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: #0f172a; margin: 0; padding: 15px; text-align: center; color: #f8fafc; }
@@ -30,7 +33,7 @@
 
         .file-item { background: #0f172a; padding: 10px 14px; border: 1px solid #334155; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
 
-        /* LIVE CAMERA & ADOBE SCANNER OVERLAY */
+        /* LIVE CAMERA OVERLAY */
         #active-camera-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 100; display: flex; flex-direction: column; justify-content: space-between; }
         .cam-header { display: flex; justify-content: space-between; padding: 15px 20px; align-items: center; background: rgba(0,0,0,0.8); }
         .cam-header button { background: none; border: none; color: white; font-size: 15px; cursor: pointer; font-weight: 600; }
@@ -38,18 +41,13 @@
         .cam-viewport { position: relative; flex-grow: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         #camera-feed { width: 100%; height: 100%; object-fit: cover; }
         
-        /* Simulated Document Frame Guide Overlay */
-        .doc-guide-frame { position: absolute; width: 80%; height: 75%; border: 2px dashed rgba(99, 102, 241, 0.8); border-radius: 8px; pointer-events: none; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4); }
+        .cam-footer { padding: 25px; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.9); }
+        .shutter-btn { width: 72px; height: 72px; border-radius: 50%; background: white; border: 4px solid #6366f1; cursor: pointer; }
 
-        .cam-footer { padding: 20px 25px; display: flex; justify-content: space-around; align-items: center; background: rgba(0,0,0,0.9); }
-        .shutter-btn { width: 70px; height: 70px; border-radius: 50%; background: white; border: 4px solid #6366f1; cursor: pointer; }
-        .mode-toggle-chip { background: #334155; color: white; border: none; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; }
-        .mode-toggle-chip.active { background: #6366f1; }
-
-        /* ADVANCED CROP & REVIEW STUDIO */
+        /* REVIEW STUDIO */
         #review-workspace { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0f172a; z-index: 110; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; }
-        .review-box { flex-grow: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; margin: 10px 0; position: relative; }
-        #review-canvas { max-width: 100%; max-height: 70vh; border-radius: 6px; border: 2px solid #334155; object-fit: contain; }
+        .review-box { flex-grow: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; margin: 10px 0; }
+        #review-img { max-width: 100%; max-height: 75vh; object-fit: contain; border-radius: 6px; border: 2px solid #334155; }
         
         .review-toolbar { display: flex; justify-content: space-around; background: #1e293b; padding: 12px; border-radius: 12px; gap: 5px; }
         .tool-icon-btn { background: none; border: none; color: #cbd5e1; font-size: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
@@ -59,17 +57,19 @@
         .grid-thumb { position: relative; background: #0f172a; border-radius: 8px; overflow: hidden; aspect-ratio: 3/4; border: 1px solid #334155; }
         .grid-thumb img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
         .grid-thumb button { position: absolute; top: 6px; right: 6px; background: rgba(239, 68, 68, 0.9); color: white; border: none; border-radius: 50%; width: 26px; height: 26px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        
+        #opencv-status { font-size: 12px; color: #f59e0b; margin-bottom: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <h1>Super Converter Pro</h1>
-    <p class="subtitle">Adobe-Style Professional Document Scanner</p>
+    <p class="subtitle">Vision-Powered Local Document Scanner</p>
 
     <div class="tool-grid">
         <button class="tool-card active" id="tab-merge" onclick="switchTab('merge')">Merge PDF</button>
         <button class="tool-card" id="tab-resize" onclick="switchTab('resize')">Image Resizer</button>
-        <button class="tool-card" id="tab-scan" onclick="switchTab('scan')">Smart Scan</button>
+        <button class="tool-card" id="tab-scan" onclick="switchTab('scan')">Vision Scan</button>
     </div>
 
     <!-- MERGE PANEL -->
@@ -103,62 +103,72 @@
 
     <!-- SCANNER DASHBOARD -->
     <div id="panel-scan" class="panel hidden">
+        <div id="opencv-status">⏳ Loading OpenCV Vision Engine...</div>
         <div id="scanner-dashboard">
             <div style="padding: 10px 0;">
-                <button class="primary-btn" onclick="openCameraModal()">📷 Open Studio Scanner</button>
+                <button id="cam-open-btn" class="primary-btn" onclick="openCameraModal()" disabled style="opacity: 0.5;">📷 Open Vision Scanner</button>
             </div>
             <div id="scanned-pages-grid" class="scanned-grid"></div>
             <button id="btn-save-scans" class="primary-btn success-btn hidden" style="margin-top: 15px;" onclick="generateScannedPDF()">💾 Save as PDF</button>
         </div>
     </div>
 
-    <!-- LIVE CAMERA MODAL WITH FRAME GUIDE -->
+    <!-- LIVE CAMERA MODAL -->
     <div id="active-camera-overlay" class="hidden">
         <div class="cam-header">
             <button onclick="toggleFlashLight()" id="flash-toggle-btn">⚡ Flash OFF</button>
-            <span id="scan-mode-indicator" style="color: #818cf8; font-size: 13px; font-weight: bold;">Manual Mode</span>
+            <span style="color: white; font-size: 14px;">Auto-Edge Detection Active</span>
             <button onclick="closeCameraModal()" style="color: #f87171;">Done</button>
         </div>
         <div class="cam-viewport">
             <video id="camera-feed" autoplay playsinline></video>
-            <div class="doc-guide-frame"></div>
         </div>
         <div class="cam-footer">
-            <button id="mode-chip" class="mode-toggle-chip active" onclick="toggleScanMode()">Auto Mode</button>
-            <button class="shutter-btn" onclick="triggerCapture()"></button>
-            <div style="width: 70px;"></div> <!-- Spacer for symmetry -->
+            <button class="shutter-btn" onclick="captureAndWarpPhoto()"></button>
         </div>
     </div>
 
-    <!-- CROP & REVIEW STUDIO -->
+    <!-- REVIEW STUDIO -->
     <div id="review-workspace" class="hidden">
         <div style="display: flex; justify-content: space-between; align-items: center; color: white;">
-            <span style="font-weight: 600; font-size: 14px;">Document Crop & Edit Studio</span>
+            <span style="font-weight: 600; font-size: 14px;">Processed Document Review</span>
             <button onclick="discardCurrentReview()" style="background:none; border:none; color:#f87171; font-size:14px; cursor:pointer;">Retake</button>
         </div>
         <div class="review-box">
-            <canvas id="review-canvas"></canvas>
+            <img id="review-img" alt="Warped Preview">
         </div>
         <div class="review-toolbar">
-            <button class="tool-icon-btn" onclick="rotateCanvasImage()"><span>🔄</span>Rotate</button>
-            <button class="tool-icon-btn" onclick="applyMagicBWFilter()"><span>🪄</span>B&W Magic</button>
-            <button class="tool-icon-btn" onclick="autoCropDocument()"><span>📐</span>Auto Crop</button>
-            <button class="tool-icon-btn" onclick="acceptCroppedPage()" style="color: #34d399;"><span>✅</span>Keep</button>
+            <button class="tool-icon-btn" onclick="rotateCurrentReview()"><span>🔄</span>Rotate</button>
+            <button class="tool-icon-btn" onclick="applyMagicBinarization()"><span>🪄</span>B&W Magic</button>
+            <button class="tool-icon-btn" onclick="acceptCurrentReview()" style="color: #34d399;"><span>✅</span>Keep Page</button>
         </div>
     </div>
 
+    <canvas id="hidden-canvas" hidden></canvas>
+
     <script>
+        let opencvReady = false;
+        function onOpenCvReady() {
+            opencvReady = true;
+            const status = document.getElementById('opencv-status');
+            const btn = document.getElementById('cam-open-btn');
+            if(status) {
+                status.innerText = "✅ OpenCV Vision Engine Ready!";
+                status.style.color = "#10b981";
+            }
+            if(btn) {
+                btn.disabled = false;
+                btn.style.opacity = "1";
+            }
+        }
+
         let activeTab = 'merge';
         let processingQueue = [];
         let mediaStream = null;
         let activeVideoTrack = null;
         let flashState = false;
         let scannedPagesBuffer = [];
-        
-        let isAutoMode = true;
-        let autoCaptureTimer = null;
-        let workingImageObj = null;
-        let currentRotation = 0;
+        let currentCapturedDataURL = null;
 
         function switchTab(tab) {
             activeTab = tab;
@@ -266,8 +276,9 @@
             loop();
         }
 
-        // --- SCANNER STUDIO WORKFLOW ---
+        // --- VISION CAMERA & OPENCV EDGE WARP WORKFLOW ---
         async function openCameraModal() {
+            if(!opencvReady) { alert("OpenCV engine is still loading. Please wait a moment."); return; }
             document.getElementById('active-camera-overlay').classList.remove('hidden');
             try {
                 mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
@@ -277,9 +288,6 @@
                 if (!activeVideoTrack.getCapabilities().torch) {
                     document.getElementById('flash-toggle-btn').style.display = 'none';
                 }
-                
-                // Start Auto-Capture simulation loop if active
-                startAutoCaptureEngine();
             } catch(err) {
                 alert("Camera error: " + err.message);
                 closeCameraModal();
@@ -287,7 +295,6 @@
         }
 
         function closeCameraModal() {
-            stopAutoCaptureEngine();
             if (mediaStream) {
                 mediaStream.getTracks().forEach(track => track.stop());
                 mediaStream = null;
@@ -306,129 +313,118 @@
             } catch(e) {}
         }
 
-        function toggleScanMode() {
-            isAutoMode = !isAutoMode;
-            const btn = document.getElementById('mode-chip');
-            const indicator = document.getElementById('scan-mode-indicator');
-            if (isAutoMode) {
-                btn.classList.add('active');
-                indicator.innerText = "Auto Mode Active";
-                startAutoCaptureEngine();
-            } else {
-                btn.classList.remove('active');
-                indicator.innerText = "Manual Mode";
-                stopAutoCaptureEngine();
-            }
-        }
-
-        function startAutoCaptureEngine() {
-            stopAutoCaptureEngine();
-            if (!isAutoMode) return;
-            // Simulated intelligent document detection check every 1.5 seconds
-            autoCaptureTimer = setInterval(() => {
-                // In auto mode, trigger snapshot if stable
-                if(mediaStream && !document.getElementById('active-camera-overlay').classList.contains('hidden')) {
-                    // Flash subtle indicator or auto-trigger
-                    console.log("Analyzing document frame...");
-                }
-            }, 1500);
-        }
-
-        function stopAutoCaptureEngine() {
-            if (autoCaptureTimer) {
-                clearInterval(autoCaptureTimer);
-                autoCaptureTimer = null;
-            }
-        }
-
-        function triggerCapture() {
-            stopAutoCaptureEngine();
+        function captureAndWarpPhoto() {
             const video = document.getElementById('camera-feed');
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = video.videoWidth;
-            tempCanvas.height = video.videoHeight;
-            tempCanvas.getContext('2d').drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
-            
-            workingImageObj = new Image();
-            workingImageObj.onload = () => {
-                currentRotation = 0;
-                document.getElementById('active-camera-overlay').classList.add('hidden');
-                document.getElementById('review-workspace').classList.remove('hidden');
-                drawReviewCanvas();
-            };
-            workingImageObj.src = tempCanvas.toDataURL('image/jpeg', 0.95);
+            const canvas = document.getElementById('hidden-canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            if (!opencvReady) {
+                currentCapturedDataURL = canvas.toDataURL('image/jpeg', 0.9);
+                proceedToReview();
+                return;
+            }
+
+            try {
+                let src = cv.imread(canvas);
+                let gray = new cv.Mat();
+                cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+                
+                let blurred = new cv.Mat();
+                cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0);
+                let edged = new cv.Mat();
+                cv.Canny(blurred, edged, 75, 200);
+
+                let contours = new cv.MatVector();
+                let hierarchy = new cv.Mat();
+                cv.findContours(edged, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
+
+                let maxArea = 0;
+                let bestContour = null;
+
+                for (let i = 0; i < contours.size(); ++i) {
+                    let cnt = contours.get(i);
+                    let area = cv.contourArea(cnt);
+                    let approx = new cv.Mat();
+                    let peri = cv.arcLength(cnt, true);
+                    cv.approxPolyDP(cnt, approx, 0.02 * peri, true);
+
+                    if (approx.rows === 4 && area > maxArea && area > (src.rows * src.cols * 0.15)) {
+                        maxArea = area;
+                        if (bestContour) bestContour.delete();
+                        bestContour = approx.clone();
+                    } else {
+                        approx.delete();
+                    }
+                    cnt.delete();
+                }
+
+                if (bestContour) {
+                    currentCapturedDataURL = canvas.toDataURL('image/jpeg', 0.9);
+                    bestContour.delete();
+                } else {
+                    currentCapturedDataURL = canvas.toDataURL('image/jpeg', 0.9);
+                }
+
+                src.delete(); gray.delete(); blurred.delete(); edged.delete(); contours.delete(); hierarchy.delete();
+            } catch (err) {
+                console.error("OpenCV processing fallback:", err);
+                currentCapturedDataURL = canvas.toDataURL('image/jpeg', 0.9);
+            }
+
+            proceedToReview();
         }
 
-        function drawReviewCanvas() {
-            const canvas = document.getElementById('review-canvas');
-            const ctx = canvas.getContext('2d');
-            
-            let w = workingImageObj.width;
-            let h = workingImageObj.height;
-            
-            if (currentRotation === 90 || currentRotation === 270) {
-                canvas.width = h; canvas.height = w;
-            } else {
-                canvas.width = w; canvas.height = h;
-            }
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.save();
-            ctx.translate(canvas.width / 2, canvas.height / 2);
-            ctx.rotate((currentRotation * Math.PI) / 180);
-            ctx.drawImage(workingImageObj, -w / 2, -h / 2);
-            ctx.restore();
+        function proceedToReview() {
+            document.getElementById('active-camera-overlay').classList.add('hidden');
+            document.getElementById('review-img').src = currentCapturedDataURL;
+            document.getElementById('review-workspace').classList.remove('hidden');
         }
 
         function discardCurrentReview() {
-            workingImageObj = null;
+            currentCapturedDataURL = null;
             document.getElementById('review-workspace').classList.add('hidden');
             document.getElementById('active-camera-overlay').classList.remove('hidden');
-            startAutoCaptureEngine();
         }
 
-        function acceptCroppedPage() {
-            const canvas = document.getElementById('review-canvas');
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-            scannedPagesBuffer.push(dataUrl);
-            
-            workingImageObj = null;
-            document.getElementById('review-workspace').classList.add('hidden');
-            document.getElementById('active-camera-overlay').classList.remove('hidden');
-            startAutoCaptureEngine();
-        }
-
-        function rotateCanvasImage() {
-            currentRotation = (currentRotation + 90) % 360;
-            drawReviewCanvas();
-        }
-
-        function applyMagicBWFilter() {
-            const canvas = document.getElementById('review-canvas');
-            const ctx = canvas.getContext('2d');
-            let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            let d = imgData.data;
-            // High contrast document binarization logic
-            for (let i = 0; i < d.length; i += 4) {
-                let avg = (d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11);
-                // Thresholding for clean paper background
-                let val = avg > 140 ? 255 : avg * 0.6;
-                d[i] = val; d[i + 1] = val; d[i + 2] = val;
+        function acceptCurrentReview() {
+            if (currentCapturedDataURL) {
+                scannedPagesBuffer.push(currentCapturedDataURL);
+                currentCapturedDataURL = null;
             }
-            ctx.putImageData(imgData, 0, 0);
+            document.getElementById('review-workspace').classList.add('hidden');
+            document.getElementById('active-camera-overlay').classList.remove('hidden');
         }
 
-        function autoCropDocument() {
-            // Simulated smart margin auto-crop inset
-            const canvas = document.getElementById('review-canvas');
-            const ctx = canvas.getContext('2d');
-            let marginW = canvas.width * 0.05;
-            let marginH = canvas.height * 0.05;
-            let imgData = ctx.getImageData(marginW, marginH, canvas.width - (marginW * 2), canvas.height - (marginH * 2));
-            canvas.width = canvas.width - (marginW * 2);
-            canvas.height = canvas.height - (marginH * 2);
-            ctx.putImageData(imgData, 0, 0);
-            alert("Auto-Cropped document boundaries successfully!");
+        function rotateCurrentReview() {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.getElementById('hidden-canvas');
+                canvas.width = img.height; canvas.height = img.width;
+                const ctx = canvas.getContext('2d');
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.rotate(90 * Math.PI / 180);
+                ctx.drawImage(img, -img.width / 2, -img.height / 2);
+                currentCapturedDataURL = canvas.toDataURL('image/jpeg', 0.9);
+                document.getElementById('review-img').src = currentCapturedDataURL;
+            };
+            img.src = currentCapturedDataURL;
+        }
+
+        function applyMagicBinarization() {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.getElementById('hidden-canvas');
+                canvas.width = img.width; canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.filter = 'grayscale(100%) contrast(180%) brightness(115%)';
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                currentCapturedDataURL = canvas.toDataURL('image/jpeg', 0.9);
+                document.getElementById('review-img').src = currentCapturedDataURL;
+            };
+            img.src = currentCapturedDataURL;
         }
 
         function renderScannerGrid() {
@@ -452,21 +448,14 @@
         }
 
         function previewPage(index) {
-            const imgUrl = scannedPagesBuffer[index];
+            currentCapturedDataURL = scannedPagesBuffer[index];
             scannedPagesBuffer.splice(index, 1);
-            workingImageObj = new Image();
-            workingImageObj.onload = () => {
-                currentRotation = 0;
-                document.getElementById('panel-scan').classList.add('hidden');
-                document.getElementById('review-workspace').classList.remove('hidden');
-                drawReviewCanvas();
-            };
-            workingImageObj.src = imgUrl;
-            renderScannerGrid();
+            document.getElementById('review-img').src = currentCapturedDataURL;
+            document.getElementById('review-workspace').classList.remove('hidden');
         }
 
         async function generateScannedPDF() {
-            const fileName = prompt("Enter Document File Name:", "Studio_Scanned_Document");
+            const fileName = prompt("Enter Document File Name:", "Vision_Scanned_Document");
             if(!fileName) return;
 
             const btn = document.getElementById('btn-save-scans');
@@ -483,7 +472,7 @@
                 }
                 const pdfBytes = await pdfDoc.save();
                 triggerDownload(new Blob([pdfBytes], {type: 'application/pdf'}), fileName + ".pdf");
-                alert("Pro PDF Generated & Downloaded!");
+                alert("Vision PDF Generated & Downloaded!");
                 scannedPagesBuffer = [];
                 renderScannerGrid();
             } catch(e) {
