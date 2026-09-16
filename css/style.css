@@ -1,0 +1,64 @@
+* {
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f3f4f6;
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+}
+
+header h1 {
+    color: #1f2937;
+    margin-bottom: 5px;
+}
+
+header p {
+    color: #6b7280;
+    margin-top: 0;
+}
+
+.tool-grid {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 30px 0;
+    flex-wrap: wrap;
+}
+
+.tool-card {
+    background: white;
+    border: 2px solid #e5e7eb;
+    padding: 15px 25px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tool-card:hover {
+    border-color: #4F46E5;
+    color: #4F46E5;
+    transform: translateY(-2px);
+}
+
+.drop-zone {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px;
+    border: 2px dashed #9ca3af;
+    border-radius: 12px;
+    background: white;
+    font-size: 18px;
+    color: #4b5563;
+    transition: background 0.3s ease;
+}
+
+.drop-zone.dragover {
+    background: #eef2ff;
+    border-color: #4F46E5;
+}
