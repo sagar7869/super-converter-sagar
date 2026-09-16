@@ -2,6 +2,7 @@ import { mergePdfs } from './tools/pdf-merge.js';
 import { processImages } from './tools/image-resizer.js';
 
 let currentTool = 'merge';
+let pendingFiles = []; // FILES KO HOLD KARNE KE LIYE ARRAY
 
 const btnMerge = document.getElementById('btn-merge');
 const btnResize = document.getElementById('btn-resize');
@@ -9,14 +10,22 @@ const btnScan = document.getElementById('btn-scan');
 const workspace = document.getElementById('workspace');
 const resizeOptions = document.getElementById('resize-options');
 
+// Naye UI elements
+const fileListContainer = document.getElementById('file-list-container');
+const fileList = document.getElementById('file-list');
+const btnAction = document.getElementById('btn-action');
+
 function setActiveTool(toolId, buttonElement) {
     currentTool = toolId;
+    pendingFiles = []; // Tool change par purani files clear karein
+    updateFileListUI(); // UI reset karein
+    
     document.querySelectorAll('.tool-card').forEach(btn => btn.style.borderColor = '#e5e7eb');
     buttonElement.style.borderColor = '#4F46E5';
     
     if (toolId === 'resize') {
         resizeOptions.classList.remove('hidden');
-        workspace.innerHTML = `<p style="color: #4F46E5; font-weight: bold;">Set inputs, then Drop images!</p>`;
+        workspace.innerHTML = `<p style="color: #4F46E5; font-weight: bold;">Set options, then Drop images!</p>`;
     } else {
         resizeOptions.classList.add('hidden');
         workspace.innerHTML = `<p style="color: #4F46E5; font-weight: bold;">Ready to ${toolId}. Drop files above!</p>`;
@@ -27,14 +36,51 @@ btnMerge.addEventListener('click', () => setActiveTool('merge', btnMerge));
 btnResize.addEventListener('click', () => setActiveTool('resize', btnResize));
 btnScan.addEventListener('click', () => setActiveTool('scan', btnScan));
 
-async function handleFiles(files) {
+// TURANT PROCESS NAHI KARENGE, SIRF ARRAY MEIN SAVE KARENGE
+function handleFiles(files) {
+    pendingFiles = Array.from(files);
+    updateFileListUI();
+}
+
+// FILES KI LIST UI PAR DIKHANE KA FUNCTION
+function updateFileListUI() {
+    if (pendingFiles.length === 0) {
+        fileListContainer.classList.add('hidden');
+        return;
+    }
+
+    fileListContainer.classList.remove('hidden');
+    
+    let html = `<p style="color: #6b7280; font-size: 14px; margin-bottom: 10px;">Selected Files (${pendingFiles.length}):</p>`;
+    pendingFiles.forEach(file => {
+        html += `<div class="file-item">
+                    <span class="file-item-name">📄 ${file.name}</span>
+                    <span class="file-item-size">${(file.size / 1024).toFixed(1)} KB</span>
+                 </div>`;
+    });
+    fileList.innerHTML = html;
+
+    // Button ka naam tool ke hisaab se set karein
     if (currentTool === 'merge') {
-        workspace.innerHTML = `<p>Merging ${files.length} PDFs... Please wait.</p>`;
+        btnAction.innerText = "Merge & Download PDFs";
+    } else if (currentTool === 'resize') {
+        btnAction.innerText = "Compress & Download Images";
+    }
+}
+
+// JAB USER "PROCESS FILES" BUTTON DBAYE TABHI START HOGA
+btnAction.addEventListener('click', async () => {
+    if (pendingFiles.length === 0) return;
+
+    btnAction.innerText = "Processing... Please wait ⏳";
+    btnAction.disabled = true;
+
+    if (currentTool === 'merge') {
         try {
-            await mergePdfs(files);
-            workspace.innerHTML = `<p style="color: green; font-weight: bold;">Merge Complete!</p>`;
+            await mergePdfs(pendingFiles);
+            alert("Success! Merged PDF is downloading.");
         } catch (error) {
-            workspace.innerHTML = `<p style="color: red;">Error: Use PDF files only.</p>`;
+            alert("Error: Please make sure all files are PDFs.");
         }
     } else if (currentTool === 'resize') {
         const options = {
@@ -43,20 +89,21 @@ async function handleFiles(files) {
             targetKB: document.getElementById('input-kb').value,
             format: document.getElementById('input-format').value
         };
-        workspace.innerHTML = `<p>Processing images...</p>`;
-        await processImages(files, options);
-        workspace.innerHTML = `<p style="color: green; font-weight: bold;">Processed!</p>`;
-    } else {
-        alert("Smart Scanner next!");
+        await processImages(pendingFiles, options);
+        alert("Success! Images are processed and downloading.");
     }
-}
 
-// Drag & Drop
+    // Process hone ke baad reset kar do
+    btnAction.disabled = false;
+    pendingFiles = [];
+    updateFileListUI();
+});
+
+// Drag & Drop Init
 document.addEventListener('DOMContentLoaded', () => {
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
 
-    // CLICK KARTAY HI FILE MANAGER KHULEGA
     dropZone.addEventListener('click', () => fileInput.click());
 
     fileInput.addEventListener('change', (e) => {
