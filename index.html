@@ -5,6 +5,14 @@
 
 <meta name="viewport"
       content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Super Converter Pro">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
 
 <title>Super Converter Pro - HD Studio</title>
 
@@ -13,7 +21,25 @@
 
 <!-- PDF JS - PDF RENDERING FOR COMPRESSOR -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+<script>
+(function(){
+  function loadDocxFallback(){
+    if(window.docx) return Promise.resolve(true);
+    return new Promise(function(resolve){
+      var s=document.createElement('script');
+      s.src='https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js';
+      s.onload=function(){resolve(!!window.docx)};
+      s.onerror=function(){resolve(false)};
+      document.head.appendChild(s);
+    });
+  }
+  window.__ensureDocxLoaded=loadDocxFallback;
+  window.addEventListener('load',function(){
+    if(!window.docx) loadDocxFallback();
+  });
+})();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@pdfsmaller/pdf-encrypt@1.2.0/dist/pdf-encrypt.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -6348,7 +6374,12 @@ async function pageText(page){
 async function pdfToWord(){
  const f=selectedFile('pdfword-input');
  if(!f){alert('Select PDF first.');return}
- if(!window.docx){extraStatus('pdfword','❌ Word/DOCX engine did not load. Please reload the page with internet access.');return}
+ if(!window.docx && window.__ensureDocxLoaded){
+   extraStatus('pdfword','Loading Word/DOCX engine... ⏳');
+   const ok=await window.__ensureDocxLoaded();
+   if(!ok || !window.docx){extraStatus('pdfword','❌ Word/DOCX engine could not load. The app will retry automatically; check internet access and refresh once.');return}
+ }
+ if(!window.docx){extraStatus('pdfword','❌ Word/DOCX engine did not load. Please refresh the page once.');return}
  if(!window.pdfjsLib){extraStatus('pdfword','❌ PDF engine did not load. Please reload the page with internet access.');return}
 
  try{
@@ -6623,5 +6654,15 @@ updateSaveUI();
   <div>Developed by <strong style="color:#fff;">SAGAR HEROLE</strong> • 2026</div>
 </footer>
 
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('./sw.js', {scope:'./'})
+      .then(function(reg){ console.log('Super Converter Pro PWA ready', reg.scope); })
+      .catch(function(err){ console.warn('PWA service worker registration failed:', err); });
+  });
+}
+</script>
 </body>
 </html>
