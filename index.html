@@ -15,7 +15,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@pdfsmaller/pdf-encrypt@1.2.0/dist/pdf-encrypt.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@pdfsmaller/pdf-decrypt@1.0.1/dist/pdf-decrypt.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
@@ -1115,6 +1114,20 @@ VERY SMALL PHONES
 .tool-title{font-size:18px;font-weight:900;margin-bottom:6px}.tool-desc{font-size:12px;color:#94a3b8;line-height:1.5;margin:0 0 12px}.tool-input,.tool-textarea{width:100%;padding:11px;border:1px solid #475569;border-radius:9px;background:#0f172a;color:#fff;margin:5px 0}.tool-textarea{min-height:180px;resize:vertical}.tool-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:left;margin:8px 0}.tool-row label{font-size:11px;color:#cbd5e1}.tool-row input,.tool-row select{width:100%;margin-top:4px;padding:9px;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#fff}
 
 .output-modal{position:fixed;inset:0;background:rgba(2,6,23,.78);display:flex;align-items:center;justify-content:center;z-index:99999;padding:18px}.output-modal.hidden{display:none}.output-modal-box{width:min(520px,96vw);background:#111827;border:1px solid #334155;border-radius:18px;padding:20px;box-shadow:0 20px 70px #0008;text-align:left}.output-modal-title{font-size:19px;font-weight:800;margin-bottom:6px}.output-modal-desc{font-size:12px;color:#94a3b8;margin-bottom:14px}.output-modal-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.output-modal-actions button{flex:1 1 45%}.organize-preview{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:12px 0;text-align:left}.org-card{background:#0b1220;border:1px solid #334155;border-radius:12px;padding:8px}.org-card canvas{width:100%;height:130px;object-fit:contain;background:#fff;border-radius:8px}.org-head{display:flex;justify-content:space-between;align-items:center;margin:6px 0;font-size:12px}.org-actions{display:flex;gap:5px}.org-actions button{padding:5px 7px;border-radius:7px;border:1px solid #475569;background:#1e293b;color:#fff}.extra-drop.drag{border-color:#38bdf8!important;background:#082f49!important;transform:scale(1.01)}
+
+/* File thumbnails + password eye */
+.extra-file-card{overflow:hidden}
+.extra-file-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid rgba(255,255,255,.06)}
+.extra-file-row:first-child{border-top:0}
+.extra-file-thumb{width:58px;height:72px;flex:0 0 58px;border-radius:9px;overflow:hidden;background:#fff;display:grid;place-items:center;border:1px solid rgba(255,255,255,.12)}
+.extra-file-thumb img,.extra-file-thumb canvas{width:100%;height:100%;object-fit:cover;display:block}
+.extra-file-thumb.pdf-thumb canvas{object-fit:contain;background:#fff}
+.extra-file-thumb.generic-thumb{background:rgba(255,255,255,.08);color:#fff;font-size:25px}
+.password-wrap{position:relative;width:100%;margin-top:5px}
+.password-wrap .tool-input{margin:0;padding-right:46px}
+.password-eye{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:36px;height:34px;border:0;border-radius:8px;background:transparent;color:#cbd5e1;cursor:pointer;font-size:18px;display:grid;place-items:center}
+.password-eye:hover{background:rgba(255,255,255,.08);color:#fff}
+
 </style>
 <style id="professional-extra-tools-css">
 .extra-file-card{margin:12px 0;padding:14px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(255,255,255,.045);display:flex;align-items:center;gap:12px}
@@ -1702,8 +1715,8 @@ ADDITIONAL CONVERTERS & PDF TOOLS
 <div id="panel-sign" class="panel hidden"><div class="tool-title">✍️ Sign PDF</div><p class="tool-desc">Add a signature to your PDF with control over text, page and position.</p><input id="sign-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="sign-input">📂 <b>Select PDF</b><br><small>or drag & drop here</small></div><div id="sign-file-card"></div><div class="extra-options"><label>Signature text<input id="sign-text" class="tool-input" value="Your Signature"></label><label>Page<select id="sign-page"><option value="all">All pages</option><option value="first">First page</option><option value="last">Last page</option></select></label><label>Position<select id="sign-position"><option value="bottom-right">Bottom Right</option><option value="bottom-left">Bottom Left</option><option value="center">Center</option><option value="top-right">Top Right</option></select></label><label>Size<input id="sign-size" class="tool-input" type="number" value="18" min="8" max="72"></label></div><div class="extra-help">Current browser mode adds a typed signature. A true handwritten signature pad can be added separately.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="signPDF()">✍️ SIGN & DOWNLOAD</button><button class="primary-btn" onclick="clearExtraFile('sign-input')">🗑️ Clear</button></div><div id="sign-status" class="compress-status"></div></div>
 <div id="panel-watermark" class="panel hidden"><div class="tool-title">💧 Watermark</div><p class="tool-desc">Stamp text across selected PDF pages with professional controls.</p><input id="watermark-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="watermark-input">📂 <b>Select PDF</b><br><small>or drag & drop here</small></div><div id="watermark-file-card"></div><div class="extra-options"><label>Text<input id="watermark-text" class="tool-input" value="CONFIDENTIAL"></label><label>Opacity %<input id="watermark-opacity" class="tool-input" type="number" min="5" max="100" value="25"></label><label>Position<select id="watermark-position"><option value="center">Center / Diagonal</option><option value="top">Top</option><option value="bottom">Bottom</option></select></label><label>Pages<input id="watermark-pages" class="tool-input" placeholder="All pages"></label></div><div class="extra-actions"><button class="primary-btn success-btn" onclick="watermarkPDF()">💧 ADD WATERMARK</button><button class="primary-btn" onclick="clearExtraFile('watermark-input')">🗑️ Clear</button></div><div id="watermark-status" class="compress-status"></div></div>
 <div id="panel-htmlpdf" class="panel hidden"><div class="tool-title">🌐 HTML to PDF</div><p class="tool-desc">Build a PDF from HTML with page and quality controls.</p><textarea id="htmlpdf-input" class="tool-textarea" placeholder="Paste HTML here..."></textarea><div class="extra-options"><label>Page size<select id="htmlpdf-size"><option>A4</option><option>A3</option><option>Letter</option></select></label><label>Orientation<select id="htmlpdf-orient"><option value="p">Portrait</option><option value="l">Landscape</option></select></label><label>Scale<select id="htmlpdf-scale"><option value="1">Standard</option><option value="1.5" selected>High</option><option value="2">Ultra</option></select></label></div><div class="extra-actions"><button class="primary-btn success-btn" onclick="htmlToPDF()">🌐 CONVERT HTML TO PDF</button><button class="primary-btn" onclick="document.getElementById('htmlpdf-input').value='';saveFieldState()">🗑️ Clear HTML</button></div><div id="htmlpdf-status" class="compress-status"></div></div>
-<div id="panel-unlock" class="panel hidden"><div class="tool-title">🔓 Unlock PDF</div><p class="tool-desc">Remove restrictions from PDFs that can be opened client-side.</p><input id="unlock-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="unlock-input">📂 <b>Select PDF</b><br><small>or drag & drop here</small></div><div id="unlock-file-card"></div><div class="extra-options"><label>PDF password<input id="unlock-password" class="tool-input" type="password" placeholder="Enter current password"></label></div><div class="extra-help">The correct password is required. The output is decrypted and saved as a normal PDF without the password.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="unlockPDF()">🔓 REMOVE SECURITY</button><button class="primary-btn" onclick="clearExtraFile('unlock-input')">🗑️ Clear</button></div><div id="unlock-status" class="compress-status"></div></div>
-<div id="panel-protect" class="panel hidden"><div class="tool-title">🔐 Protect PDF</div><p class="tool-desc">Configure password protection for a PDF.</p><input id="protect-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="protect-input">📂 <b>Select PDF</b><br><small>or drag & drop here</small></div><div id="protect-file-card"></div><div class="extra-options"><label>Password<input id="protect-password" class="tool-input" type="password" placeholder="Enter password"></label><label>Confirm<input id="protect-password2" class="tool-input" type="password" placeholder="Confirm password"></label><label>Method<select id="protect-method"><option value="aes">AES / Password encryption</option><option value="permissions">Permissions</option></select></label></div><div class="extra-help">Creates real PDF password encryption locally in your browser. AES-256 requires HTTPS/localhost; RC4 legacy mode is available as a compatibility fallback.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="protectPDF()">🔐 PROTECT PDF</button><button class="primary-btn" onclick="clearExtraFile('protect-input')">🗑️ Clear</button></div><div id="protect-status" class="compress-status"></div></div>
+<div id="panel-unlock" class="panel hidden"><div class="tool-title">🔓 Unlock PDF</div><p class="tool-desc">Unlock a password-protected PDF directly in your browser using the correct password.</p><input id="unlock-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="unlock-input">📂 <b>Select PDF</b><br><small>or drag & drop here</small></div><div id="unlock-file-card"></div><div class="extra-options"><label>PDF password<div class="password-wrap"><input id="unlock-password" class="tool-input" type="password" placeholder="Enter current password" autocomplete="off"><button type="button" class="password-eye" data-password-toggle="unlock-password" aria-label="Show password" title="Show password">👁️</button></div></label></div><div class="extra-help">The correct password is required. The output is decrypted and saved as a normal PDF without the password.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="unlockPDF()">🔓 REMOVE SECURITY</button><button class="primary-btn" onclick="clearExtraFile('unlock-input')">🗑️ Clear</button></div><div id="unlock-status" class="compress-status"></div></div>
+<div id="panel-protect" class="panel hidden"><div class="tool-title">🔐 Protect PDF</div><p class="tool-desc">Configure password protection for a PDF.</p><input id="protect-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="protect-input">📂 <b>Select PDF</b><br><small>or drag & drop here</small></div><div id="protect-file-card"></div><div class="extra-options"><label>Password<div class="password-wrap"><input id="protect-password" class="tool-input" type="password" placeholder="Enter password" autocomplete="new-password"><button type="button" class="password-eye" data-password-toggle="protect-password" aria-label="Show password" title="Show password">👁️</button></div></label><label>Confirm<div class="password-wrap"><input id="protect-password2" class="tool-input" type="password" placeholder="Confirm password" autocomplete="new-password"><button type="button" class="password-eye" data-password-toggle="protect-password2" aria-label="Show password" title="Show password">👁️</button></div></label><label>Method<select id="protect-method"><option value="aes">AES / Password encryption</option><option value="permissions">Permissions</option></select></label></div><div class="extra-help">Creates real PDF password encryption locally in your browser. AES-256 requires HTTPS/localhost; RC4 legacy mode is available as a compatibility fallback.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="protectPDF()">🔐 PROTECT PDF</button><button class="primary-btn" onclick="clearExtraFile('protect-input')">🗑️ Clear</button></div><div id="protect-status" class="compress-status"></div></div>
 <div id="panel-organize" class="panel hidden"><div class="tool-title">🗂️ Organize PDF</div><p class="tool-desc">Reorder, duplicate and remove pages using a simple page sequence.</p><input id="organize-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="organize-input">📂 <b>Select PDF</b><br><small>or drag & drop here</small></div><div id="organize-file-card"></div><div class="extra-options"><label>Page order<input id="organize-order" class="tool-input" placeholder="e.g. 3,1,2,4"></label><label>Action<select id="organize-action"><option value="custom">Use preview order</option><option value="reverse">Reverse pages</option></select></label></div><div id="organize-preview" class="organize-preview"></div><div class="extra-help">Use page numbers separated by commas. Repeat a number to duplicate a page; omit a number to delete it.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="organizePDF()">🗂️ APPLY & DOWNLOAD</button><button class="primary-btn" onclick="clearExtraFile('organize-input')">🗑️ Clear</button></div><div id="organize-status" class="compress-status"></div></div>
 <div id="panel-pagenum" class="panel hidden"><div class="tool-title">🔢 Page Numbers</div><p class="tool-desc">Add page numbers with custom position, start number and format.</p><input id="pagenum-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="pagenum-input">📂 <b>Select PDF</b><br><small>or drag & drop here</small></div><div id="pagenum-file-card"></div><div class="extra-options"><label>Position<select id="pagenum-position"><option value="bottom-center">Bottom Center</option><option value="bottom-right">Bottom Right</option><option value="bottom-left">Bottom Left</option><option value="top-right">Top Right</option></select></label><label>Start<input id="pagenum-start" type="number" class="tool-input" value="1" min="1"></label><label>Format<select id="pagenum-format"><option value="number">1, 2, 3</option><option value="page">Page 1</option><option value="slash">1 / total</option></select></label><label>Pages<input id="pagenum-pages" class="tool-input" placeholder="All pages"></label></div><div class="extra-actions"><button class="primary-btn success-btn" onclick="addPageNumbers()">🔢 ADD PAGE NUMBERS</button><button class="primary-btn" onclick="clearExtraFile('pagenum-input')">🗑️ Clear</button></div><div id="pagenum-status" class="compress-status"></div></div>
 <div id="panel-ocr" class="panel hidden"><div class="tool-title">🔎 OCR PDF</div><p class="tool-desc">Recognize scanned pages and export searchable text data.</p><input id="ocr-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="ocr-input">📂 <b>Select Scanned PDF</b><br><small>or drag & drop here</small></div><div id="ocr-file-card"></div><div class="extra-options"><label>Language<select id="ocr-lang" class="tool-input"><option value="eng">English</option><option value="hin">Hindi</option><option value="eng+hin">English + Hindi</option></select></label><label>Resolution<select id="ocr-scale"><option value="1.5">Standard</option><option value="2" selected>High</option><option value="2.5">Ultra</option></select></label><label>Output<select id="ocr-output"><option value="txt">TXT text</option><option value="json">JSON with page text</option></select></label></div><div class="extra-help">OCR quality depends on scan clarity. Searchable-PDF embedding needs an OCR/PDF engine that can place text layers.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="ocrPDF()">🔎 RUN OCR</button><button class="primary-btn" onclick="clearExtraFile('ocr-input')">🗑️ Clear</button></div><div id="ocr-status" class="compress-status"></div></div>>
@@ -6074,20 +6087,71 @@ async function restoreFileInputStatus(){
 }
 function extraStatus(id,msg){const e=document.getElementById(id+"-status");if(e)e.innerHTML=msg}
 function formatExtraBytes(n){if(!Number.isFinite(n))return "";if(n<1024)return n+" B";if(n<1024*1024)return (n/1024).toFixed(1)+" KB";return (n/1024/1024).toFixed(2)+" MB";}
-function renderExtraFileCard(id){
- const input=document.getElementById(id), box=document.getElementById(id.replace("-input","-file-card"));
- if(!input||!box)return;
- const files=Array.from(input.files||[]);
- if(!files.length){box.innerHTML="";return;}
- const multi=files.length>1;
- box.innerHTML='<div class="extra-file-card">'+
-   '<div class="extra-file-icon">📄</div><div class="extra-file-meta">'+
-   files.map((f,i)=>'<div class="extra-file-row"><div><div class="extra-file-name">'+escapeHTML(f.name)+'</div><div class="extra-file-size">'+formatExtraBytes(f.size)+'</div></div><button type="button" class="extra-file-remove" data-remove-index="'+i+'" aria-label="Remove file">✕</button></div>').join('')+
-   '<div class="extra-file-size"><b>'+files.length+'</b> file'+(files.length===1?'':'s')+' selected</div></div>'+
-   '<button type="button" class="extra-file-remove" data-clear-all="1">🗑️ Clear</button></div>';
- box.querySelectorAll('[data-remove-index]').forEach(btn=>btn.addEventListener('click',()=>removeExtraFile(id,Number(btn.dataset.removeIndex))));
- box.querySelector('[data-clear-all]')?.addEventListener('click',()=>clearExtraFile(id));
+function fileTypeIcon(file){
+  const n=(file?.name||'').toLowerCase();
+  if(file?.type?.startsWith('image/'))return '🖼️';
+  if(n.endsWith('.pdf'))return '📕';
+  if(n.endsWith('.doc')||n.endsWith('.docx'))return '📝';
+  if(n.endsWith('.xls')||n.endsWith('.xlsx'))return '📊';
+  if(n.endsWith('.ppt')||n.endsWith('.pptx'))return '📽️';
+  if(n.endsWith('.txt'))return '📄';
+  return '📁';
 }
+function renderExtraFileCard(id){
+  const input=document.getElementById(id), box=document.getElementById(id.replace("-input","-file-card"));
+  if(!input||!box)return;
+  const files=Array.from(input.files||[]);
+  if(!files.length){box.innerHTML="";return;}
+
+  box.innerHTML='<div class="extra-file-card">'+
+    files.map((f,i)=>'<div class="extra-file-row">'+
+      '<div class="extra-file-thumb" data-thumb-index="'+i+'"><span>'+fileTypeIcon(f)+'</span></div>'+
+      '<div class="extra-file-meta"><div class="extra-file-name">'+escapeHTML(f.name)+'</div><div class="extra-file-size">'+formatExtraBytes(f.size)+'</div></div>'+
+      '<button type="button" class="extra-file-remove" data-remove-index="'+i+'" aria-label="Remove file">✕</button>'+
+    '</div>').join('')+
+    '<div class="extra-file-size" style="margin-top:7px"><b>'+files.length+'</b> file'+(files.length===1?'':'s')+' selected</div>'+
+    '<button type="button" class="extra-file-remove" data-clear-all="1" style="margin-top:8px">🗑️ Clear</button>'+
+    '</div>';
+
+  box.querySelectorAll('[data-remove-index]').forEach(btn=>btn.addEventListener('click',()=>removeExtraFile(id,Number(btn.dataset.removeIndex))));
+  box.querySelector('[data-clear-all]')?.addEventListener('click',()=>clearExtraFile(id));
+
+  files.forEach((file,i)=>renderExtraThumbnail(file,box.querySelector('[data-thumb-index="'+i+'"]')));
+}
+async function renderExtraThumbnail(file,thumb){
+  if(!thumb||!file)return;
+  try{
+    if(file.type?.startsWith('image/')){
+      const url=URL.createObjectURL(file);
+      thumb.innerHTML='<img alt="File thumbnail">';
+      const img=thumb.querySelector('img');
+      img.onload=()=>URL.revokeObjectURL(url);
+      img.src=url;
+      return;
+    }
+    if(file.type==='application/pdf'||/\.pdf$/i.test(file.name)){
+      if(!window.pdfjsLib)return;
+      const bytes=new Uint8Array(await file.arrayBuffer());
+      const task=pdfjsLib.getDocument({data:bytes});
+      const pdf=await task.promise;
+      const page=await pdf.getPage(1);
+      const v=page.getViewport({scale:.42});
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.ceil(v.width);canvas.height=Math.ceil(v.height);
+      await page.render({canvasContext:canvas.getContext('2d'),viewport:v}).promise;
+      thumb.classList.add('pdf-thumb');
+      thumb.innerHTML='';
+      thumb.appendChild(canvas);
+      return;
+    }
+    thumb.classList.add('generic-thumb');
+    thumb.textContent=fileTypeIcon(file);
+  }catch(e){
+    thumb.classList.add('generic-thumb');
+    thumb.textContent=fileTypeIcon(file);
+  }
+}
+
 function setExtraFiles(id,fileList){
  const input=document.getElementById(id);if(!input)return;
  const files=Array.from(fileList||[]);if(!files.length){clearExtraFile(id);return;}
@@ -6107,6 +6171,26 @@ function clearExtraFile(id){
  const box=document.getElementById(id.replace('-input','-file-card'));if(box)box.innerHTML="";
  dbPut(id,null);extraStatus(id.replace('-input',''),"");
 }
+function setupPasswordEyes(){
+  document.querySelectorAll('[data-password-toggle]').forEach(btn=>{
+    if(btn.dataset.bound)return;
+    btn.addEventListener('click',()=>{
+      const input=document.getElementById(btn.dataset.passwordToggle);
+      if(!input)return;
+      const showing=input.type==='text';
+      input.type=showing?'password':'text';
+      btn.textContent=showing?'👁️':'🙈';
+      btn.title=showing?'Show password':'Hide password';
+      btn.setAttribute('aria-label',showing?'Show password':'Hide password');
+    });
+    btn.dataset.bound='1';
+  });
+  ['unlock-password','protect-password','protect-password2'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.value='';
+  });
+}
+
 function setupExtraFilePickers(){
  document.querySelectorAll('.extra-drop[data-pick]').forEach(drop=>{
    const id=drop.dataset.pick,input=document.getElementById(id);if(!input)return;
@@ -6327,13 +6411,69 @@ async function signPDF(){try{const f=selectedFile("sign-input"),doc=await loadPD
 async function watermarkPDF(){try{const f=selectedFile("watermark-input"),doc=await loadPDFLibDoc("watermark-input"),txt=document.getElementById("watermark-text").value||"WATERMARK",op=clamp(+document.getElementById("watermark-opacity").value||25,5,100)/100,pos=document.getElementById("watermark-position").value;doc.getPages().forEach(p=>{const {width,height}=p.getSize();const size=Math.max(18,Math.min(48,width/10));const tw=txt.length*size*.5;let x=(width-tw)/2,y=height/2;if(pos==="top")y=height-50;if(pos==="bottom")y=30;p.drawText(txt,{x,y,size,opacity:op,rotate:pos==="center"?PDFLib.degrees(-35):PDFLib.degrees(0)})});await savePdfDoc(doc,f.name.replace(/\.pdf$/i,"")+"-watermarked.pdf");extraStatus("watermark","✅ Watermark added.")}catch(e){extraStatus("watermark","❌ "+escapeHTML(e.message))}}
 async function htmlToPDF(){try{const html=document.getElementById("htmlpdf-input").value;if(!html.trim()){alert("Paste HTML first.");return}const holder=document.createElement("div");holder.innerHTML=html;holder.style.cssText="position:fixed;left:-100000px;top:0;width:794px;background:white;color:black;padding:40px";document.body.appendChild(holder);const c=await html2canvas(holder,{scale:1.5});const {jsPDF}=window.jspdf,pdf=new jsPDF("p","pt","a4"),pw=595.28,ph=841.89,ratio=pw/c.width,pagePx=ph/ratio;for(let y=0,pg=0;y<c.height;y+=pagePx,pg++){const h=Math.min(pagePx,c.height-y),part=document.createElement("canvas");part.width=c.width;part.height=h;part.getContext("2d").drawImage(c,0,y,c.width,h,0,0,c.width,h);if(pg)pdf.addPage();pdf.addImage(part.toDataURL("image/jpeg",.92),"JPEG",0,0,pw,h*ratio)}document.body.removeChild(holder);dlBlob(pdf.output("blob"),"HTML.pdf");extraStatus("htmlpdf","✅ HTML converted to PDF.")}catch(e){extraStatus("htmlpdf","❌ "+escapeHTML(e.message))}}
 async function unlockPDF(){
- try{
-  const f=selectedFile('unlock-input'), pw=document.getElementById('unlock-password')?.value||''; if(!f){alert('Select PDF first.');return} if(!pw){alert('Enter the current PDF password.');return}
-  if(!window.PDFDecrypt?.decryptPDF)throw new Error('PDF decryption engine did not load. Check internet connection and reload.');
-  extraStatus('unlock','Decrypting PDF securely in your browser... ⏳');
-  const bytes=new Uint8Array(await f.arrayBuffer()); const out=await PDFDecrypt.decryptPDF(bytes,pw);
-  dlBlob(new Blob([out],{type:'application/pdf'}),f.name.replace(/\.pdf$/i,'')+'-unlocked.pdf'); extraStatus('unlock','✅ Password removed. The downloaded PDF should open without asking for the old password.');
- }catch(e){extraStatus('unlock','❌ '+escapeHTML(e.message||e))}
+  const f=selectedFile('unlock-input');
+  const pw=document.getElementById('unlock-password')?.value||'';
+  if(!f){alert('Select PDF first.');return}
+  if(!pw){alert('Enter the current PDF password.');return}
+  if(!window.pdfjsLib||!window.jspdf?.jsPDF){
+    extraStatus('unlock','❌ PDF engine did not load. Please reload the page with internet access.');
+    return;
+  }
+  try{
+    extraStatus('unlock','Opening encrypted PDF with the password... ⏳');
+    const bytes=new Uint8Array(await f.arrayBuffer());
+    let passwordUsed=false;
+    const loadingTask=pdfjsLib.getDocument({
+      data:bytes,
+      password:pw,
+      isEvalSupported:true,
+      useWorkerFetch:true
+    });
+    const pdf=await loadingTask.promise;
+    const {jsPDF}=window.jspdf;
+    let outPdf=null;
+
+    for(let pageNo=1;pageNo<=pdf.numPages;pageNo++){
+      extraStatus('unlock',`Decrypting page ${pageNo}/${pdf.numPages}... ⏳`);
+      const page=await pdf.getPage(pageNo);
+      const base=page.getViewport({scale:1});
+      const scale=Math.min(2,Math.max(1.35,1800/Math.max(base.width,base.height)));
+      const viewport=page.getViewport({scale});
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.ceil(viewport.width);
+      canvas.height=Math.ceil(viewport.height);
+      const ctx=canvas.getContext('2d',{alpha:false});
+      ctx.fillStyle='#ffffff';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      await page.render({canvasContext:ctx,viewport}).promise;
+
+      const pageW=base.width;
+      const pageH=base.height;
+      const orientation=pageW>pageH?'landscape':'portrait';
+      if(!outPdf){
+        outPdf=new jsPDF({orientation,unit:'pt',format:[pageW,pageH],compress:true});
+      }else{
+        outPdf.addPage([pageW,pageH],orientation);
+      }
+      outPdf.addImage(canvas.toDataURL('image/jpeg',0.94),'JPEG',0,0,pageW,pageH,undefined,'FAST');
+      canvas.width=1; canvas.height=1;
+    }
+
+    if(!outPdf)throw new Error('No pages found in this PDF.');
+    dlBlob(outPdf.output('blob'),f.name.replace(/\.pdf$/i,'')+'-unlocked.pdf');
+
+    const pwEl=document.getElementById('unlock-password');
+    if(pwEl)pwEl.value='';
+    extraStatus('unlock','✅ Password removed. Downloaded PDF no longer asks for the old password.');
+  }catch(e){
+    const msg=String(e?.message||e);
+    const lower=msg.toLowerCase();
+    if(lower.includes('password')||lower.includes('incorrect')||lower.includes('passwordexception')){
+      extraStatus('unlock','❌ Incorrect PDF password. Please enter the correct password and try again.');
+    }else{
+      extraStatus('unlock','❌ '+escapeHTML(msg));
+    }
+  }
 }
 async function protectPDF(){
  try{
@@ -6341,7 +6481,7 @@ async function protectPDF(){
   if(!window.PDFEncrypt?.encryptPDF)throw new Error('PDF encryption engine did not load. Check internet connection and reload.');
   extraStatus('protect','Encrypting PDF with real password protection... ⏳');
   const bytes=new Uint8Array(await f.arrayBuffer()); const out=await PDFEncrypt.encryptPDF(bytes,pw,{ownerPassword:pw,allowPrinting:true,allowModifying:true,allowCopying:true,allowAnnotating:true,allowFillingForms:true,allowExtraction:true,allowAssembly:true,allowHighQualityPrint:true,algorithm:'AES-256'});
-  dlBlob(new Blob([out],{type:'application/pdf'}),f.name.replace(/\.pdf$/i,'')+'-protected.pdf'); extraStatus('protect','✅ Protected PDF created. It will require the password to open.');
+  dlBlob(new Blob([out],{type:'application/pdf'}),f.name.replace(/\.pdf$/i,'')+'-protected.pdf'); document.getElementById('protect-password').value=''; document.getElementById('protect-password2').value=''; extraStatus('protect','✅ Protected PDF created. Password fields cleared.');
  }catch(e){extraStatus('protect','❌ '+escapeHTML(e.message||e)+' — If AES-256 fails on a non-HTTPS page, serve this HTML from HTTPS/localhost.')}
 }
 let organizeState=[];
@@ -6366,7 +6506,7 @@ async function addPageNumbers(){try{const f=selectedFile('pagenum-input'),doc=aw
 async function ocrPDF(){const f=selectedFile('ocr-input');if(!f){alert('Select scanned PDF first.');return}if(!window.Tesseract){extraStatus('ocr','❌ OCR engine not loaded. Check internet connection and reload.');return}try{const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise;let text='';const lang=document.getElementById('ocr-lang').value,scale=+(document.getElementById('ocr-scale')?.value||2),outMode=document.getElementById('ocr-output')?.value||'txt';const pages=[];for(let i=1;i<=pdf.numPages;i++){extraStatus('ocr',`OCR page ${i}/${pdf.numPages}... ⏳`);const p=await pdf.getPage(i),v=p.getViewport({scale}),c=document.createElement('canvas');c.width=v.width;c.height=v.height;await p.render({canvasContext:c.getContext('2d'),viewport:v}).promise;const r=await Tesseract.recognize(c.toDataURL('image/png'),lang);pages.push({page:i,text:r.data.text||''});text+=`\n--- Page ${i} ---\n${r.data.text||''}\n`}if(outMode==='json'){dlBlob(new Blob([JSON.stringify({source:f.name,pages},null,2)],{type:'application/json'}),f.name.replace(/\.pdf$/i,'')+'-OCR.json')}else{dlBlob(new Blob([text],{type:'text/plain;charset=utf-8'}),f.name.replace(/\.pdf$/i,'')+'-OCR.txt')}extraStatus('ocr','✅ OCR completed.')}catch(e){extraStatus('ocr','❌ '+escapeHTML(e.message))}}
 
 
-restoreFieldState();bindPersistentInputs();setupExtraFilePickers();restoreFileInputStatus().then(()=>{if(selectedFile('organize-input'))initOrganizePreview()});
+restoreFieldState();bindPersistentInputs();setupExtraFilePickers();setupPasswordEyes();['unlock-password','protect-password','protect-password2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});restoreFileInputStatus().then(()=>{if(selectedFile('organize-input'))initOrganizePreview()});
 
 /* =====================================================
 INITIAL
@@ -6381,5 +6521,3 @@ updateSaveUI();
 <div id="output-modal" class="output-modal hidden"><div class="output-modal-box"><div class="output-modal-title">💾 Save your file</div><div id="output-modal-desc" class="output-modal-desc"></div><label>File name<input id="output-name" class="tool-input"></label><div class="output-modal-actions"><button id="output-save" class="primary-btn success-btn">💾 Download</button><button id="output-share" class="primary-btn">📱 WhatsApp / Share</button><button id="output-drive" type="button" class="primary-btn">☁️ Google Drive</button><button id="output-cancel" class="primary-btn">Cancel</button></div><div id="output-drive-help" class="extra-help"></div></div></div>
 </body>
 </html>
-
-<div class="legal-links" style="text-align:center;margin-top:14px;font-size:13px;"><a href="privacy-policy.html" target="_blank" rel="noopener">Privacy Policy</a><span style="margin:0 10px;">|</span><a href="terms.html" target="_blank" rel="noopener">Terms &amp; Conditions</a></div>
