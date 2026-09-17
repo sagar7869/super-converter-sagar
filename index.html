@@ -1732,7 +1732,7 @@ NEW - COMPRESS PDF
 ADDITIONAL CONVERTERS & PDF TOOLS
 ===================================================== -->
 
-<div id="panel-pdfword" class="panel hidden"><div class="tool-title">📝 PDF to Word</div><p class="tool-desc">Convert PDF text into a real editable DOCX document.</p><input id="pdfword-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="pdfword-input">📂 <b>Select PDF</b><br><small>or drag & drop here</small></div><div id="pdfword-file-card"></div><div class="extra-options"><label>Mode<select id="pdfword-mode"><option value="text">Without OCR — selectable text</option><option value="ocr">With OCR — scanned PDF</option><option value="layout">Layout Hybrid — text + page visual reference</option></select></label><label>OCR language<select id="pdfword-ocr-lang"><option value="eng">English</option><option value="hin">Hindi</option><option value="eng+hin">English + Hindi</option></select></label><label>Page range<input id="pdfword-pages" class="tool-input" placeholder="All pages (e.g. 1-5)"></label></div><div class="extra-help">Without OCR keeps selectable PDF text. OCR recognizes scanned pages. Layout Hybrid preserves page size and adds an editable text layer; exact 100% Word layout is not guaranteed because PDF and DOCX use different layout engines.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="pdfToWord()">📝 CONVERT TO WORD</button><button class="primary-btn" onclick="clearExtraFile('pdfword-input')">🗑️ Clear</button></div><div id="pdfword-status" class="compress-status"></div></div>
+<div id="panel-pdfword" class="panel hidden"><div class="tool-title">📝 PDF to Word</div><p class="tool-desc">Convert PDF text into a real editable DOCX document.</p><input id="pdfword-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="pdfword-input">📂 <b>Select PDF</b><br><small>or drag & drop here</small></div><div id="pdfword-file-card"></div><div class="extra-options"><label>Conversion<select id="pdfword-mode"><option value="high-fidelity" selected>High Fidelity — preserve layout</option><option value="ocr">OCR — scanned PDF</option></select></label><label>OCR language<select id="pdfword-ocr-lang"><option value="eng">English</option><option value="hin">Hindi</option><option value="eng+hin">English + Hindi</option></select></label><label>Page range<input id="pdfword-pages" class="tool-input" placeholder="All pages (e.g. 1-5)"></label></div><div class="extra-help">High Fidelity reconstructs text, fonts, images, tables, columns, spacing and page layout into an editable DOCX. Scanned PDFs automatically use OCR when needed. Complex PDFs can still have small Word-layout differences because PDF and DOCX use different layout models.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="pdfToWord()">📝 CONVERT TO WORD</button><button class="primary-btn" onclick="clearExtraFile('pdfword-input')">🗑️ Clear</button></div><div id="pdfword-status" class="compress-status"></div></div>
 <div id="panel-wordpdf" class="panel hidden"><div class="tool-title">📘 Word to PDF</div><p class="tool-desc">Convert DOC/DOCX into a clean, printable PDF.</p><input id="wordpdf-input" type="file" accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden><div class="extra-drop" data-pick="wordpdf-input">📂 <b>Select DOC / DOCX</b><br><small>or drag & drop here</small></div><div id="wordpdf-file-card"></div><div class="extra-options"><label>Page size<select id="wordpdf-size"><option>A4</option><option>A3</option><option>Letter</option></select></label><label>Orientation<select id="wordpdf-orient"><option value="p">Portrait</option><option value="l">Landscape</option></select></label><label>Quality<select id="wordpdf-quality"><option value="1.2">Standard</option><option value="1.6" selected>High</option><option value="2">Maximum</option></select></label></div><div class="extra-help">DOCX works best with browser conversion. Complex Word layouts may differ.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="wordToPDF()">📄 CONVERT TO PDF</button><button class="primary-btn" onclick="clearExtraFile('wordpdf-input')">🗑️ Clear</button></div><div id="wordpdf-status" class="compress-status"></div></div>
 <div id="panel-excelpdf" class="panel hidden"><div class="tool-title">📊 Excel to PDF</div><p class="tool-desc">Convert workbook sheets into a printable PDF.</p><input id="excelpdf-input" type="file" accept=".xls,.xlsx" hidden><div class="extra-drop" data-pick="excelpdf-input">📂 <b>Select EXCEL</b><br><small>XLS / XLSX • drag & drop</small></div><div id="excelpdf-file-card"></div><div class="extra-options"><label>Orientation<select id="excelpdf-orient"><option value="l">Landscape</option><option value="p">Portrait</option></select></label><label>Scale<select id="excelpdf-scale"><option value="0.9">Fit width</option><option value="1.2" selected>Standard</option><option value="1.5">Large text</option></select></label><label>Sheets<select id="excelpdf-sheets"><option value="all">All sheets</option><option value="first">First sheet</option></select></label></div><div class="extra-help">Each worksheet is rendered for printing; spreadsheet formulas are not edited in the PDF.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="excelToPDF()">📄 CONVERT TO PDF</button><button class="primary-btn" onclick="clearExtraFile('excelpdf-input')">🗑️ Clear</button></div><div id="excelpdf-status" class="compress-status"></div></div>
 <div id="panel-pptpdf" class="panel hidden"><div class="tool-title">📽️ PowerPoint to PDF</div><p class="tool-desc">Prepare PPT/PPTX for PDF conversion.</p><input id="pptpdf-input" type="file" accept=".ppt,.pptx" hidden><div class="extra-drop" data-pick="pptpdf-input">📂 <b>Select PPT / PPTX</b><br><small>or drag & drop here</small></div><div id="pptpdf-file-card"></div><div class="extra-options"><label>Conversion mode<select id="pptpdf-mode"><option value="browser">Browser preview / export</option><option value="office">Office engine (server)</option></select></label><label>Slides<input id="pptpdf-pages" class="tool-input" placeholder="All slides"></label></div><div class="extra-help">True slide-faithful PPT/PPTX → PDF needs an Office/LibreOffice rendering engine. This browser-only build will not fake a PDF.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="pptToPDF()">📄 CONVERT TO PDF</button><button class="primary-btn" onclick="clearExtraFile('pptpdf-input')">🗑️ Clear</button></div><div id="pptpdf-status" class="compress-status"></div></div>
@@ -6371,133 +6371,46 @@ async function pageText(page){
  for(const item of items){const y=item.transform?item.transform[5]:0;if(lastY!==null&&Math.abs(y-lastY)>5){if(cur.length)lines.push(cur.join(' '));cur=[]}if(item.str)cur.push(item.str);lastY=y}
  if(cur.length)lines.push(cur.join(' ')); return lines.filter(Boolean);
 }
+const PDF_TO_WORD_API = 'https://super-converter-pdfword-api.onrender.com';
+
 async function pdfToWord(){
  const f=selectedFile('pdfword-input');
  if(!f){alert('Select PDF first.');return}
- if(!window.docx && window.__ensureDocxLoaded){
-   extraStatus('pdfword','Loading Word/DOCX engine... ⏳');
-   const ok=await window.__ensureDocxLoaded();
-   if(!ok || !window.docx){extraStatus('pdfword','❌ Word/DOCX engine could not load. Check internet access and reload once.');return}
+ if(!/^https:\/\/[^\s]+\.onrender\.com$/i.test(PDF_TO_WORD_API)){
+   extraStatus('pdfword','⚠️ PDF → Word engine is not connected yet. Deploy the backend on Render, then replace PDF_TO_WORD_API with your Render URL.');
+   return;
  }
- if(!window.docx){extraStatus('pdfword','❌ Word/DOCX engine did not load. Please refresh the page once.');return}
- if(!window.pdfjsLib){extraStatus('pdfword','❌ PDF engine did not load. Please reload the page with internet access.');return}
-
  try{
-  const mode=document.getElementById('pdfword-mode')?.value||'text';
-  const lang=document.getElementById('pdfword-ocr-lang')?.value||'eng';
-  const raw=new Uint8Array(await f.arrayBuffer());
-
-  extraStatus('pdfword','Opening PDF... ⏳');
-  let pdf;
-  try{
-    if(pdfjsLib.GlobalWorkerOptions){
-      pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    }
-    pdf=await pdfjsLib.getDocument({
-      data:raw,
-      useWorkerFetch:true,
-      isEvalSupported:true,
-      disableAutoFetch:false,
-      disableStream:false
-    }).promise;
-  }catch(firstErr){
-    // Retry without a worker. This fixes intermittent PDF.js worker/CSP/CDN failures.
-    extraStatus('pdfword','PDF worker failed, retrying compatibility mode... ⏳');
-    pdf=await pdfjsLib.getDocument({
-      data:raw,
-      disableWorker:true,
-      isEvalSupported:false
-    }).promise;
-  }
-
-  const pages=parsePageRange(document.getElementById('pdfword-pages')?.value,pdf.numPages);
-  if(!pages.length)throw new Error('No valid pages selected.');
-
-  const children=[];
-  for(let ix=0;ix<pages.length;ix++){
-    const pageNo=pages[ix];
-    extraStatus('pdfword',`Processing page ${pageNo}/${pdf.numPages} (${ix+1}/${pages.length})... ⏳`);
-
-    let page=await pdf.getPage(pageNo);
-    let lines=[];
-    try{lines=await pageText(page)}catch(e){lines=[]}
-
-    if(mode==='ocr' || (mode==='text'&&!lines.length)){
-      const scale=1.6;
-      const v=page.getViewport({scale});
-      const c=document.createElement('canvas');
-      c.width=Math.max(1,Math.ceil(v.width));
-      c.height=Math.max(1,Math.ceil(v.height));
-      const ctx=c.getContext('2d',{willReadFrequently:true});
-      await page.render({canvasContext:ctx,viewport:v}).promise;
-      if(!window.Tesseract)throw new Error('OCR engine did not load. Please reload the page with internet access.');
-      const r=await Tesseract.recognize(c.toDataURL('image/png'),lang);
-      lines=(r.data.text||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
-      c.width=1;c.height=1;
-    }
-
-    if(!lines.length)lines=['[No selectable text found on this page]'];
-
-    children.push(new docx.Paragraph({
-      text:`Page ${pageNo}`,
-      heading:docx.HeadingLevel.HEADING_1
-    }));
-    lines.forEach(line=>children.push(new docx.Paragraph({text:String(line)})));
-
-    if(mode==='layout'){
-      const v=page.getViewport({scale:1.15});
-      const c=document.createElement('canvas');
-      c.width=Math.max(1,Math.ceil(v.width));
-      c.height=Math.max(1,Math.ceil(v.height));
-      await page.render({canvasContext:c.getContext('2d'),viewport:v}).promise;
-
-      // DOCX ImageRun is given binary image bytes, not a data-URL.
-      const dataUrl=c.toDataURL('image/jpeg',.82);
-      const b64=dataUrl.split(',')[1]||'';
-      const binary=atob(b64);
-      const imgBytes=new Uint8Array(binary.length);
-      for(let j=0;j<binary.length;j++)imgBytes[j]=binary.charCodeAt(j);
-
-      children.push(new docx.Paragraph({
-        children:[new docx.ImageRun({
-          data:imgBytes,
-          transformation:{
-            width:540,
-            height:Math.max(1,Math.round(540*v.height/v.width))
-          }
-        })]
-      }));
-      c.width=1;c.height=1;
-    }
-    children.push(new docx.Paragraph({text:''}));
-  }
-
-  extraStatus('pdfword','Creating editable DOCX... ⏳');
-  const docxDocument=new docx.Document({
-    sections:[{
-      properties:{page:{margin:{top:720,right:720,bottom:720,left:720}}},
-      children
-    }]
-  });
-  const blob=await docx.Packer.toBlob(docxDocument);
-
-  const suffix=mode==='ocr'?'-OCR-editable':mode==='layout'?'-layout-editable':'-editable';
-  dlBlob(blob,f.name.replace(/\.pdf$/i,'')+suffix+'.docx');
-
-  // Clear only the password-type fields globally; PDF-to-Word has no password field.
-  extraStatus('pdfword','✅ Editable DOCX created successfully.');
+   const mode=document.getElementById('pdfword-mode')?.value||'high-fidelity';
+   const lang=document.getElementById('pdfword-ocr-lang')?.value||'eng';
+   const range=document.getElementById('pdfword-pages')?.value?.trim()||'';
+   if(f.size>25*1024*1024)throw new Error('PDF is larger than the 25 MB free-service limit.');
+   extraStatus('pdfword','Uploading PDF to the high-fidelity conversion engine... ⏳');
+   const form=new FormData();
+   form.append('file',f,f.name);
+   form.append('mode',mode);
+   form.append('ocr_lang',lang);
+   form.append('page_range',range);
+   const response=await fetch(PDF_TO_WORD_API.replace(/\/$/,'')+'/convert/pdf-to-word',{method:'POST',body:form});
+   if(!response.ok){
+     let msg='Conversion server error ('+response.status+').';
+     try{const j=await response.json();msg=j.detail||j.message||msg}catch(e){}
+     throw new Error(msg);
+   }
+   extraStatus('pdfword','Building your editable DOCX with preserved layout... ⏳');
+   const blob=await response.blob();
+   if(!blob.size)throw new Error('The conversion server returned an empty DOCX.');
+   let name=f.name.replace(/\.pdf$/i,'-editable.docx');
+   const cd=response.headers.get('content-disposition')||'';
+   const match=cd.match(/filename\*?=(?:UTF-8''|\")?([^\";]+)/i);
+   if(match)name=decodeURIComponent(match[1].replace(/^\"|\"$/g,''));
+   dlBlob(blob,name);
+   extraStatus('pdfword','✅ High-fidelity editable DOCX created successfully.');
  }catch(e){
-  const msg=String(e?.message||e||'Unknown PDF to Word error');
-  const lower=msg.toLowerCase();
-  if(lower.includes('password')){
-    extraStatus('pdfword','❌ This PDF is password-protected. Unlock the PDF first, then convert it to Word.');
-  }else if(lower.includes('worker')||lower.includes('setting up fake worker')||lower.includes('fetch')){
-    extraStatus('pdfword','❌ PDF engine could not start. Refresh the page once and try again.');
-  }else{
-    extraStatus('pdfword','❌ PDF to Word failed: '+escapeHTML(msg));
-  }
+   extraStatus('pdfword','❌ PDF to Word failed: '+escapeHTML(e?.message||e));
  }
 }
+
 async function wordToPDF(){const f=selectedFile("wordpdf-input");if(!f){alert("Select DOC/DOCX first.");return}try{extraStatus("wordpdf","Converting... ⏳");const ab=await f.arrayBuffer();let html="";if(window.mammoth){const r=await mammoth.convertToHtml({arrayBuffer:ab});html=r.value}else html=`<pre>${escapeHTML(new TextDecoder().decode(ab))}</pre>`;const holder=document.createElement("div");holder.innerHTML=html;holder.style.cssText="position:fixed;left:-100000px;top:0;width:794px;background:white;color:black;padding:40px;font-family:Arial;line-height:1.5";document.body.appendChild(holder);const c=await html2canvas(holder,{scale:1.5,useCORS:true});const {jsPDF}=window.jspdf;const pdf=new jsPDF("p","pt","a4");const pageW=595.28,pageH=841.89;const ratio=pageW/c.width;const pagePx=pageH/ratio;for(let y=0,pg=0;y<c.height;y+=pagePx,pg++){const h=Math.min(pagePx,c.height-y);const part=document.createElement("canvas");part.width=c.width;part.height=h;part.getContext("2d").drawImage(c,0,y,c.width,h,0,0,c.width,h);if(pg)pdf.addPage();pdf.addImage(part.toDataURL("image/jpeg",.92),"JPEG",0,0,pageW,h*ratio)}document.body.removeChild(holder);dlBlob(pdf.output("blob"),f.name.replace(/\.(docx?|DOCX?)$/i,"")+".pdf");extraStatus("wordpdf","✅ PDF created.")}catch(e){extraStatus("wordpdf","❌ "+escapeHTML(e.message))}}
 
 async function excelToPDF(){const f=selectedFile("excelpdf-input");if(!f){alert("Select Excel first.");return}try{extraStatus("excelpdf","Reading workbook... ⏳");const wb=XLSX.read(await f.arrayBuffer(),{type:"array"});const html=wb.SheetNames.map(n=>`<h2>${escapeHTML(n)}</h2>`+XLSX.utils.sheet_to_html(wb.Sheets[n],{header:"",footer:""})).join("<hr>");const holder=document.createElement("div");holder.innerHTML=html;holder.style.cssText="position:fixed;left:-100000px;top:0;width:1050px;background:white;color:black;padding:24px;font-family:Arial;font-size:11px";holder.querySelectorAll("table").forEach(t=>t.style.cssText="border-collapse:collapse;width:100%");holder.querySelectorAll("td,th").forEach(t=>t.style.cssText="border:1px solid #999;padding:4px");document.body.appendChild(holder);const c=await html2canvas(holder,{scale:1.2});const {jsPDF}=window.jspdf;const pdf=new jsPDF("l","pt","a4");const pw=841.89,ph=595.28,ratio=pw/c.width,pagePx=ph/ratio;for(let y=0,pg=0;y<c.height;y+=pagePx,pg++){const h=Math.min(pagePx,c.height-y);const part=document.createElement("canvas");part.width=c.width;part.height=h;part.getContext("2d").drawImage(c,0,y,c.width,h,0,0,c.width,h);if(pg)pdf.addPage();pdf.addImage(part.toDataURL("image/jpeg",.9),"JPEG",0,0,pw,h*ratio)}document.body.removeChild(holder);dlBlob(pdf.output("blob"),f.name.replace(/\.(xlsx?|XLSX?)$/i,"")+".pdf");extraStatus("excelpdf","✅ Excel converted to PDF.")}catch(e){extraStatus("excelpdf","❌ "+escapeHTML(e.message))}}
