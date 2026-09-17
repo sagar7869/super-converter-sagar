@@ -6377,7 +6377,7 @@ async function pdfToWord(){
  if(!window.docx && window.__ensureDocxLoaded){
    extraStatus('pdfword','Loading Word/DOCX engine... ⏳');
    const ok=await window.__ensureDocxLoaded();
-   if(!ok || !window.docx){extraStatus('pdfword','❌ Word/DOCX engine could not load. The app will retry automatically; check internet access and refresh once.');return}
+   if(!ok || !window.docx){extraStatus('pdfword','❌ Word/DOCX engine could not load. Check internet access and reload once.');return}
  }
  if(!window.docx){extraStatus('pdfword','❌ Word/DOCX engine did not load. Please refresh the page once.');return}
  if(!window.pdfjsLib){extraStatus('pdfword','❌ PDF engine did not load. Please reload the page with internet access.');return}
@@ -6473,13 +6473,13 @@ async function pdfToWord(){
   }
 
   extraStatus('pdfword','Creating editable DOCX... ⏳');
-  const document=new docx.Document({
+  const docxDocument=new docx.Document({
     sections:[{
       properties:{page:{margin:{top:720,right:720,bottom:720,left:720}}},
       children
     }]
   });
-  const blob=await docx.Packer.toBlob(document);
+  const blob=await docx.Packer.toBlob(docxDocument);
 
   const suffix=mode==='ocr'?'-OCR-editable':mode==='layout'?'-layout-editable':'-editable';
   dlBlob(blob,f.name.replace(/\.pdf$/i,'')+suffix+'.docx');
