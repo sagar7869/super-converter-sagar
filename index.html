@@ -5,7 +5,7 @@
 
 <meta name="viewport"
       content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0f172a">
+<meta name="theme-color" content="#7c3aed">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1154,6 +1154,33 @@ VERY SMALL PHONES
 .password-eye{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:36px;height:34px;border:0;border-radius:8px;background:transparent;color:#cbd5e1;cursor:pointer;font-size:18px;display:grid;place-items:center}
 .password-eye:hover{background:rgba(255,255,255,.08);color:#fff}
 
+
+/* Modern animated UI — lightweight, no framework dependency */
+:root{--glow:#6366f1;--glow2:#22d3ee}
+body{background:radial-gradient(circle at 20% 0%,rgba(99,102,241,.14),transparent 30%),radial-gradient(circle at 100% 30%,rgba(34,211,238,.08),transparent 28%),#0b1120;transition:background .4s ease}
+.tool-card,.panel,.options-panel,.extra-drop,.camera-box,.save-box,.output-modal-box{transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;animation:scpIn .38s ease both}
+.tool-card:hover,.extra-drop:hover{transform:translateY(-2px);box-shadow:0 14px 35px rgba(0,0,0,.25),0 0 0 1px rgba(99,102,241,.15)}
+.primary-btn{position:relative;overflow:hidden;transition:transform .18s ease,filter .18s ease,box-shadow .18s ease}
+.primary-btn:hover{transform:translateY(-1px);filter:brightness(1.06);box-shadow:0 8px 24px rgba(99,102,241,.18)}
+.primary-btn:active{transform:translateY(0) scale(.985)}
+.primary-btn::after{content:"";position:absolute;inset:0;transform:translateX(-120%);background:linear-gradient(100deg,transparent,rgba(255,255,255,.16),transparent);transition:transform .5s ease}
+.primary-btn:hover::after{transform:translateX(120%)}
+.drop-zone,.extra-drop{position:relative;overflow:hidden}
+.drop-zone::before,.extra-drop::before{content:"";position:absolute;inset:-1px;background:linear-gradient(120deg,transparent,rgba(99,102,241,.10),transparent);transform:translateX(-100%);animation:scpShimmer 3.8s infinite}
+@keyframes scpIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+@keyframes scpShimmer{0%,55%{transform:translateX(-100%)}75%,100%{transform:translateX(100%)}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* V5 SEARCH RESULTS - clickable and clearly visible */
+.v4-results{width:100%;max-width:600px;margin:8px auto 14px;display:none;text-align:left;}
+.v4-results.show{display:block;}
+.v4-result{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 0;padding:12px 13px;border:1px solid #334155;border-radius:11px;background:#111c31;color:#f8fafc;text-align:left;cursor:pointer;}
+.v4-result:hover{border-color:#6366f1;background:#172554;}
+.v4-result span{min-width:0;display:flex;flex-direction:column;gap:3px;}
+.v4-result small{color:#a5b4fc;font-size:10px;}
+.v4-result em{font-style:normal;color:#94a3b8;font-size:10px;font-weight:500;}
+.v4-result strong{font-size:22px;color:#a5b4fc;}
+.v4-empty{padding:14px;border:1px solid #334155;border-radius:10px;color:#94a3b8;background:#0f172a;text-align:center;}
 </style>
 <style id="professional-extra-tools-css">
 .extra-file-card{margin:12px 0;padding:14px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(255,255,255,.045);display:flex;align-items:center;gap:12px}
@@ -1164,16 +1191,292 @@ VERY SMALL PHONES
 <style id="google-drive-extra-css">
 .drive-upload-status{margin-top:9px;padding:9px;border-radius:9px;background:#0b1220;border:1px solid #334155;color:#cbd5e1;font-size:11px;line-height:1.45}.drive-link{display:inline-block;margin-top:6px;color:#93c5fd;font-weight:800;text-decoration:none}.drive-link:hover{text-decoration:underline}.drive-progress{height:6px;background:#020617;border-radius:10px;overflow:hidden;margin-top:8px;display:none}.drive-progress>span{display:block;height:100%;width:0;background:#10b981;transition:width .2s}
 </style>
-</style></head>
+</style>
+<style id="modern-ui-v3">
+/* ===== Super Converter Pro — Modern Motion UI ===== */
+:root{
+  --ui-accent:#7c3aed;
+  --ui-cyan:#06b6d4;
+  --ui-pink:#ec4899;
+  --ui-surface:rgba(15,23,42,.72);
+  --ui-border:rgba(255,255,255,.12);
+}
+body{
+  background:
+    radial-gradient(circle at 12% 8%, rgba(124,58,237,.24), transparent 28%),
+    radial-gradient(circle at 88% 18%, rgba(6,182,212,.18), transparent 30%),
+    radial-gradient(circle at 50% 100%, rgba(236,72,153,.12), transparent 35%),
+    #070b16 !important;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";
+  position:fixed; inset:-30%;
+  z-index:-3; pointer-events:none;
+  background:
+    conic-gradient(from 0deg at 50% 50%,
+      rgba(124,58,237,.13),
+      rgba(6,182,212,.10),
+      rgba(236,72,153,.10),
+      rgba(124,58,237,.13));
+  filter:blur(55px);
+  animation:uiAurora 18s linear infinite;
+}
+body::after{
+  content:"";
+  position:fixed; inset:0;
+  z-index:-2; pointer-events:none;
+  opacity:.34;
+  background-image:
+    linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+  background-size:34px 34px;
+  mask-image:linear-gradient(to bottom,black,transparent 85%);
+}
+@keyframes uiAurora{
+  0%{transform:rotate(0deg) scale(1)}
+  50%{transform:rotate(180deg) scale(1.14)}
+  100%{transform:rotate(360deg) scale(1)}
+}
+header,.app-header,.topbar{
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.10)!important;
+  background:linear-gradient(135deg,rgba(15,23,42,.92),rgba(30,41,59,.70))!important;
+  box-shadow:0 20px 70px rgba(0,0,0,.30), inset 0 1px rgba(255,255,255,.08)!important;
+}
+header::before,.app-header::before,.topbar::before{
+  content:"";
+  position:absolute; inset:0;
+  background:linear-gradient(110deg,transparent 15%,rgba(255,255,255,.10) 45%,transparent 65%);
+  transform:translateX(-120%);
+  animation:uiShine 5s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes uiShine{
+  0%,55%{transform:translateX(-120%)}
+  100%{transform:translateX(120%)}
+}
+.tool-grid > *, .panel, .card, .tool-card{
+  border:1px solid var(--ui-border)!important;
+  background:linear-gradient(145deg,rgba(30,41,59,.82),rgba(15,23,42,.68))!important;
+  box-shadow:0 12px 40px rgba(0,0,0,.20), inset 0 1px rgba(255,255,255,.055)!important;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+}
+.tool-grid > *{
+  position:relative;
+  overflow:hidden;
+  transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s,border-color .28s;
+}
+.tool-grid > *::after{
+  content:"";
+  position:absolute;
+  width:130px;height:130px;
+  right:-65px;top:-65px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(124,58,237,.26),transparent 68%);
+  transition:transform .4s,opacity .4s;
+  opacity:.55;
+}
+.tool-grid > *:hover{
+  transform:translateY(-5px);
+  border-color:rgba(124,58,237,.42)!important;
+  box-shadow:0 20px 55px rgba(0,0,0,.32),0 0 30px rgba(124,58,237,.08)!important;
+}
+.tool-grid > *:hover::after{transform:scale(1.8);opacity:.9}
+button,.primary-btn,.tab-btn,.action-btn{
+  position:relative;
+  overflow:hidden;
+  transition:transform .2s,box-shadow .2s,filter .2s!important;
+}
+button::before,.primary-btn::before,.tab-btn::before,.action-btn::before{
+  content:"";
+  position:absolute; inset:0;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.18) 50%,transparent 65%);
+  transform:translateX(-130%);
+  transition:transform .6s;
+  pointer-events:none;
+}
+button:hover::before,.primary-btn:hover::before,.tab-btn:hover::before,.action-btn:hover::before{
+  transform:translateX(130%);
+}
+button:hover,.primary-btn:hover,.tab-btn:hover,.action-btn:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.08);
+  box-shadow:0 10px 28px rgba(0,0,0,.24);
+}
+.extra-drop,.drop-zone,[class*="drop"]{
+  position:relative;
+  overflow:hidden;
+  border:1px dashed rgba(124,58,237,.55)!important;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(124,58,237,.16),transparent 55%),
+    rgba(15,23,42,.54)!important;
+  box-shadow:inset 0 0 35px rgba(124,58,237,.06),0 10px 30px rgba(0,0,0,.16)!important;
+  transition:transform .25s,border-color .25s,background .25s;
+}
+.extra-drop:hover,.drop-zone:hover,[class*="drop"]:hover{
+  transform:translateY(-3px);
+  border-color:rgba(6,182,212,.85)!important;
+}
+.extra-drop::after,.drop-zone::after,[class*="drop"]::after{
+  content:"";
+  position:absolute;left:-20%;right:-20%;height:1px;top:50%;
+  background:linear-gradient(90deg,transparent,rgba(6,182,212,.65),transparent);
+  animation:uiScan 3s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes uiScan{
+  0%{transform:translateY(-55px);opacity:0}
+  30%,70%{opacity:1}
+  100%{transform:translateY(55px);opacity:0}
+}
+input,select,textarea{
+  border-color:rgba(255,255,255,.12)!important;
+  background:rgba(2,6,23,.55)!important;
+  transition:border-color .2s,box-shadow .2s,transform .2s!important;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:rgba(124,58,237,.85)!important;
+  box-shadow:0 0 0 3px rgba(124,58,237,.13),0 0 25px rgba(124,58,237,.08)!important;
+  transform:translateY(-1px);
+}
+.tool-title,h1,h2,h3{
+  text-shadow:0 0 24px rgba(124,58,237,.18);
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+
+
+<style>
+.ui-motion-orb{
+  position:absolute;right:18px;top:18px;width:12px;height:12px;border-radius:50%;
+  background:#06b6d4;box-shadow:0 0 0 0 rgba(6,182,212,.55),0 0 18px rgba(6,182,212,.75);
+  animation:uiPulse 2s infinite;z-index:3;pointer-events:none
+}
+@keyframes uiPulse{
+  0%{box-shadow:0 0 0 0 rgba(6,182,212,.55),0 0 18px rgba(6,182,212,.75)}
+  70%{box-shadow:0 0 0 13px rgba(6,182,212,0),0 0 28px rgba(124,58,237,.55)}
+  100%{box-shadow:0 0 0 0 rgba(6,182,212,0),0 0 18px rgba(6,182,212,.75)}
+}
+</style>
+
+
+<style id="super-ui-v4">
+/* ===== SUPER CONVERTER PRO — V4 COMMAND UI ===== */
+:root{
+  --v4-bg:#070b16;--v4-panel:rgba(15,23,42,.78);--v4-line:rgba(255,255,255,.10);
+  --v4-text:#eef2ff;--v4-muted:#94a3b8;--v4-purple:#8b5cf6;--v4-cyan:#22d3ee;
+}
+body{
+  background:
+    radial-gradient(900px 500px at 10% -5%,rgba(139,92,246,.26),transparent 60%),
+    radial-gradient(800px 500px at 100% 10%,rgba(34,211,238,.18),transparent 58%),
+    radial-gradient(900px 600px at 50% 110%,rgba(236,72,153,.12),transparent 60%),
+    var(--v4-bg)!important;
+}
+.v4-command{
+  position:sticky;top:8px;z-index:50;margin:10px auto 16px;max-width:900px;
+  padding:12px;border:1px solid var(--v4-line);border-radius:20px;
+  background:rgba(2,6,23,.78);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+  box-shadow:0 18px 60px rgba(0,0,0,.28),0 0 35px rgba(139,92,246,.08);
+}
+.v4-search{
+  display:flex;align-items:center;gap:10px;height:48px;padding:0 14px;border-radius:14px;
+  background:rgba(30,41,59,.72);border:1px solid rgba(255,255,255,.10);
+}
+.v4-search span{font-size:20px}.v4-search input{border:0!important;outline:0!important;box-shadow:none!important;
+  background:transparent!important;margin:0!important;width:100%;font-size:16px}
+.v4-cats{display:flex;gap:8px;overflow:auto;padding:10px 2px 2px;scrollbar-width:none}
+.v4-cats::-webkit-scrollbar{display:none}
+.v4-cat{
+  flex:0 0 auto;border:1px solid rgba(255,255,255,.10);background:rgba(30,41,59,.58);
+  color:#cbd5e1;border-radius:999px;padding:8px 13px;font-size:12px;font-weight:700;cursor:pointer;
+}
+.v4-cat.active{background:linear-gradient(135deg,#7c3aed,#0891b2);color:white;border-color:transparent;
+  box-shadow:0 7px 24px rgba(124,58,237,.25)}
+.v4-results{display:none;max-height:280px;overflow:auto;margin-top:8px;border-top:1px solid var(--v4-line);padding-top:7px}
+.v4-results.show{display:block}
+.v4-result{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:12px;
+  cursor:pointer;color:#e2e8f0;background:rgba(15,23,42,.35)
+}
+.v4-result:hover{background:rgba(124,58,237,.14)}
+.v4-result small{color:var(--v4-muted)}
+.v4-hidden-card{display:none!important}
+.v4-file-card{
+  position:relative;display:flex;align-items:center;gap:10px;margin:12px 0;padding:10px;
+  border:1px solid rgba(255,255,255,.10);border-radius:16px;background:rgba(2,6,23,.46);
+  overflow:hidden;
+}
+.v4-thumb{
+  width:58px;height:70px;flex:0 0 58px;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(145deg,#1e293b,#0f172a);border:1px solid rgba(255,255,255,.10)
+}
+.v4-thumb img,.v4-thumb canvas{width:100%;height:100%;object-fit:cover;display:block}
+.v4-file-meta{min-width:0;flex:1}.v4-file-name{font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v4-file-size{font-size:12px;color:#94a3b8;margin-top:4px}
+.v4-remove{width:34px!important;height:34px!important;padding:0!important;border-radius:10px!important;background:rgba(239,68,68,.10)!important;color:#fecaca!important}
+.v4-remove:hover{background:rgba(239,68,68,.22)!important}
+.v4-summary{
+  margin-top:12px;padding:13px;border-radius:16px;border:1px solid rgba(34,211,238,.16);
+  background:linear-gradient(135deg,rgba(15,118,110,.10),rgba(124,58,237,.10));
+  display:none;animation:v4Up .35s ease both
+}
+.v4-summary.show{display:block}
+.v4-summary-title{font-weight:800;margin-bottom:8px}.v4-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.v4-stat{padding:9px;border-radius:11px;background:rgba(2,6,23,.35);text-align:center}
+.v4-stat b{display:block;font-size:14px}.v4-stat span{font-size:10px;color:#94a3b8}
+.v4-progress{height:7px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin:9px 0}
+.v4-progress i{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#8b5cf6,#22d3ee);
+  transition:width .35s ease}
+.v4-target{
+  margin:10px 0;padding:11px;border:1px dashed rgba(139,92,246,.35);border-radius:14px;
+  background:rgba(124,58,237,.055)
+}
+.v4-target-row{display:flex;gap:8px;align-items:center}.v4-target-row input,.v4-target-row select{margin:0!important}
+.v4-target-note{font-size:11px;color:#94a3b8;margin-top:5px}
+@keyframes v4Up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(max-width:600px){.v4-command{top:4px}.v4-stats{grid-template-columns:repeat(3,1fr)}}
+</style>
+
+</head>
 
 <body>
+
+<div id="v4-command" class="v4-command">
+  <div class="v4-search">
+    <span>⌕</span>
+    <input id="v4-tool-search" type="search" autocomplete="off" placeholder="Search any tool… e.g. PDF, JPG, Merge, OCR">
+    <span id="v4-search-count" style="font-size:11px;color:#94a3b8"></span>
+  </div>
+  <div class="v4-cats" id="v4-cats">
+    <button class="v4-cat active" data-cat="all">All</button>
+    <button class="v4-cat" data-cat="pdf">PDF</button>
+    <button class="v4-cat" data-cat="image">Images</button>
+    <button class="v4-cat" data-cat="office">Office</button>
+    <button class="v4-cat" data-cat="scan">Scan</button>
+    <button class="v4-cat" data-cat="security">Security</button>
+    <button class="v4-cat" data-cat="organize">Organize</button>
+  </div>
+  <div class="v9-theme-row" aria-label="Theme">
+    <button type="button" class="v9-theme-btn active" data-theme="colorful">🌈 Colorful</button>
+    <button type="button" class="v9-theme-btn" data-theme="dark">🌙 Dark</button>
+    <button type="button" class="v9-theme-btn" data-theme="light">☀️ Light</button>
+  </div>
+  <div id="v4-results" class="v4-results"></div>
+</div>
+
 
 <h1>Super Converter Pro</h1>
 <p class="subtitle">HD Document Studio</p>
 
 <div class="tool-grid">
 
-    <button id="tab-merge" class="tool-card active" onclick="switchTab('merge')">📄 Merge PDF</button>
+    <button id="tab-merge" class="tool-card" onclick="switchTab('merge')">📄 Merge PDF</button>
     <button id="tab-resize" class="tool-card" onclick="switchTab('resize')">🖼️ Image Resizer</button>
     <button id="tab-scan" class="tool-card" onclick="switchTab('scan')">📸 Smart Scan</button>
     <button id="tab-split" class="tool-card" onclick="switchTab('split')">✂️ Split PDF</button>
@@ -1237,67 +1540,44 @@ IMAGE RESIZER
 ===================================================== -->
 
 <div id="panel-resize" class="panel hidden">
-
-    <div class="options-panel">
-
-        <label>Target Size</label>
-
-        <div style="display:flex;gap:7px">
-
-            <input
-                id="resize-size"
-                type="number"
-                min="1"
-                placeholder="e.g. 150">
-
-            <select id="resize-unit">
-                <option>KB</option>
-                <option>MB</option>
-            </select>
-
-        </div>
-
-        <label>Resize Method</label>
-
+<div class="options-panel">
+        <label>Resize Mode</label>
         <select id="resize-mode" onchange="toggleResizeMode()">
-            <option value="size" selected>Target File Size (KB / MB)</option>
-            <option value="dimensions">Exact Width × Height (px)</option>
+          <option value="dimensions" selected>Width × Height</option>
+          <option value="size">Target File Size</option>
+          <option value="both">Width × Height + Target Size</option>
         </select>
 
-        <div id="resize-size-box">
-            <label style="margin-top:8px">Target Size</label>
-            <div style="display:flex;gap:7px">
-                <input id="resize-size" type="number" min="1" placeholder="e.g. 150">
-                <select id="resize-unit"><option>KB</option><option>MB</option></select>
-            </div>
+        <div id="resize-dimensions-box" style="margin-top:8px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <label>Width (px)<input id="resize-width" type="number" min="1" placeholder="1080"></label>
+            <label>Height (px)<input id="resize-height" type="number" min="1" placeholder="1350"></label>
+          </div>
+          <label style="display:flex;align-items:center;gap:7px;margin-top:8px">
+            <input id="resize-keep-ratio" type="checkbox" checked style="width:auto;margin:0"> Keep aspect ratio
+          </label>
         </div>
 
-        <div id="resize-dimensions-box" class="hidden" style="margin-top:8px">
-            <label>Width (px)</label>
-            <input id="resize-width" type="number" min="1" placeholder="e.g. 1080">
-            <label style="margin-top:7px">Height (px)</label>
-            <input id="resize-height" type="number" min="1" placeholder="e.g. 1350">
-            <label style="display:flex;align-items:center;gap:7px;margin-top:8px">
-                <input id="resize-keep-ratio" type="checkbox" checked style="width:auto;margin:0">
-                Keep aspect ratio
-            </label>
+        <div id="resize-size-box" class="hidden" style="margin-top:8px">
+          <label>Target File Size</label>
+          <div style="display:flex;gap:7px">
+            <input id="resize-size" type="number" min="1" placeholder="e.g. 150">
+            <select id="resize-unit"><option>KB</option><option>MB</option></select>
+          </div>
         </div>
 
-        <label style="margin-top:10px">Export Format</label>
+        <div id="resize-both-box" class="hidden" style="margin-top:8px">
+          <label>Target File Size (optional)</label>
+          <div style="display:flex;gap:7px">
+            <input id="resize-both-size" type="number" min="1" placeholder="e.g. 150">
+            <select id="resize-both-unit"><option>KB</option><option>MB</option></select>
+          </div>
+        </div>
 
-        <select id="resize-format">
-
-            <option value="image/jpeg">
-                JPG
-            </option>
-
-            <option value="image/png">
-                PNG
-            </option>
-
-        </select>
-
-    </div>
+        <label style="margin-top:10px">Export Format
+          <select id="resize-format"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option></select>
+        </label>
+      </div>
 
     <div class="drop-zone"
          onclick="document.getElementById('resize-input').click()">
@@ -1438,6 +1718,7 @@ SMART SCAN
         </div>
 
         <button
+            id="save-pdf-btn"
             class="primary-btn success-btn"
             onclick="saveScannedPDF()">
 
@@ -1759,11 +2040,11 @@ ADDITIONAL CONVERTERS & PDF TOOLS
 ===================================================== -->
 
 <div id="panel-pdfword" class="panel hidden"><div class="tool-title">📝 PDF to Word</div><p class="tool-desc">Convert PDF text into a real editable DOCX document.</p><input id="pdfword-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="pdfword-input">📂 <b>Select PDF</b><br><small>or drag & drop here</small></div><div id="pdfword-file-card"></div><div class="extra-options"><label>Conversion<select id="pdfword-mode"><option value="high-fidelity" selected>High Fidelity — preserve layout</option><option value="ocr">OCR — scanned PDF</option></select></label><label>OCR language<select id="pdfword-ocr-lang"><option value="eng">English</option><option value="hin">Hindi</option><option value="eng+hin">English + Hindi</option></select></label><label>Page range<input id="pdfword-pages" class="tool-input" placeholder="All pages (e.g. 1-5)"></label></div><div class="extra-help">High Fidelity reconstructs text, fonts, images, tables, columns, spacing and page layout into an editable DOCX. Scanned PDFs automatically use OCR when needed. Complex PDFs can still have small Word-layout differences because PDF and DOCX use different layout models.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="pdfToWord()">📝 CONVERT TO WORD</button><button class="primary-btn" onclick="clearExtraFile('pdfword-input')">🗑️ Clear</button></div><div id="pdfword-status" class="compress-status"></div></div>
-<div id="panel-wordpdf" class="panel hidden"><div class="tool-title">📘 Word to PDF</div><p class="tool-desc">Convert DOC/DOCX into a clean, printable PDF.</p><input id="wordpdf-input" type="file" accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden><div class="extra-drop" data-pick="wordpdf-input">📂 <b>Select DOC / DOCX</b><br><small>or drag & drop here</small></div><div id="wordpdf-file-card"></div><div class="extra-options"><label>Page size<select id="wordpdf-size"><option>A4</option><option>A3</option><option>Letter</option></select></label><label>Orientation<select id="wordpdf-orient"><option value="p">Portrait</option><option value="l">Landscape</option></select></label><label>Quality<select id="wordpdf-quality"><option value="1.2">Standard</option><option value="1.6" selected>High</option><option value="2">Maximum</option></select></label></div><div class="extra-help">DOCX works best with browser conversion. Complex Word layouts may differ.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="wordToPDF()">📄 CONVERT TO PDF</button><button class="primary-btn" onclick="clearExtraFile('wordpdf-input')">🗑️ Clear</button></div><div id="wordpdf-status" class="compress-status"></div></div>
+<div id="panel-wordpdf" class="panel hidden"><div class="tool-title">📘 Word to PDF</div><p class="tool-desc">Convert DOC/DOCX into a clean, printable PDF.</p><input id="wordpdf-input" type="file" accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden><div class="extra-drop" data-pick="wordpdf-input">📂 <b>Select DOC / DOCX</b><br><small>or drag & drop here</small></div><div id="wordpdf-file-card"></div><div class="v4-target"><b>Output size (optional)</b><div class="v4-target-row"><input id="jpgpdf-target-size" type="number" min="1" placeholder="e.g. 500"><select id="jpgpdf-target-unit"><option>KB</option><option>MB</option></select></div><div class="v4-target-note">Optional target size; quality is adjusted automatically.</div></div><div class="extra-options"><label>Page size<select id="wordpdf-size"><option>A4</option><option>A3</option><option>Letter</option></select></label><label>Orientation<select id="wordpdf-orient"><option value="p">Portrait</option><option value="l">Landscape</option></select></label><label>Quality<select id="wordpdf-quality"><option value="1.2">Standard</option><option value="1.6" selected>High</option><option value="2">Maximum</option></select></label></div><div class="extra-help">DOCX works best with browser conversion. Complex Word layouts may differ.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="wordToPDF()">📄 CONVERT TO PDF</button><button class="primary-btn" onclick="clearExtraFile('wordpdf-input')">🗑️ Clear</button></div><div id="wordpdf-status" class="compress-status"></div></div>
 <div id="panel-excelpdf" class="panel hidden"><div class="tool-title">📊 Excel to PDF</div><p class="tool-desc">Convert workbook sheets into a printable PDF.</p><input id="excelpdf-input" type="file" accept=".xls,.xlsx" hidden><div class="extra-drop" data-pick="excelpdf-input">📂 <b>Select EXCEL</b><br><small>XLS / XLSX • drag & drop</small></div><div id="excelpdf-file-card"></div><div class="extra-options"><label>Orientation<select id="excelpdf-orient"><option value="l">Landscape</option><option value="p">Portrait</option></select></label><label>Scale<select id="excelpdf-scale"><option value="0.9">Fit width</option><option value="1.2" selected>Standard</option><option value="1.5">Large text</option></select></label><label>Sheets<select id="excelpdf-sheets"><option value="all">All sheets</option><option value="first">First sheet</option></select></label></div><div class="extra-help">Each worksheet is rendered for printing; spreadsheet formulas are not edited in the PDF.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="excelToPDF()">📄 CONVERT TO PDF</button><button class="primary-btn" onclick="clearExtraFile('excelpdf-input')">🗑️ Clear</button></div><div id="excelpdf-status" class="compress-status"></div></div>
 <div id="panel-pptpdf" class="panel hidden"><div class="tool-title">📽️ PowerPoint to PDF</div><p class="tool-desc">Prepare PPT/PPTX for PDF conversion.</p><input id="pptpdf-input" type="file" accept=".ppt,.pptx" hidden><div class="extra-drop" data-pick="pptpdf-input">📂 <b>Select PPT / PPTX</b><br><small>or drag & drop here</small></div><div id="pptpdf-file-card"></div><div class="extra-options"><label>Conversion mode<select id="pptpdf-mode"><option value="browser">Browser preview / export</option><option value="office">Office engine (server)</option></select></label><label>Slides<input id="pptpdf-pages" class="tool-input" placeholder="All slides"></label></div><div class="extra-help">True slide-faithful PPT/PPTX → PDF needs an Office/LibreOffice rendering engine. This browser-only build will not fake a PDF.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="pptToPDF()">📄 CONVERT TO PDF</button><button class="primary-btn" onclick="clearExtraFile('pptpdf-input')">🗑️ Clear</button></div><div id="pptpdf-status" class="compress-status"></div></div>
 <div id="panel-pdfjpg" class="panel hidden"><div class="tool-title">🖼️ PDF to JPG</div><p class="tool-desc">Render PDF pages as high-quality JPG images.</p><input id="pdfjpg-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="pdfjpg-input">📂 <b>Select PDF</b><br><small>or drag & drop here</small></div><div id="pdfjpg-file-card"></div><div class="extra-options"><label>Quality<select id="pdfjpg-quality"><option value="1">Standard</option><option value="1.5" selected>High</option><option value="2">Ultra</option></select></label><label>Pages<input id="pdfjpg-pages" class="tool-input" placeholder="All (e.g. 1-3)"></label><label>Format<select id="pdfjpg-format"><option value="jpg">JPG</option><option value="png">PNG</option></select></label></div><div class="extra-actions"><button class="primary-btn success-btn" onclick="pdfToJPG()">🖼️ CONVERT PAGES</button><button class="primary-btn" onclick="clearExtraFile('pdfjpg-input')">🗑️ Clear</button></div><div id="pdfjpg-status" class="compress-status"></div></div>
-<div id="panel-jpgpdf" class="panel hidden"><div class="tool-title">📄 JPG to PDF</div><p class="tool-desc">Combine one or many images into a professionally sized PDF.</p><input id="jpgpdf-input" type="file" accept="image/jpeg,image/jpg,image/png,image/webp" multiple hidden><div class="extra-drop" data-pick="jpgpdf-input">📂 <b>Select Images</b><br><small>Multiple images • drag & drop</small></div><div id="jpgpdf-file-card"></div><div class="extra-options"><label>Page size<select id="jpgpdf-size"><option value="a4">A4</option><option value="letter">Letter</option><option value="original">Original image</option></select></label><label>Fit<select id="jpgpdf-fit"><option value="contain">Fit inside page</option><option value="cover">Fill page</option></select></label><label>Quality<select id="jpgpdf-quality"><option value="0.8">Standard</option><option value="0.92" selected>High</option><option value="1">Maximum</option></select></label></div><div class="extra-actions"><button class="primary-btn success-btn" onclick="jpgToPDF()">📄 CREATE PDF</button><button class="primary-btn" onclick="clearExtraFile('jpgpdf-input')">🗑️ Clear</button></div><div id="jpgpdf-status" class="compress-status"></div></div>
+<div id="panel-jpgpdf" class="panel hidden"><div class="tool-title">📄 JPG to PDF</div><p class="tool-desc">Combine images into a size-controlled PDF. The selected quality preset now changes the actual output.</p><input id="jpgpdf-input" type="file" accept="image/jpeg,image/jpg,image/png,image/webp" multiple hidden><div class="extra-drop" data-pick="jpgpdf-input">📂 <b>Select Images</b><br><small>Multiple images • drag & drop</small></div><div id="jpgpdf-file-card"></div><div class="extra-options"><label>Page size<select id="jpgpdf-size"><option value="a4">A4</option><option value="letter">Letter</option><option value="original">Original image</option></select></label><label>Fit<select id="jpgpdf-fit"><option value="contain">Fit inside page</option><option value="cover">Fill page</option></select></label><label>PDF quality<select id="jpgpdf-quality"><option value="small">Small — lower size</option><option value="standard" selected>Standard — balanced</option><option value="high">High — clearer</option><option value="maximum">Maximum — largest</option></select></label></div><div class="extra-actions"><button class="primary-btn success-btn" onclick="jpgToPDF()">📄 CREATE PDF</button><button class="primary-btn" onclick="clearExtraFile('jpgpdf-input')">🗑️ Clear</button></div><div id="jpgpdf-status" class="compress-status"></div></div>
 <div id="panel-sign" class="panel hidden"><div class="tool-title">✍️ Sign PDF</div><p class="tool-desc">Add a signature to your PDF with control over text, page and position.</p><input id="sign-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="sign-input">📂 <b>Select PDF</b><br><small>or drag & drop here</small></div><div id="sign-file-card"></div><div class="extra-options"><label>Signature text<input id="sign-text" class="tool-input" value="Your Signature"></label><label>Page<select id="sign-page"><option value="all">All pages</option><option value="first">First page</option><option value="last">Last page</option></select></label><label>Position<select id="sign-position"><option value="bottom-right">Bottom Right</option><option value="bottom-left">Bottom Left</option><option value="center">Center</option><option value="top-right">Top Right</option></select></label><label>Size<input id="sign-size" class="tool-input" type="number" value="18" min="8" max="72"></label></div><div class="extra-help">Current browser mode adds a typed signature. A true handwritten signature pad can be added separately.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="signPDF()">✍️ SIGN & DOWNLOAD</button><button class="primary-btn" onclick="clearExtraFile('sign-input')">🗑️ Clear</button></div><div id="sign-status" class="compress-status"></div></div>
 <div id="panel-watermark" class="panel hidden"><div class="tool-title">💧 Watermark</div><p class="tool-desc">Stamp text across selected PDF pages with professional controls.</p><input id="watermark-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="watermark-input">📂 <b>Select PDF</b><br><small>or drag & drop here</small></div><div id="watermark-file-card"></div><div class="extra-options"><label>Text<input id="watermark-text" class="tool-input" value="CONFIDENTIAL"></label><label>Opacity %<input id="watermark-opacity" class="tool-input" type="number" min="5" max="100" value="25"></label><label>Position<select id="watermark-position"><option value="center">Center / Diagonal</option><option value="top">Top</option><option value="bottom">Bottom</option></select></label><label>Pages<input id="watermark-pages" class="tool-input" placeholder="All pages"></label></div><div class="extra-actions"><button class="primary-btn success-btn" onclick="watermarkPDF()">💧 ADD WATERMARK</button><button class="primary-btn" onclick="clearExtraFile('watermark-input')">🗑️ Clear</button></div><div id="watermark-status" class="compress-status"></div></div>
 <div id="panel-htmlpdf" class="panel hidden"><div class="tool-title">🌐 HTML to PDF</div><p class="tool-desc">Build a PDF from HTML with page and quality controls.</p><textarea id="htmlpdf-input" class="tool-textarea" placeholder="Paste HTML here..."></textarea><div class="extra-options"><label>Page size<select id="htmlpdf-size"><option>A4</option><option>A3</option><option>Letter</option></select></label><label>Orientation<select id="htmlpdf-orient"><option value="p">Portrait</option><option value="l">Landscape</option></select></label><label>Scale<select id="htmlpdf-scale"><option value="1">Standard</option><option value="1.5" selected>High</option><option value="2">Ultra</option></select></label></div><div class="extra-actions"><button class="primary-btn success-btn" onclick="htmlToPDF()">🌐 CONVERT HTML TO PDF</button><button class="primary-btn" onclick="document.getElementById('htmlpdf-input').value='';saveFieldState()">🗑️ Clear HTML</button></div><div id="htmlpdf-status" class="compress-status"></div></div>
@@ -1998,35 +2279,38 @@ TAB
 
 function switchTab(tab){
 
+    const validTabs=[
+        "merge","resize","scan","split","compress",
+        "pdfword","wordpdf","excelpdf","pptpdf","pdfjpg","jpgpdf",
+        "sign","watermark","htmlpdf","unlock","protect","organize","pagenum","ocr"
+    ];
+    if(!validTabs.includes(tab)) tab="merge";
+
     activeTab=tab;
 
-    [
-        "merge",
-        "resize",
-        "scan",
-        "split",
-        "compress",
-        "pdfword","wordpdf","excelpdf","pptpdf","pdfjpg","jpgpdf","sign","watermark","htmlpdf","unlock","protect","organize","pagenum","ocr"
-    ].forEach(t=>{
-
-        document
-            .getElementById(`tab-${t}`)
-            .classList.toggle(
-                "active",
-                t===tab
-            );
-
-        document
-            .getElementById(`panel-${t}`)
-            .classList.toggle(
-                "hidden",
-                t!==tab
-            );
-
+    validTabs.forEach(function(t){
+        const tabBtn=document.getElementById("tab-"+t);
+        const panel=document.getElementById("panel-"+t);
+        if(tabBtn) tabBtn.classList.toggle("active",t===tab);
+        if(panel) panel.classList.toggle("hidden",t!==tab);
     });
 
-    updateSaveUI();
+    try{
+        if(location.hash !== '#'+tab) history.replaceState(null,'','#'+tab);
+    }catch(e){}
 
+    if(typeof updateSaveUI==='function') updateSaveUI();
+
+    // Keep the selected panel heading fully visible below the sticky command bar.
+    requestAnimationFrame(function(){
+        const panel=document.getElementById("panel-"+tab);
+        const command=document.getElementById("v4-command");
+        if(panel){setTimeout(function(){
+            const top=panel.getBoundingClientRect().top+window.pageYOffset;
+            const bottom=command?command.getBoundingClientRect().bottom+window.pageYOffset:0;
+            window.scrollTo({top:Math.max(0,top-bottom-18),behavior:"smooth"});
+        },60);}
+    });
 }
 
 
@@ -2161,77 +2445,91 @@ RESIZER
 ===================================================== */
 
 function toggleResizeMode(){
-    const mode=document.getElementById('resize-mode')?.value||'size';
-    document.getElementById('resize-size-box')?.classList.toggle('hidden',mode!=='size');
-    document.getElementById('resize-dimensions-box')?.classList.toggle('hidden',mode!=='dimensions');
+  const mode=document.getElementById('resize-mode')?.value||'dimensions';
+  document.getElementById('resize-dimensions-box')?.classList.toggle('hidden',mode==='size');
+  document.getElementById('resize-size-box')?.classList.toggle('hidden',mode!=='size');
+  document.getElementById('resize-both-box')?.classList.toggle('hidden',mode!=='both');
 }
 
 async function executeResize(){
-    const btn=document.getElementById('resize-btn');
-    const mode=document.getElementById('resize-mode')?.value||'size';
-    const format=document.getElementById('resize-format').value;
-    const files=Array.isArray(queue)?queue.slice():[];
-    if(!files.length){ alert('Please select at least one image.'); return; }
+  const btn=document.getElementById('resize-btn');
+  const mode=document.getElementById('resize-mode')?.value||'dimensions';
+  const format=document.getElementById('resize-format')?.value||'image/jpeg';
+  const files=Array.isArray(queue)?queue.slice():[];
+  if(!files.length){alert('Please select at least one image.');return;}
 
-    let targetKB=0;
-    if(mode==='size'){
-        const size=parseFloat(document.getElementById('resize-size')?.value);
-        if(!size||size<=0){alert('Please enter target file size.');return;}
-        const unit=document.getElementById('resize-unit').value;
-        targetKB=unit==='MB'?size*1024:size;
-    }else{
-        const w=parseInt(document.getElementById('resize-width')?.value,10);
-        const h=parseInt(document.getElementById('resize-height')?.value,10);
-        if(!w||!h||w<1||h<1){alert('Please enter width and height in pixels.');return;}
+  let targetKB=0;
+  if(mode==='size'){
+    const v=parseFloat(document.getElementById('resize-size')?.value);
+    if(!v||v<=0){alert('Enter target size.');return;}
+    targetKB=(document.getElementById('resize-unit')?.value==='MB'?v*1024:v);
+  }else if(mode==='both'){
+    const v=parseFloat(document.getElementById('resize-both-size')?.value);
+    if(v>0)targetKB=(document.getElementById('resize-both-unit')?.value==='MB'?v*1024:v);
+  }
+  const needsDims=(mode==='dimensions'||mode==='both');
+  let tw=0,th=0,keep=true;
+  if(needsDims){
+    tw=parseInt(document.getElementById('resize-width')?.value,10);
+    th=parseInt(document.getElementById('resize-height')?.value,10);
+    if(!tw||!th){alert('Enter width and height in pixels.');return;}
+    keep=document.getElementById('resize-keep-ratio')?.checked!==false;
+  }
+  if(format==='image/png' && targetKB>0){
+    alert('Target file size works with JPG. PNG uses lossless compression.');
+    return;
+  }
+
+  if(btn){btn.disabled=true;btn.innerText='Processing… ⏳';}
+  const results=[];
+  try{
+    for(let i=0;i<files.length;i++){
+      const file=files[i];
+      extraStatus('resize',`Processing ${i+1}/${files.length}…`);
+      const img=await loadImageFromFile(file);
+      let outW=img.naturalWidth,outH=img.naturalHeight;
+      if(needsDims){
+        if(keep){const scale=Math.min(tw/img.naturalWidth,th/img.naturalHeight);outW=Math.max(1,Math.round(img.naturalWidth*scale));outH=Math.max(1,Math.round(img.naturalHeight*scale));}
+        else {outW=tw;outH=th;}
+      }
+      let blob;
+      if(format==='image/jpeg'){
+        const canvas=document.createElement('canvas');canvas.width=outW;canvas.height=outH;
+        const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,outW,outH);ctx.drawImage(img,0,0,outW,outH);
+        if(targetKB>0){
+          blob=await compressImageToTarget(canvas,targetKB);
+        }else blob=await canvasBlob(canvas,'image/jpeg',.92);
+      }else{
+        const canvas=document.createElement('canvas');canvas.width=outW;canvas.height=outH;
+        canvas.getContext('2d').drawImage(img,0,0,outW,outH);
+        blob=await canvasBlob(canvas,'image/png',1);
+      }
+      if(!blob)throw new Error('Image export failed.');
+      const ext=format==='image/png'?'.png':'.jpg';
+      dlBlob(blob,file.name.replace(/\.[^/.]+$/,'')+ext);
+      results.push({name:file.name,before:file.size,after:blob.size});
     }
-
-    if(btn){btn.disabled=true;btn.innerText='Processing... ⏳';}
-    try{
-        for(let i=0;i<files.length;i++){
-            const file=files[i];
-            extraStatus('resize',`Processing ${i+1}/${files.length}...`);
-            const img=await loadImageFromFile(file);
-            let outW=img.naturalWidth, outH=img.naturalHeight;
-
-            if(mode==='dimensions'){
-                const tw=parseInt(document.getElementById('resize-width').value,10);
-                const th=parseInt(document.getElementById('resize-height').value,10);
-                if(document.getElementById('resize-keep-ratio')?.checked){
-                    const scale=Math.min(tw/img.naturalWidth,th/img.naturalHeight);
-                    outW=Math.max(1,Math.round(img.naturalWidth*scale));
-                    outH=Math.max(1,Math.round(img.naturalHeight*scale));
-                }else{
-                    outW=tw; outH=th;
-                }
-            }
-
-            const c=document.createElement('canvas');
-            c.width=outW;c.height=outH;
-            const ctx=c.getContext('2d');
-            if(format==='image/jpeg'){ctx.fillStyle='#fff';ctx.fillRect(0,0,outW,outH);}
-            ctx.drawImage(img,0,0,outW,outH);
-
-            if(mode==='size' && format==='image/jpeg'){
-                await new Promise((resolve,reject)=>{
-                    try{compressImage(c,targetKB,file.name,resolve)}catch(e){reject(e)}
-                });
-            }else{
-                const blob=await canvasBlob(c,format,0.92);
-                if(!blob)throw new Error('Image export failed.');
-                const ext=format==='image/png'?'.png':'.jpg';
-                download(blob,file.name.replace(/\.[^/.]+$/,'')+ext);
-            }
-        }
-        extraStatus('resize','✅ Images processed successfully.');
-        queue=[];
-        const q=document.getElementById('resize-queue');if(q)q.innerHTML='';
-        btn?.classList.add('hidden');
-    }catch(error){
-        extraStatus('resize','❌ Resize Error: '+escapeHTML(error?.message||error));
-    }finally{
-        if(btn){btn.disabled=false;btn.innerText='Compress & Download Images';}
-    }
+    showV4Summary('resize','Images converted',results);
+    extraStatus('resize','✅ Done — files downloaded.');
+    queue=[];document.getElementById('resize-queue')?.replaceChildren();btn?.classList.add('hidden');
+  }catch(e){extraStatus('resize','❌ '+escapeHTML(e?.message||e));}
+  finally{if(btn){btn.disabled=false;btn.innerText='Resize & Download';}}
 }
+
+function compressImageToTarget(canvas,targetKB){
+  return new Promise(resolve=>{
+    const target=Math.max(1,targetKB)*1024;
+    let lo=.05,hi=.98,best=null;
+    const test=q=>canvas.toBlob(b=>{
+      if(!b){resolve(null);return}
+      if(b.size<=target){best=b;lo=q+.01;}else hi=q-.01;
+      if(hi-lo<.01||q<=.06||q>=.97){resolve(best||b);return}
+      test((lo+hi)/2);
+    },'image/jpeg',q);
+    test(.82);
+  });
+}
+
 
 function compressImage(
     canvas,
@@ -6036,12 +6334,14 @@ ADDITIONAL TOOLS + PERSISTENCE
 const EXTRA_TABS=["pdfword","wordpdf","excelpdf","pptpdf","pdfjpg","jpgpdf","sign","watermark","htmlpdf","unlock","protect","organize","pagenum","ocr"];
 const DB_NAME="super_converter_pro_db_v2";
 const DB_STORE="files";
+// Uploaded files are session-only: never restore them after a refresh.
+async function clearPersistedUploads(){try{const db=await openAppDB();await new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,"readwrite");tx.objectStore(DB_STORE).clear();tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});db.close();}catch(e){console.warn(e)}}
 function openAppDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(DB_STORE))r.result.createObjectStore(DB_STORE)};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 async function dbPut(key,file){try{const db=await openAppDB();await new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,"readwrite");if(file===null||file===undefined)tx.objectStore(DB_STORE).delete(key);else tx.objectStore(DB_STORE).put(file,key);tx.oncomplete=res;tx.onerror=()=>rej(tx.error);});db.close();}catch(e){console.warn(e)}}
 async function dbGet(key){try{const db=await openAppDB();const v=await new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,"readonly");const q=tx.objectStore(DB_STORE).get(key);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)});db.close();return v}catch(e){return null}}
 function saveFieldState(){const data={};document.querySelectorAll("input:not([type=file]),select,textarea").forEach(el=>{if(el.id)data[el.id]=el.value});localStorage.setItem("scp_fields_v2",JSON.stringify(data));}
 function restoreFieldState(){try{const data=JSON.parse(localStorage.getItem("scp_fields_v2")||"{}");Object.entries(data).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.value=v});if(document.getElementById("compress-quality"))toggleCompressTarget()}catch(e){}}
-function bindPersistentInputs(){document.addEventListener("input",e=>{if(e.target.matches("input,select,textarea"))saveFieldState()});document.addEventListener("change",e=>{if(e.target.matches("input,select,textarea"))saveFieldState();if(e.target.type==="file"&&e.target.files.length){dbPut(e.target.id,e.target.multiple?Array.from(e.target.files):e.target.files[0]);renderExtraFileCard(e.target.id)}})}
+function bindPersistentInputs(){document.addEventListener("input",e=>{if(e.target.matches("input,select,textarea"))saveFieldState()});document.addEventListener("change",e=>{if(e.target.matches("input,select,textarea") && e.target.type!=="file")saveFieldState();if(e.target.type==="file"&&e.target.files.length){renderExtraFileCard(e.target.id)}})}
 async function restoreFileInputStatus(){
  const ids=["pdfword-input","wordpdf-input","excelpdf-input","pptpdf-input","pdfjpg-input","jpgpdf-input","sign-input","watermark-input","htmlpdf-input","unlock-input","protect-input","organize-input","pagenum-input","ocr-input"];
  for(const id of ids){
@@ -6063,25 +6363,18 @@ function fileTypeIcon(file){
   return '📁';
 }
 function renderExtraFileCard(id){
-  const input=document.getElementById(id), box=document.getElementById(id.replace("-input","-file-card"));
-  if(!input||!box)return;
-  const files=Array.from(input.files||[]);
-  if(!files.length){box.innerHTML="";return;}
-
-  box.innerHTML='<div class="extra-file-card">'+
-    files.map((f,i)=>'<div class="extra-file-row">'+
-      '<div class="extra-file-thumb" data-thumb-index="'+i+'"><span>'+fileTypeIcon(f)+'</span></div>'+
-      '<div class="extra-file-meta"><div class="extra-file-name">'+escapeHTML(f.name)+'</div><div class="extra-file-size">'+formatExtraBytes(f.size)+'</div></div>'+
-      '<button type="button" class="extra-file-remove" data-remove-index="'+i+'" aria-label="Remove file">✕</button>'+
-    '</div>').join('')+
-    '<div class="extra-file-size" style="margin-top:7px"><b>'+files.length+'</b> file'+(files.length===1?'':'s')+' selected</div>'+
-    '<button type="button" class="extra-file-remove" data-clear-all="1" style="margin-top:8px">🗑️ Clear</button>'+
-    '</div>';
-
-  box.querySelectorAll('[data-remove-index]').forEach(btn=>btn.addEventListener('click',()=>removeExtraFile(id,Number(btn.dataset.removeIndex))));
-  box.querySelector('[data-clear-all]')?.addEventListener('click',()=>clearExtraFile(id));
-
-  files.forEach((file,i)=>renderExtraThumbnail(file,box.querySelector('[data-thumb-index="'+i+'"]')));
+ const input=document.getElementById(id),box=document.getElementById(id.replace("-input","-file-card"));
+ if(!input||!box)return;
+ const files=Array.from(input.files||[]);
+ if(!files.length){box.innerHTML="";return;}
+ box.innerHTML=files.map((f,i)=>`
+  <div class="v4-file-card" data-v4-file="${i}">
+    <div class="v4-thumb" data-v4-thumb="${i}"><span>${fileTypeIcon(f)}</span></div>
+    <div class="v4-file-meta"><div class="v4-file-name">${escapeHTML(f.name)}</div><div class="v4-file-size">${formatExtraBytes(f.size)}</div></div>
+    <button type="button" class="v4-remove" data-v4-remove="${i}" aria-label="Remove file">✕</button>
+  </div>`).join('');
+ box.querySelectorAll('[data-v4-remove]').forEach(b=>b.addEventListener('click',()=>removeExtraFile(id,+b.dataset.v4Remove)));
+ files.forEach((f,i)=>renderExtraThumbnail(f,box.querySelector(`[data-v4-thumb="${i}"]`)));
 }
 async function renderExtraThumbnail(file,thumb){
   if(!thumb||!file)return;
@@ -6392,7 +6685,57 @@ async function pdfToJPG(){
   extraStatus("pdfjpg","✅ All pages converted to JPG.");
  }catch(e){extraStatus("pdfjpg","❌ "+escapeHTML(e.message));}
 }
-async function jpgToPDF(){const fs=selectedFiles("jpgpdf-input");if(!fs.length){alert("Select images first.");return}try{const {jsPDF}=window.jspdf;const pdf=new jsPDF({unit:"pt",format:"a4"});for(let i=0;i<fs.length;i++){const img=await fileToDataURL(fs[i]);const im=await loadImage(img);const pw=595.28,ph=841.89,scale=Math.min(pw/im.width,ph/im.height),w=im.width*scale,h=im.height*scale;if(i)pdf.addPage();pdf.addImage(img,"JPEG",(pw-w)/2,(ph-h)/2,w,h)}dlBlob(pdf.output("blob"),"Images.pdf");extraStatus("jpgpdf","✅ PDF created.")}catch(e){extraStatus("jpgpdf","❌ "+escapeHTML(e.message))}}
+async function jpgToPDF(){
+ const fs=selectedFiles("jpgpdf-input");
+ if(!fs.length){alert("Select images first.");return}
+ try{
+  const {jsPDF}=window.jspdf;
+  const preset=document.getElementById("jpgpdf-quality")?.value||"standard";
+  const presets={small:{q:.55,max:1200},standard:{q:.72,max:1700},high:{q:.86,max:2400},maximum:{q:.94,max:3200}};
+  const cfg=presets[preset]||presets.standard;
+  const pageSize=document.getElementById("jpgpdf-size")?.value||"a4";
+  const fit=document.getElementById("jpgpdf-fit")?.value||"contain";
+  const tv=parseFloat(document.getElementById("jpgpdf-target-size")?.value||0);
+  const tu=document.getElementById("jpgpdf-target-unit")?.value||"KB";
+  const targetBytes=tv>0?(tu==="MB"?tv*1024*1024:tv*1024):0;
+  let pdf=null, outputImages=[];
+  for(let i=0;i<fs.length;i++){
+    extraStatus("jpgpdf",`Preparing image ${i+1}/${fs.length}…`);
+    const im=await loadImage(await fileToDataURL(fs[i]));
+    let W=im.naturalWidth,H=im.naturalHeight;
+    const scale=Math.min(1,cfg.max/Math.max(W,H));W=Math.max(1,Math.round(W*scale));H=Math.max(1,Math.round(H*scale));
+    const c=document.createElement("canvas");c.width=W;c.height=H;const ctx=c.getContext("2d",{alpha:false});
+    ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);ctx.drawImage(im,0,0,W,H);
+    const data=await canvasDataURLTarget(c,cfg.q,targetBytes?Math.max(3000,targetBytes/Math.max(1,fs.length)*.82):0);
+    let pw=W,ph=H,orientation=W>H?"landscape":"portrait";
+    if(pageSize==="a4"){pw=595.28;ph=841.89;orientation=W>H?"landscape":"portrait";if(orientation==="landscape")[pw,ph]=[841.89,595.28]}
+    else if(pageSize==="letter"){pw=612;ph=792;orientation=W>H?"landscape":"portrait";if(orientation==="landscape")[pw,ph]=[792,612]}
+    if(pageSize==="original"){pw=W*72/96;ph=H*72/96;orientation=W>H?"landscape":"portrait";}
+    if(!pdf)pdf=new jsPDF({unit:"pt",format:[pw,ph],orientation,compress:true});else pdf.addPage([pw,ph],orientation);
+    let x=0,y=0,w=pw,h=ph;
+    if(fit==="contain"){const sc=Math.min(pw/W,ph/H);w=W*sc;h=H*sc;x=(pw-w)/2;y=(ph-h)/2}
+    else{const sc=Math.max(pw/W,ph/H);w=W*sc;h=H*sc;x=(pw-w)/2;y=(ph-h)/2}
+    pdf.addImage(data,"JPEG",x,y,w,h,undefined,"FAST");
+  }
+  if(!pdf)throw new Error("No images found.");
+  const blob=pdf.output("blob");
+  dlBlob(blob,"Images.pdf");
+  showV4Summary('jpgpdf','PDF created',[{name:'Images.pdf',before:fs.reduce((a,f)=>a+f.size,0),after:blob.size}]);
+  extraStatus("jpgpdf",`✅ PDF created • ${formatExtraBytes(blob.size)}.`);
+ }catch(e){extraStatus("jpgpdf","❌ "+escapeHTML(e.message))}
+}
+function canvasDataURLTarget(canvas,q,targetBytes){
+ return new Promise(resolve=>{
+  if(!targetBytes){resolve(canvas.toDataURL("image/jpeg",q));return}
+  let lo=.35,hi=q,best=canvas.toDataURL("image/jpeg",lo);
+  const loop=(n)=>{
+    const mid=(lo+hi)/2,data=canvas.toDataURL("image/jpeg",mid);
+    const bytes=Math.ceil((data.length-22)*3/4);
+    if(bytes<=targetBytes){best=data;lo=mid}else hi=mid;
+    if(n>=7||hi-lo<.015){resolve(best);return} loop(n+1)
+  };loop(0);
+ });
+}
 function fileToDataURL(f){return new Promise((r,j)=>{const x=new FileReader();x.onload=()=>r(x.result);x.onerror=j;x.readAsDataURL(f)})}function loadImage(src){return new Promise((r,j)=>{const i=new Image();i.onload=()=>r(i);i.onerror=j;i.src=src})}
 
 async function loadPDFLibDoc(id){const f=selectedFile(id);if(!f)throw new Error("Select PDF first.");return PDFLib.PDFDocument.load(await f.arrayBuffer(),{ignoreEncryption:true})}
@@ -6496,7 +6839,7 @@ async function addPageNumbers(){try{const f=selectedFile('pagenum-input'),doc=aw
 async function ocrPDF(){const f=selectedFile('ocr-input');if(!f){alert('Select scanned PDF first.');return}if(!window.Tesseract){extraStatus('ocr','❌ OCR engine not loaded. Check internet connection and reload.');return}try{const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise;let text='';const lang=document.getElementById('ocr-lang').value,scale=+(document.getElementById('ocr-scale')?.value||2),outMode=document.getElementById('ocr-output')?.value||'txt';const pages=[];for(let i=1;i<=pdf.numPages;i++){extraStatus('ocr',`OCR page ${i}/${pdf.numPages}... ⏳`);const p=await pdf.getPage(i),v=p.getViewport({scale}),c=document.createElement('canvas');c.width=v.width;c.height=v.height;await p.render({canvasContext:c.getContext('2d'),viewport:v}).promise;const r=await Tesseract.recognize(c.toDataURL('image/png'),lang);pages.push({page:i,text:r.data.text||''});text+=`\n--- Page ${i} ---\n${r.data.text||''}\n`}if(outMode==='json'){dlBlob(new Blob([JSON.stringify({source:f.name,pages},null,2)],{type:'application/json'}),f.name.replace(/\.pdf$/i,'')+'-OCR.json')}else{dlBlob(new Blob([text],{type:'text/plain;charset=utf-8'}),f.name.replace(/\.pdf$/i,'')+'-OCR.txt')}extraStatus('ocr','✅ OCR completed.')}catch(e){extraStatus('ocr','❌ '+escapeHTML(e.message))}}
 
 
-restoreFieldState();bindPersistentInputs();setupExtraFilePickers();setupPasswordEyes();['unlock-password','protect-password','protect-password2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});restoreFileInputStatus().then(()=>{if(selectedFile('organize-input'))initOrganizePreview()});
+restoreFieldState();bindPersistentInputs();setupExtraFilePickers();setupPasswordEyes();['unlock-password','protect-password','protect-password2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
 
 /* =====================================================
 INITIAL
@@ -6509,9 +6852,21 @@ INITIAL
   const el=document.getElementById(id); if(el) el.value='';
 });
 
+clearPersistedUploads();
 renderPages();
 toggleResizeMode();
+const initialTab=(location.hash||'').replace(/^#/,'');
+const validTabs=["merge","resize","scan","split","compress","pdfword","wordpdf","excelpdf","pptpdf","pdfjpg","jpgpdf","sign","watermark","htmlpdf","unlock","protect","organize","pagenum","ocr"];
+if(validTabs.includes(initialTab)) switchTab(initialTab); else {
+  activeTab='';
+  validTabs.forEach(function(t){
+    const b=document.getElementById('tab-'+t), panel=document.getElementById('panel-'+t);
+    if(b)b.classList.remove('active');
+    if(panel)panel.classList.add('hidden');
+  });
+}
 updateSaveUI();
+window.addEventListener('hashchange',()=>{const t=(location.hash||'').replace(/^#/,'');if(validTabs.includes(t)&&t!==activeTab)switchTab(t);});
 
 </script>
 
@@ -6536,5 +6891,856 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
-</body>
+
+<script id="super-ui-v5-js">
+(function(){
+  const meta={
+    merge:['pdf','Merge PDF','Combine multiple PDFs'],
+    resize:['image','Image Resizer','Resize/compress images'],
+    scan:['scan','Smart Scan','Capture and crop documents'],
+    split:['pdf','Split PDF','Split pages'],
+    compress:['pdf','Compress PDF','Reduce PDF size'],
+    pdfword:['pdf','PDF to Word','Convert PDF to editable Word'],
+    wordpdf:['office','Word to PDF','Convert Word files'],
+    excelpdf:['office','Excel to PDF','Convert Excel files'],
+    pptpdf:['office','PowerPoint to PDF','Convert PowerPoint files'],
+    pdfjpg:['pdf','PDF to JPG','Convert PDF pages to images'],
+    jpgpdf:['image','JPG to PDF','Combine images into PDF'],
+    sign:['security','Sign PDF','Add signature'],
+    watermark:['pdf','Watermark','Stamp PDF'],
+    htmlpdf:['office','HTML to PDF','Convert HTML'],
+    unlock:['security','Unlock PDF','Remove password'],
+    protect:['security','Protect PDF','Set PDF password'],
+    organize:['organize','Organize PDF','Reorder pages'],
+    pagenum:['pdf','Page Numbers','Add page numbers'],
+    ocr:['pdf','OCR PDF','Make PDF searchable']
+  };
+  let activeCat='all', query='';
+
+  function toolItems(){
+    return Object.keys(meta).map(function(id){
+      return {id:id,cat:meta[id][0],name:meta[id][1],desc:meta[id][2]};
+    });
+  }
+  function filteredItems(){
+    const q=query.toLowerCase();
+    return toolItems().filter(function(x){
+      const catOK=activeCat==='all'||x.cat===activeCat;
+      const text=(x.name+' '+x.desc+' '+x.id+' '+x.cat).toLowerCase();
+      return catOK && (!q || text.includes(q));
+    });
+  }
+  function renderResults(scrollToResults){
+    const box=document.getElementById('v4-results');
+    const count=document.getElementById('v4-search-count');
+    if(!box) return;
+    const items=filteredItems();
+    if(count) count.textContent=items.length+' tools';
+    box.classList.add('show');
+    box.innerHTML=items.length ? items.map(function(x){
+      return '<button type="button" class="v4-result" data-open-tool="'+x.id+'">'+
+        '<span>✨ '+x.name+'<small> · '+x.cat+'</small><em>'+x.desc+'</em></span>'+
+        '<strong>›</strong></button>';
+    }).join('') : '<div class="v4-empty">No tool found</div>';
+
+    box.querySelectorAll('[data-open-tool]').forEach(function(el){
+      el.addEventListener('click',function(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        const id=el.getAttribute('data-open-tool');
+        if(typeof window.switchTab==='function') window.switchTab(id);
+        else if(typeof switchTab==='function') switchTab(id);
+      });
+    });
+
+    if(scrollToResults){
+      setTimeout(function(){box.scrollIntoView({behavior:'smooth',block:'nearest'});},30);
+    }
+  }
+
+  function openTool(id){
+    if(typeof window.switchTab==='function') window.switchTab(id);
+    else if(typeof switchTab==='function') switchTab(id);
+  }
+  window.openTool=openTool;
+
+  function init(){
+    const search=document.getElementById('v4-tool-search');
+    if(search){
+      search.addEventListener('input',function(){
+        query=search.value.trim();
+        renderResults(true);
+      });
+      search.addEventListener('keydown',function(e){
+        if(e.key==='Enter'){
+          const first=filteredItems()[0];
+          if(first) openTool(first.id);
+        }
+      });
+    }
+
+    document.querySelectorAll('.v4-cat').forEach(function(btn){
+      btn.addEventListener('click',function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        document.querySelectorAll('.v4-cat').forEach(function(x){x.classList.remove('active');});
+        btn.classList.add('active');
+        activeCat=btn.dataset.cat || 'all';
+        renderResults(true);
+      });
+    });
+
+    // Clicking any original tool card: switch + automatic scroll.
+    document.querySelectorAll('.tool-card[id^="tab-"]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        const id=btn.id.slice(4);
+        setTimeout(function(){
+          const panel=document.getElementById('panel-'+id);
+          if(panel) panel.scrollIntoView({behavior:'smooth',block:'start'});
+        },60);
+      });
+    });
+
+    // Always show the complete tool list under All.
+    renderResults(false);
+  }
+
+  window.showV4Summary=function(id,title,items){
+    const panel=document.getElementById('panel-'+id);
+    if(!panel)return;
+    let box=panel.querySelector('.v4-summary');
+    if(!box){box=document.createElement('div');box.className='v4-summary';panel.appendChild(box);}
+    const before=items.reduce(function(a,x){return a+(x.before||0);},0);
+    const after=items.reduce(function(a,x){return a+(x.after||0);},0);
+    const pct=before?Math.round((1-after/before)*100):0;
+    const fmt=typeof formatExtraBytes==='function'?formatExtraBytes:function(n){return n+' B';};
+    box.innerHTML='<div class="v4-summary-title">✅ '+title+'</div>'+
+      '<div class="v4-stats"><div class="v4-stat"><b>'+items.length+'</b><span>Files</span></div>'+
+      '<div class="v4-stat"><b>'+fmt(before)+'</b><span>Original</span></div>'+
+      '<div class="v4-stat"><b>'+fmt(after)+'</b><span>Output</span></div></div>'+
+      '<div class="v4-progress"><i style="width:'+Math.max(3,Math.min(100,pct>0?pct:100))+'%"></i></div>'+
+      '<div style="font-size:11px;color:#94a3b8">'+(pct>0?pct+'% smaller':after<before?'Reduced':'Conversion complete')+'</div>';
+    box.classList.add('show');
+  };
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
+  else init();
+})();
+</script>
+
+
+<style id="v7-navigation-sort-fix">
+/* V8 navigation: use ONLY the original tool cards. */
+#v4-results{display:none!important;height:0!important;overflow:hidden!important;margin:0!important;padding:0!important;border:0!important}
+.v4-search input#v4-tool-search,
+.v4-search input#v4-tool-search:focus,
+.v4-search input#v4-tool-search:active{
+  color:#f8fafc!important;
+  -webkit-text-fill-color:#f8fafc!important;
+  caret-color:#22d3ee!important;
+  background:transparent!important;
+}
+.v4-search input#v4-tool-search::placeholder{color:#94a3b8!important;opacity:1}
+.v4-search #v4-search-count{color:#cbd5e1!important;white-space:nowrap}
+.tool-grid{scroll-margin-top:155px}
+.tool-card{scroll-margin-top:155px;transition:opacity .18s ease,transform .18s ease}
+[id^="panel-"]{scroll-margin-top:155px}
+.tool-card.v7-filter-hidden{display:none!important}
+.tool-card.v7-priority{order:-999!important}
+@media(max-width:600px){
+  .tool-grid{scroll-margin-top:132px}
+  .tool-card{scroll-margin-top:132px}
+  [id^="panel-"]{scroll-margin-top:132px}
+}
+</style>
+<style id="v9-theme-and-panel-fix">
+.v9-theme-row{display:flex;gap:7px;align-items:center;overflow:auto;padding:8px 2px 0;scrollbar-width:none}.v9-theme-row::-webkit-scrollbar{display:none}
+.v9-theme-btn{flex:0 0 auto;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:7px 11px;background:rgba(30,41,59,.55);color:#cbd5e1;font-size:11px;font-weight:800;cursor:pointer}.v9-theme-btn.active{background:linear-gradient(135deg,#7c3aed,#0891b2,#ec4899);color:#fff;border-color:transparent;box-shadow:0 6px 20px rgba(124,58,237,.25)}
+body.v9-light{background:linear-gradient(135deg,#f8fbff,#eef2ff 45%,#fff1f2)!important;color:#172033!important}body.v9-light .v4-command{background:rgba(255,255,255,.92);border-color:rgba(79,70,229,.14)}body.v9-light .v4-search{background:#fff;border-color:rgba(71,85,105,.16)}body.v9-light .v4-search input{color:#172033!important;-webkit-text-fill-color:#172033!important}body.v9-light .v4-search input::placeholder{color:#64748b!important}body.v9-light .v4-cat{background:#fff;color:#334155;border-color:rgba(71,85,105,.15)}body.v9-light .tool-card{background:linear-gradient(135deg,#fff,#f5f3ff)!important;color:#172033!important;border-color:rgba(79,70,229,.16)!important}body.v9-light .panel{background:#fff!important;color:#172033!important;border-color:rgba(71,85,105,.14)!important}body.v9-light .tool-title{color:#172033!important}body.v9-light .tool-desc{color:#64748b!important}body.v9-light .tool-input,body.v9-light textarea,body.v9-light select{background:#f8fafc!important;color:#172033!important;border-color:#cbd5e1!important}
+body.v9-dark{background:radial-gradient(900px 500px at 10% -5%,rgba(99,102,241,.18),transparent 60%),#080b14!important}body.v9-colorful{background:radial-gradient(900px 500px at 8% -5%,rgba(139,92,246,.34),transparent 58%),radial-gradient(800px 500px at 100% 12%,rgba(34,211,238,.23),transparent 58%),radial-gradient(900px 600px at 50% 110%,rgba(236,72,153,.18),transparent 60%),#070b16!important}
+[id^="panel-"]{scroll-margin-top:0!important}
+</style>
+<script id="v8-navigation-filter-existing-cards">
+(function(){
+  'use strict';
+
+  const meta={
+    merge:{cat:'pdf',name:'Merge PDF',desc:'Combine multiple PDFs',keys:'pdf merge combine join document documents'},
+    resize:{cat:'image',name:'Image Resizer',desc:'Resize and compress images',keys:'image images photo photos picture pictures jpg jpeg png resize compress reduce kb mb'},
+    scan:{cat:'scan',name:'Smart Scan',desc:'Capture and crop documents',keys:'scan scanner camera document photo capture crop'},
+    split:{cat:'pdf',name:'Split PDF',desc:'Split pages',keys:'pdf split pages separate'},
+    compress:{cat:'pdf',name:'Compress PDF',desc:'Reduce PDF size',keys:'pdf compress reduce size kb mb'},
+    pdfword:{cat:'pdf',name:'PDF to Word',desc:'Convert PDF to editable Word',keys:'pdf word doc docx editable convert'},
+    wordpdf:{cat:'office',name:'Word to PDF',desc:'Convert Word files',keys:'word doc docx office pdf convert'},
+    excelpdf:{cat:'office',name:'Excel to PDF',desc:'Convert Excel files',keys:'excel xls xlsx spreadsheet office pdf convert'},
+    pptpdf:{cat:'office',name:'PowerPoint to PDF',desc:'Convert PowerPoint files',keys:'powerpoint ppt pptx presentation office pdf convert'},
+    pdfjpg:{cat:'pdf',name:'PDF to JPG',desc:'Convert PDF pages to images',keys:'pdf jpg jpeg image images photo photos convert'},
+    jpgpdf:{cat:'image',name:'JPG to PDF',desc:'Combine images into PDF',keys:'jpg jpeg image images photo photos png picture pdf convert'},
+    sign:{cat:'security',name:'Sign PDF',desc:'Add signature',keys:'pdf sign signature e-sign'},
+    watermark:{cat:'pdf',name:'Watermark',desc:'Stamp PDF',keys:'pdf watermark stamp'},
+    htmlpdf:{cat:'office',name:'HTML to PDF',desc:'Convert HTML',keys:'html web webpage office pdf convert'},
+    unlock:{cat:'security',name:'Unlock PDF',desc:'Remove password',keys:'pdf unlock password security'},
+    protect:{cat:'security',name:'Protect PDF',desc:'Set PDF password',keys:'pdf protect password security'},
+    organize:{cat:'organize',name:'Organize PDF',desc:'Reorder pages',keys:'pdf organize reorder pages'},
+    pagenum:{cat:'pdf',name:'Page Numbers',desc:'Add page numbers',keys:'pdf page pages numbers numbering'},
+    ocr:{cat:'pdf',name:'OCR PDF',desc:'Make PDF searchable',keys:'pdf ocr text searchable scan scanned'}
+  };
+
+  const fileTool={
+    pdf:'merge',word:'wordpdf',doc:'wordpdf',docx:'wordpdf',excel:'excelpdf',xls:'excelpdf',xlsx:'excelpdf',csv:'excelpdf',
+    ppt:'pptpdf',pptx:'pptpdf',jpg:'resize',jpeg:'resize',png:'resize',webp:'resize',gif:'resize',bmp:'resize',tif:'resize',tiff:'resize'
+  };
+
+  let activeCat='all';
+  let query='';
+  let originalOrder=[];
+  function closeSelectedTool(){
+    Object.keys(meta).forEach(function(id){
+      const panel=document.getElementById('panel-'+id), card=document.getElementById('tab-'+id);
+      if(panel)panel.classList.add('hidden');
+      if(card)card.classList.remove('active');
+    });
+    activeTab='';
+    try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}
+  }
+  let currentPriority=null;
+  let initialized=false;
+
+  function cards(){
+    const grid=document.querySelector('.tool-grid');
+    return grid ? Array.from(grid.querySelectorAll('.tool-card[id^="tab-"]')) : [];
+  }
+  function idOf(card){return (card.id||'').replace(/^tab-/,'')}
+  function dataOf(card){return meta[idOf(card)]||{cat:'',name:card.textContent.trim(),desc:'',keys:''}}
+
+  // Fuzzy-ish search: words, aliases, prefix and ordered character match.
+  function searchScore(card,q){
+    if(!q) return 1;
+    const d=dataOf(card);
+    const text=(d.name+' '+d.desc+' '+d.cat+' '+d.keys+' '+idOf(card)).toLowerCase();
+    const needle=q.toLowerCase().trim();
+    if(!needle) return 1;
+    if(text===needle) return 10000;
+    if(d.name.toLowerCase()===needle) return 9500;
+    if(d.name.toLowerCase().startsWith(needle)) return 8500;
+    if(text.includes(needle)) return 7000;
+    const words=needle.split(/\s+/).filter(Boolean);
+    let matched=0;
+    for(const w of words){
+      if(text.includes(w)) matched++;
+      else if(w.length>=3 && text.split(/[^a-z0-9]+/).some(t=>t.startsWith(w.slice(0,Math.max(2,w.length-1))))) matched+=0.7;
+    }
+    if(words.length && matched===words.length) return 6000+matched;
+    if(matched>0) return 2500+matched;
+    // ordered character match for small typos, e.g. "mrg" -> Merge.
+    let i=0;
+    for(const ch of needle){i=text.indexOf(ch,i);if(i<0)return 0;i++;}
+    return needle.length>=3 ? 900 : 0;
+  }
+
+  function matches(card){
+    const d=dataOf(card);
+    if(activeCat!=='all' && d.cat!==activeCat) return false;
+    return !query || searchScore(card,query)>0;
+  }
+
+  function reorderAndFilter(){
+    const grid=document.querySelector('.tool-grid');
+    if(!grid)return;
+    const list=cards();
+    if(!originalOrder.length) originalOrder=list.slice();
+
+    const visible=list.filter(matches);
+    const hidden=list.filter(c=>!matches(c));
+
+    // Search/category = ONLY matching original cards. No second result list.
+    visible.sort(function(a,b){
+      if(currentPriority){
+        if(idOf(a)===currentPriority && idOf(b)!==currentPriority)return -1;
+        if(idOf(b)===currentPriority && idOf(a)!==currentPriority)return 1;
+      }
+      if(query){
+        const diff=searchScore(b,query)-searchScore(a,query);
+        if(diff)return diff;
+      }
+      return originalOrder.indexOf(a)-originalOrder.indexOf(b);
+    });
+
+    visible.concat(hidden).forEach(c=>grid.appendChild(c));
+    visible.forEach(c=>c.classList.remove('v7-filter-hidden'));
+    hidden.forEach(c=>c.classList.add('v7-filter-hidden'));
+
+    list.forEach(c=>c.classList.toggle('v7-priority', currentPriority===idOf(c)));
+
+    const count=document.getElementById('v4-search-count');
+    if(count){
+      if(activeCat==='all' && !query){count.textContent='';}
+      else {count.textContent=visible.length+' tool'+(visible.length===1?'':'s');}
+    }
+  }
+
+  function panelScroll(id){
+    const panel=document.getElementById('panel-'+id);
+    if(!panel)return;
+    setTimeout(function(){
+      const command=document.getElementById('v4-command');
+      const barBottom=command ? command.getBoundingClientRect().bottom+window.pageYOffset : 0;
+      const gap=18;
+      const y=panel.getBoundingClientRect().top+window.pageYOffset-barBottom-gap;
+      window.scrollTo({top:Math.max(0,y),behavior:'smooth'});
+    },120);
+  }
+
+  function openTool(id){
+    currentPriority=id;
+    // A manually selected tool is shown even if a previous filter hid it.
+    activeCat='all';
+    query='';
+    const search=document.getElementById('v4-tool-search');
+    if(search)search.value='';
+    document.querySelectorAll('.v4-cat').forEach(x=>x.classList.toggle('active',(x.dataset.cat||'all')==='all'));
+    reorderAndFilter();
+    if(typeof window.switchTab==='function')window.switchTab(id);
+    else if(typeof switchTab==='function')switchTab(id);
+    panelScroll(id);
+  }
+  window.openTool=openTool;
+
+  function detectFileTool(file){
+    if(!file)return null;
+    const name=(file.name||'').toLowerCase();
+    const type=(file.type||'').toLowerCase();
+    if(type==='application/pdf'||/\.pdf$/.test(name))return 'merge';
+    if(type.includes('word')||/\.(doc|docx)$/.test(name))return 'wordpdf';
+    if(type.includes('spreadsheet')||/\.(xls|xlsx|csv)$/.test(name))return 'excelpdf';
+    if(type.includes('presentation')||/\.(ppt|pptx)$/.test(name))return 'pptpdf';
+    if(type.startsWith('image/')||/\.(jpg|jpeg|png|webp|gif|bmp|tiff?)$/.test(name))return 'resize';
+    return null;
+  }
+
+  function initFilePriority(){
+    document.addEventListener('change',function(e){
+      const input=e.target;
+      if(!input || input.type!=='file' || !input.files || !input.files.length)return;
+      const tool=detectFileTool(input.files[0]);
+      if(!tool)return;
+
+      // If the user is already inside a converter that intentionally accepts this
+      // file type, do not steal focus from that tool.
+      const owner=input.closest('[id^="panel-"]');
+      const ownerId=owner ? owner.id.replace(/^panel-/,'') : '';
+      const compatible={
+        merge:['merge'],
+        split:['merge','split','compress','pdfword','pdfjpg','sign','watermark','unlock','protect','organize','pagenum','ocr'],
+        compress:['merge','split','compress','pdfword','pdfjpg','sign','watermark','unlock','protect','organize','pagenum','ocr'],
+        pdfword:['merge','split','compress','pdfword','pdfjpg','sign','watermark','unlock','protect','organize','pagenum','ocr'],
+        pdfjpg:['merge','split','compress','pdfword','pdfjpg','sign','watermark','unlock','protect','organize','pagenum','ocr'],
+        sign:['merge','split','compress','pdfword','pdfjpg','sign','watermark','unlock','protect','organize','pagenum','ocr'],
+        watermark:['merge','split','compress','pdfword','pdfjpg','sign','watermark','unlock','protect','organize','pagenum','ocr'],
+        unlock:['merge','split','compress','pdfword','pdfjpg','sign','watermark','unlock','protect','organize','pagenum','ocr'],
+        protect:['merge','split','compress','pdfword','pdfjpg','sign','watermark','unlock','protect','organize','pagenum','ocr'],
+        organize:['merge','split','compress','pdfword','pdfjpg','sign','watermark','unlock','protect','organize','pagenum','ocr'],
+        pagenum:['merge','split','compress','pdfword','pdfjpg','sign','watermark','unlock','protect','organize','pagenum','ocr'],
+        ocr:['merge','split','compress','pdfword','pdfjpg','sign','watermark','unlock','protect','organize','pagenum','ocr'],
+        resize:['resize'],
+        scan:['resize','scan','jpgpdf'],
+        jpgpdf:['resize','scan','jpgpdf'],
+        wordpdf:['wordpdf'],
+        excelpdf:['excelpdf'],
+        pptpdf:['pptpdf']
+      };
+      if(ownerId && compatible[ownerId] && compatible[ownerId].includes(tool))return;
+
+      currentPriority=tool;
+      activeCat='all';
+      query='';
+      const search=document.getElementById('v4-tool-search'); if(search)search.value='';
+      document.querySelectorAll('.v4-cat').forEach(x=>x.classList.toggle('active',(x.dataset.cat||'all')==='all'));
+      reorderAndFilter();
+      openTool(tool);
+    },true);
+  }
+
+  function init(){
+    if(initialized)return;
+    const list=cards();
+    if(!list.length)return;
+    initialized=true;
+    originalOrder=list.slice();
+    closeSelectedTool();
+
+    const search=document.getElementById('v4-tool-search');
+    if(search){
+      search.style.color='#f8fafc';
+      search.addEventListener('input',function(){
+        query=search.value.trim();
+        // Search resets to All and closes any previously selected tool.
+        activeCat='all';
+        currentPriority=null;
+        if(query)closeSelectedTool();
+        document.querySelectorAll('.v4-cat').forEach(x=>x.classList.toggle('active',(x.dataset.cat||'all')==='all'));
+        reorderAndFilter();
+      });
+      search.addEventListener('keydown',function(e){
+        if(e.key==='Enter'){
+          const first=cards().find(c=>!c.classList.contains('v7-filter-hidden'));
+          if(first)openTool(idOf(first));
+        }
+      });
+    }
+
+    document.querySelectorAll('.v4-cat').forEach(function(btn){
+      btn.onclick=function(e){
+        e.preventDefault();e.stopPropagation();
+        activeCat=btn.dataset.cat||'all';
+        query='';currentPriority=null;
+        if(search)search.value='';
+        closeSelectedTool();
+        activeCat=btn.dataset.cat||'all';
+        document.querySelectorAll('.v4-cat').forEach(x=>x.classList.toggle('active',x===btn));
+        reorderAndFilter();
+      };
+    });
+
+    list.forEach(function(btn){
+      btn.onclick=function(e){
+        e.preventDefault();e.stopPropagation();
+        openTool(idOf(btn));
+      };
+    });
+
+    document.querySelectorAll('.v9-theme-btn').forEach(function(btn){btn.addEventListener('click',function(){
+      const theme=btn.dataset.theme||'colorful';
+      document.body.classList.remove('v9-light','v9-dark','v9-colorful');
+      document.body.classList.add('v9-'+theme);
+      document.querySelectorAll('.v9-theme-btn').forEach(function(x){x.classList.toggle('active',x===btn);});
+      try{localStorage.setItem('scp-theme-v9',theme);}catch(e){}
+    });});
+    try{const saved=localStorage.getItem('scp-theme-v9')||'colorful';document.body.classList.add('v9-'+saved);document.querySelectorAll('.v9-theme-btn').forEach(function(x){x.classList.toggle('active',x.dataset.theme===saved);});}catch(e){document.body.classList.add('v9-colorful');}
+    initFilePriority();
+    reorderAndFilter();
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
+  else init();
+})();
+</script>
+
+<style id="v10-final-ui-fix">
+/* ===== V10 THEMES ===== */
+body.v10-colorful{
+  background:
+    radial-gradient(700px 420px at 5% 0%,rgba(124,58,237,.42),transparent 62%),
+    radial-gradient(650px 420px at 100% 10%,rgba(6,182,212,.34),transparent 60%),
+    radial-gradient(700px 500px at 50% 100%,rgba(236,72,153,.28),transparent 62%),
+    linear-gradient(135deg,#0b1024,#15103a 48%,#071b2b) !important;
+  color:#f8fafc !important;
+}
+body.v10-colorful .v4-command{background:rgba(12,18,40,.82)!important;border-color:rgba(255,255,255,.14)!important;box-shadow:0 16px 40px rgba(0,0,0,.25)}
+body.v10-colorful .tool-card{background:linear-gradient(135deg,rgba(124,58,237,.24),rgba(6,182,212,.18),rgba(236,72,153,.18))!important;border-color:rgba(255,255,255,.13)!important;color:#fff!important}
+body.v10-dark{
+  background:#07090f !important;color:#e5e7eb !important;
+}
+body.v10-dark .v4-command{background:#0d111b!important;border-color:#202938!important;box-shadow:0 12px 30px rgba(0,0,0,.45)}
+body.v10-dark .v4-search{background:#111827!important;border-color:#263244!important}
+body.v10-dark .v4-search input{color:#f8fafc!important;-webkit-text-fill-color:#f8fafc!important}
+body.v10-dark .tool-card{background:#111827!important;border-color:#263244!important;color:#e5e7eb!important}
+body.v10-dark .panel{background:#0f141e!important;border-color:#263244!important;color:#e5e7eb!important}
+body.v10-light{
+  background:linear-gradient(145deg,#ffffff 0%,#f8fbff 48%,#eef4ff 100%) !important;color:#172033!important;
+}
+body.v10-light .v4-command{background:rgba(255,255,255,.96)!important;border-color:#dbe4f0!important;box-shadow:0 10px 28px rgba(30,64,175,.10)}
+body.v10-light .v4-search{background:#fff!important;border-color:#cbd5e1!important}
+body.v10-light .v4-search input{color:#111827!important;-webkit-text-fill-color:#111827!important}
+body.v10-light .v4-search input::placeholder{color:#64748b!important}
+body.v10-light .v4-cat{background:#f8fafc!important;color:#334155!important;border-color:#d7e0ea!important}
+body.v10-light .tool-card{background:#fff!important;border-color:#dbe4f0!important;color:#172033!important;box-shadow:0 5px 16px rgba(15,23,42,.05)}
+body.v10-light .panel{background:#fff!important;border-color:#dbe4f0!important;color:#172033!important}
+body.v10-light .v10-panel-heading{color:#172033!important}
+
+.v10-theme-row{display:flex;gap:7px;align-items:center;overflow:auto;padding:8px 2px 0;scrollbar-width:none}.v10-theme-row::-webkit-scrollbar{display:none}
+.v10-theme-btn{flex:0 0 auto;border:1px solid rgba(148,163,184,.28);border-radius:999px;padding:7px 12px;background:#111827;color:#cbd5e1;font-size:11px;font-weight:800;cursor:pointer}
+body.v10-light .v10-theme-btn{background:#f8fafc;color:#334155;border-color:#cbd5e1}
+.v10-theme-btn[data-theme="colorful"].active{background:linear-gradient(135deg,#7c3aed,#06b6d4,#ec4899);color:#fff;border-color:transparent}
+.v10-theme-btn[data-theme="dark"].active{background:#05070b;color:#fff;border-color:#475569}
+.v10-theme-btn[data-theme="light"].active{background:#fff;color:#111827;border-color:#94a3b8;box-shadow:0 3px 10px rgba(15,23,42,.12)}
+
+/* Search text is always readable */
+#v4-tool-search{color:#f8fafc!important;-webkit-text-fill-color:#f8fafc!important;caret-color:#22d3ee!important}
+body.v10-light #v4-tool-search{color:#111827!important;-webkit-text-fill-color:#111827!important;caret-color:#4f46e5!important}
+#v4-tool-search::placeholder{opacity:1}
+
+/* Hide filtered-out original cards */
+.tool-card.v7-filter-hidden{display:none!important}
+
+/* Panel title shown before the upload area */
+.v10-panel-heading{font-size:20px;line-height:1.25;font-weight:900;letter-spacing:-.02em;margin:0 0 6px;color:#f8fafc}
+.v10-panel-subheading{font-size:12px;line-height:1.45;margin:0 0 14px;color:#94a3b8}
+body.v10-colorful .v10-panel-heading{background:linear-gradient(90deg,#c4b5fd,#67e8f9,#f9a8d4);-webkit-background-clip:text;background-clip:text;color:transparent}
+body.v10-light .v10-panel-subheading{color:#64748b}
+
+/* Enough room below sticky command bar; heading never hides behind it */
+[id^="panel-"]{scroll-margin-top:160px!important}
+.v10-panel-anchor{scroll-margin-top:160px}
+@media(max-width:600px){
+  [id^="panel-"]{scroll-margin-top:152px!important}
+  .v10-panel-heading{font-size:19px}
+}
+</style>
+<script id="v10-final-behavior">
+(function(){
+  'use strict';
+  const headings={
+    merge:['Merge PDF','Please select PDF files to merge into one PDF.'],
+    resize:['Image Resizer','Please select an image or photo to resize or compress.'],
+    scan:['Smart Scan','Please capture or select a document image to scan.'],
+    split:['Split PDF','Please select a PDF file to split into separate pages.'],
+    compress:['Compress PDF','Please select a PDF file to reduce its size.'],
+    pdfword:['PDF to Word','Please select a PDF file to convert into an editable Word document.'],
+    wordpdf:['Word to PDF','Please select a Word document to convert to PDF.'],
+    excelpdf:['Excel to PDF','Please select an Excel spreadsheet to convert to PDF.'],
+    pptpdf:['PowerPoint to PDF','Please select a PowerPoint presentation to convert to PDF.'],
+    pdfjpg:['PDF to JPG','Please select a PDF file to convert its pages into JPG images.'],
+    jpgpdf:['JPG to PDF','Please select JPG or image files to create a PDF.'],
+    sign:['Sign PDF','Please select a PDF file to add your signature.'],
+    watermark:['Watermark PDF','Please select a PDF file to add a watermark.'],
+    htmlpdf:['HTML to PDF','Please enter or select HTML content to create a PDF.'],
+    unlock:['Unlock PDF','Please select a password-protected PDF to unlock.'],
+    protect:['Protect PDF','Please select a PDF file to add password protection.'],
+    organize:['Organize PDF','Please select a PDF file to organize its pages.'],
+    pagenum:['Page Numbers','Please select a PDF file to add page numbers.'],
+    ocr:['OCR PDF','Please select a PDF file to make its text searchable.']
+  };
+  const valid=Object.keys(headings);
+
+  function addHeadings(){
+    valid.forEach(function(id){
+      const panel=document.getElementById('panel-'+id); if(!panel)return;
+      if(panel.querySelector('.v10-panel-heading'))return;
+      const wrap=document.createElement('div');
+      wrap.className='v10-panel-title';
+      wrap.innerHTML='<div class="v10-panel-heading">'+headings[id][0]+'</div><div class="v10-panel-subheading">'+headings[id][1]+'</div>';
+      panel.insertBefore(wrap,panel.firstChild);
+    });
+  }
+  function hideAll(){
+    valid.forEach(function(id){
+      const panel=document.getElementById('panel-'+id), card=document.getElementById('tab-'+id);
+      if(panel)panel.classList.add('hidden');
+      if(card)card.classList.remove('active');
+    });
+    try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
+  }
+  function allMode(){
+    hideAll();
+    document.querySelectorAll('.v4-cat').forEach(function(x){x.classList.toggle('active',(x.dataset.cat||'all')==='all')});
+    const search=document.getElementById('v4-tool-search'); if(search)search.value='';
+    const grid=document.querySelector('.tool-grid'); if(grid)grid.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  function themeSetup(){
+    const row=document.querySelector('.v9-theme-row'); if(!row)return;
+    row.classList.add('v10-theme-row');
+    row.querySelectorAll('.v9-theme-btn').forEach(function(b){
+      b.classList.add('v10-theme-btn');
+      b.addEventListener('click',function(){applyTheme(b.dataset.theme||'colorful')});
+    });
+    let saved='colorful'; try{saved=localStorage.getItem('scp-theme-v10')||'colorful'}catch(e){}
+    applyTheme(saved);
+  }
+  function applyTheme(t){
+    if(!['colorful','dark','light'].includes(t))t='colorful';
+    document.body.classList.remove('v10-colorful','v10-dark','v10-light');
+    document.body.classList.add('v10-'+t);
+    document.querySelectorAll('.v9-theme-btn').forEach(function(b){b.classList.toggle('active',b.dataset.theme===t)});
+    try{localStorage.setItem('scp-theme-v10',t)}catch(e){}
+  }
+  function panelScroll(id){
+    const panel=document.getElementById('panel-'+id); if(!panel)return;
+    setTimeout(function(){
+      const bar=document.getElementById('v4-command');
+      const offset=(bar?bar.getBoundingClientRect().height:120)+26;
+      const y=panel.getBoundingClientRect().top+window.pageYOffset-offset;
+      window.scrollTo({top:Math.max(0,y),behavior:'smooth'});
+    },180);
+  }
+  function patchSwitch(){
+    const old=window.switchTab;
+    if(typeof old!=='function')return;
+    window.switchTab=function(id){
+      old(id);
+      panelScroll(id);
+    };
+  }
+  function init(){
+    addHeadings();
+    hideAll();
+    themeSetup();
+    patchSwitch();
+    // Keep homepage completely neutral: no tool selected, no upload panel.
+    const grid=document.querySelector('.tool-grid');
+    if(grid)grid.classList.add('v10-home-ready');
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<style id="v11-function-isolation-ui">
+.v11-file-card{display:grid;grid-template-columns:62px 1fr 34px;gap:10px;align-items:center;padding:10px;margin-top:10px;border:1px solid rgba(148,163,184,.22);border-radius:14px;background:rgba(15,23,42,.055)}
+.v11-thumb{width:62px;height:78px;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(100,116,139,.12);font-size:28px}
+.v11-thumb img,.v11-thumb canvas{width:100%;height:100%;object-fit:cover;display:block}.v11-meta{min-width:0}.v11-name{font-weight:800;word-break:break-word;font-size:13px}.v11-size{font-size:11px;opacity:.72;margin-top:4px}.v11-remove{width:30px;height:30px;border:0;border-radius:50%;background:rgba(239,68,68,.12);color:#ef4444;font-weight:900;cursor:pointer}
+.v11-progress{height:9px;border-radius:999px;background:rgba(100,116,139,.16);overflow:hidden;margin-top:12px}.v11-progress>i{display:block;width:0;height:100%;border-radius:999px;background:linear-gradient(90deg,#7c3aed,#06b6d4,#ec4899);transition:width .25s ease}.v11-progress-line{font-size:12px;font-weight:700;margin-top:7px;min-height:18px}
+.v11-summary{margin-top:12px;padding:12px;border-radius:14px;border:1px solid rgba(34,197,94,.25);background:rgba(34,197,94,.06)}.v11-summary-title{font-weight:900;margin-bottom:8px}.v11-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.v11-stat{padding:8px;border-radius:10px;background:rgba(100,116,139,.08);text-align:center}.v11-stat b{display:block;font-size:13px}.v11-stat span{font-size:10px;opacity:.7}.v11-target{margin-top:12px;padding:11px;border-radius:12px;border:1px solid rgba(99,102,241,.2);background:rgba(99,102,241,.055)}.v11-target b{font-size:12px}.v11-target-row{display:flex;gap:8px;margin-top:7px}.v11-target-row input,.v11-target-row select{margin:0!important}.v11-target-note{font-size:10px;opacity:.68;margin-top:5px}
+body.v10-dark .v11-file-card{background:#111827;border-color:#263244}body.v10-light .v11-file-card{background:#f8fafc;border-color:#dbe4f0}
+</style>
+<script id="v11-function-isolation">
+(function(){
+'use strict';
+let mergeFilesV11=[],resizeFilesV11=[];
+function bytes(n){if(!Number.isFinite(n))return '';if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';return (n/1048576).toFixed(2)+' MB'}
+function iconFor(f){const n=(f?.name||'').toLowerCase(),t=(f?.type||'').toLowerCase();if(t.startsWith('image/'))return '🖼️';if(/\.pdf$/.test(n)||t==='application/pdf')return '📕';if(/\.docx?$/.test(n))return '📝';if(/\.xlsx?$/.test(n))return '📊';if(/\.pptx?$/.test(n))return '📽️';return '📁'}
+async function thumbFor(f,el){try{if(f.type?.startsWith('image/')){const u=URL.createObjectURL(f);el.innerHTML='<img alt="preview">';const im=el.querySelector('img');im.onload=()=>URL.revokeObjectURL(u);im.src=u;return}if((f.type==='application/pdf'||/\.pdf$/i.test(f.name))&&window.pdfjsLib){const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise,p=await pdf.getPage(1),v=p.getViewport({scale:.42}),c=document.createElement('canvas');c.width=Math.ceil(v.width);c.height=Math.ceil(v.height);await p.render({canvasContext:c.getContext('2d'),viewport:v}).promise;el.innerHTML='';el.appendChild(c);return}}catch(e){}el.textContent=iconFor(f)}
+function renderQueueV11(kind){const isMerge=kind==='merge',files=isMerge?mergeFilesV11:resizeFilesV11,box=document.getElementById(isMerge?'merge-queue':'resize-queue');if(!box)return;box.innerHTML=files.map((f,i)=>'<div class="v11-file-card"><div class="v11-thumb" id="v11-'+kind+'-thumb-'+i+'">'+iconFor(f)+'</div><div class="v11-meta"><div class="v11-name">'+escapeHTML(f.name)+'</div><div class="v11-size">'+bytes(f.size)+' • '+(f.type||'file')+'</div></div><button type="button" class="v11-remove" data-v11-remove="'+i+'" aria-label="Remove">✕</button></div>').join('');box.querySelectorAll('[data-v11-remove]').forEach(b=>b.onclick=()=>{const idx=+b.dataset.v11Remove;if(isMerge)mergeFilesV11.splice(idx,1);else resizeFilesV11.splice(idx,1);renderQueueV11(kind);updateLegacyQueue(kind)});files.forEach((f,i)=>thumbFor(f,document.getElementById('v11-'+kind+'-thumb-'+i)))}
+function updateLegacyQueue(kind){const n=kind==='merge'?mergeFilesV11:resizeFilesV11,btn=document.getElementById(kind==='merge'?'merge-btn':'resize-btn');if(btn)btn.classList.toggle('hidden',!n.length)}
+window.handleQueueFiles=function(files,type){const arr=Array.from(files||[]);if(type==='pdf'){mergeFilesV11=arr;renderQueueV11('merge');updateLegacyQueue('merge')}else{resizeFilesV11=arr;renderQueueV11('resize');updateLegacyQueue('resize')}};
+async function targetPdfV11(blob,targetBytes){if(!targetBytes||blob.size<=targetBytes)return blob;if(!window.pdfjsLib||typeof buildCompressedPDF!=='function')return blob;const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise;let lo=0,hi=1,best=null,smallest=null;for(let i=1;i<=6;i++){const s=(lo+hi)/2,b=await buildCompressedPDF(pdf,pdf.numPages,getTargetPreset(s),0,100,()=>{});if(!smallest||b.size<smallest.size)smallest=b;if(b.size<=targetBytes){best=b;hi=s}else lo=s}return best||smallest||blob}
+function targetFrom(panelId){const box=document.getElementById(panelId+'-target-size'),unit=document.getElementById(panelId+'-target-unit');if(!box||!box.value)return null;const v=parseFloat(box.value);if(!v||v<=0)return null;return unit?.value==='MB'?v*1048576:v*1024}
+function injectTarget(panelId,note){const p=document.getElementById('panel-'+panelId);if(!p||p.querySelector('.v11-target'))return;const box=document.createElement('div');box.className='v11-target';box.innerHTML='<b>🎯 Output size (optional)</b><div class="v11-target-row"><input id="'+panelId+'-target-size" type="number" min="1" step="0.1" placeholder="e.g. 500"><select id="'+panelId+'-target-unit"><option value="KB">KB</option><option value="MB">MB</option></select></div><div class="v11-target-note">'+(note||'Optional. The converter will try to get as close as practical; exact bytes cannot always be guaranteed.')+'</div>';const actions=p.querySelector('.extra-actions')||p.querySelector('.primary-btn');if(actions)actions.parentNode.insertBefore(box,actions);else p.appendChild(box)}
+async function executeMergeV11(){const files=mergeFilesV11.slice();if(!files.length){alert('Please select at least one PDF.');return}const btn=document.getElementById('merge-btn'),q=document.getElementById('merge-queue');let prog=document.getElementById('merge-v11-progress');if(!prog){prog=document.createElement('div');prog.id='merge-v11-progress';q?.insertAdjacentElement('afterend',prog)}const set=(p,msg)=>prog.innerHTML='<div class="v11-progress"><i style="width:'+Math.max(0,Math.min(100,p))+'%"></i></div><div class="v11-progress-line">'+msg+'</div>';btn.disabled=true;set(2,'Preparing PDF merge… ⏳');try{const out=await PDFLib.PDFDocument.create();let totalBefore=files.reduce((a,f)=>a+f.size,0),pages=0;for(let i=0;i<files.length;i++){set((i/files.length)*75,'Merging file '+(i+1)+' of '+files.length+'… ⏳');const src=await PDFLib.PDFDocument.load(await files[i].arrayBuffer());pages+=src.getPageCount();(await out.copyPages(src,src.getPageIndices())).forEach(p=>out.addPage(p))}set(78,'Building merged PDF… ⏳');let blob=new Blob([await out.save()],{type:'application/pdf'});const target=targetFrom('merge');if(target){set(84,'Optimizing toward target size… ⏳');blob=await targetPdfV11(blob,target)}set(100,'✅ Merge completed');dlBlob(blob,'Merged_Document.pdf');const old=totalBefore,nu=blob.size,diff=old-nu,pct=old?(diff/old*100):0;let s=document.getElementById('merge-v11-summary');if(!s){s=document.createElement('div');s.id='merge-v11-summary';q?.insertAdjacentElement('afterend',s)}s.className='v11-summary';s.innerHTML='<div class="v11-summary-title">✅ Merge Complete</div><div class="v11-stats"><div class="v11-stat"><b>'+files.length+'</b><span>Files</span></div><div class="v11-stat"><b>'+bytes(old)+'</b><span>Original</span></div><div class="v11-stat"><b>'+bytes(nu)+'</b><span>Output</span></div></div><div style="font-size:11px;margin-top:8px">📄 '+pages+' pages • '+(pct>=0?'Saved '+bytes(Math.max(0,diff))+' ('+Math.max(0,pct).toFixed(1)+'%)':'Output increased by '+bytes(-diff))+'</div>';mergeFilesV11=[];renderQueueV11('merge');updateLegacyQueue('merge')}catch(e){set(0,'❌ '+escapeHTML(e.message||e));alert('Merge Error: '+(e.message||e))}finally{btn.disabled=false;btn.innerText='Merge & Download PDF'}}
+window.executeMerge=executeMergeV11;
+window.executeResize=async function(){const btn=document.getElementById('resize-btn'),mode=document.getElementById('resize-mode')?.value||'dimensions',format=document.getElementById('resize-format')?.value||'image/jpeg',files=resizeFilesV11.slice();if(!files.length){alert('Please select at least one image.');return}let targetKB=0;if(mode==='size'){const v=parseFloat(document.getElementById('resize-size')?.value);if(!v||v<=0){alert('Enter target size.');return}targetKB=document.getElementById('resize-unit')?.value==='MB'?v*1024:v}else if(mode==='both'){const v=parseFloat(document.getElementById('resize-both-size')?.value);if(v>0)targetKB=document.getElementById('resize-both-unit')?.value==='MB'?v*1024:v}const needsDims=mode==='dimensions'||mode==='both';let tw=0,th=0,keep=true;if(needsDims){tw=parseInt(document.getElementById('resize-width')?.value,10);th=parseInt(document.getElementById('resize-height')?.value,10);if(!tw||!th){alert('Enter width and height in pixels.');return}keep=document.getElementById('resize-keep-ratio')?.checked!==false}if(format==='image/png'&&targetKB>0){alert('Target file size works with JPG. PNG is lossless.');return}btn.disabled=true;const results=[];let prog=document.getElementById('resize-v11-progress');if(!prog){prog=document.createElement('div');prog.id='resize-v11-progress';document.getElementById('resize-queue')?.insertAdjacentElement('afterend',prog)}const set=(p,m)=>prog.innerHTML='<div class="v11-progress"><i style="width:'+p+'%"></i></div><div class="v11-progress-line">'+m+'</div>';try{for(let i=0;i<files.length;i++){const f=files[i];set(i/files.length*90,'Processing image '+(i+1)+' of '+files.length+'… ⏳');const img=await loadImageFromFile(f);let ow=img.naturalWidth,oh=img.naturalHeight,w=ow,h=oh;if(needsDims){if(keep){const s=Math.min(tw/ow,th/oh);w=Math.max(1,Math.round(ow*s));h=Math.max(1,Math.round(oh*s))}else{w=tw;h=th}}const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');if(format==='image/jpeg'){ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h)}ctx.drawImage(img,0,0,w,h);const blob=format==='image/jpeg'?(targetKB?await compressImageToTarget(c,targetKB):await canvasBlob(c,format,.92)):await canvasBlob(c,format,1);if(!blob)throw new Error('Image export failed.');dlBlob(blob,f.name.replace(/\.[^/.]+$/,'')+(format==='image/png'?'.png':'.jpg'));results.push({name:f.name,before:f.size,after:blob.size})}set(100,'✅ Images processed');showV4Summary('resize','Images converted',results);resizeFilesV11=[];renderQueueV11('resize');updateLegacyQueue('resize')}catch(e){set(0,'❌ '+escapeHTML(e.message||e));extraStatus('resize','❌ '+escapeHTML(e.message||e))}finally{btn.disabled=false;btn.innerText='Resize & Download'}};
+function renderSinglePreview(inputId,cardId,file,kind){const box=document.getElementById(cardId);if(!box)return;box.classList.remove('hidden');box.innerHTML='<div class="v11-file-card"><div class="v11-thumb" id="'+cardId+'-thumb">'+iconFor(file)+'</div><div class="v11-meta"><div class="v11-name">'+escapeHTML(file.name)+'</div><div class="v11-size">'+bytes(file.size)+' • '+(file.type||'PDF')+'</div></div><button type="button" class="v11-remove" id="'+cardId+'-remove">✕</button></div>';thumbFor(file,document.getElementById(cardId+'-thumb'));document.getElementById(cardId+'-remove').onclick=()=>{const inp=document.getElementById(inputId);if(inp){inp.value=''}if(kind==='split'){splitPDFFile=null;document.getElementById('split-controls')?.classList.add('hidden');box.classList.add('hidden')}if(kind==='compress'){compressPDFFile=null;document.getElementById('compress-controls')?.classList.add('hidden');box.classList.add('hidden')}}}
+const oldLoadSplit=window.loadSplitPDF;window.loadSplitPDF=async function(file){await oldLoadSplit(file);if(file&&splitPDFFile)renderSinglePreview('split-input','split-file-info',file,'split')};
+const oldLoadCompress=window.loadCompressPDF;window.loadCompressPDF=async function(file){await oldLoadCompress(file);if(file&&compressPDFFile)renderSinglePreview('compress-input','compress-file-info',file,'compress')};
+function patchPriority(){document.addEventListener('change',function(e){const input=e.target;if(!input||input.type!=='file'||!input.files?.length)return;const owner=input.closest('[id^="panel-"]');if(owner&&!owner.classList.contains('hidden'))return},true)}
+function setupGeneric(){injectTarget('merge','Optional target; the merged PDF is optimized toward the requested size.');['wordpdf','excelpdf','pptpdf','jpgpdf','sign','watermark','htmlpdf','unlock','organize','pagenum'].forEach(id=>injectTarget(id,'Optional target; for PDF output, the app will try to approach the requested size.'))}
+function theme(){const clean=()=>document.body.classList.remove('v9-light','v9-dark','v9-colorful','v10-light','v10-dark','v10-colorful');document.querySelectorAll('.v9-theme-btn').forEach(b=>{if(b.dataset.v11Bound)return;b.dataset.v11Bound='1';b.addEventListener('click',()=>{const t=b.dataset.theme||'colorful';clean();document.body.classList.add('v10-'+t);document.querySelectorAll('.v9-theme-btn').forEach(x=>x.classList.toggle('active',x===b));try{localStorage.setItem('scp-theme-v11',t)}catch(e){}})});let t='colorful';try{t=localStorage.getItem('scp-theme-v11')||'colorful'}catch(e){}clean();document.body.classList.add('v10-'+(['light','dark','colorful'].includes(t)?t:'colorful'));document.querySelectorAll('.v9-theme-btn').forEach(x=>x.classList.toggle('active',x.dataset.theme===t))}
+function boot(){theme();patchPriority();setupGeneric();const merge=document.getElementById('merge-input'),resize=document.getElementById('resize-input');if(merge)merge.addEventListener('change',()=>window.handleQueueFiles(merge.files,'pdf'));if(resize)resize.addEventListener('change',()=>window.handleQueueFiles(resize.files,'image'))}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})();
+</script>
+<style id="v11-theme-overrides">
+body.v10-colorful{background:radial-gradient(800px 500px at 0% 0%,rgba(124,58,237,.42),transparent 60%),radial-gradient(700px 500px at 100% 20%,rgba(6,182,212,.35),transparent 58%),radial-gradient(800px 600px at 50% 100%,rgba(236,72,153,.30),transparent 62%),linear-gradient(135deg,#090d25,#17113c,#06212b)!important;color:#f8fafc!important}body.v10-colorful .panel,body.v10-colorful .v4-command{background:rgba(17,24,55,.82)!important;border-color:rgba(255,255,255,.14)!important;color:#f8fafc!important}body.v10-dark{background:#05070b!important;color:#e5e7eb!important}body.v10-dark .panel,body.v10-dark .v4-command{background:#0b0f16!important;border-color:#1f2937!important;color:#e5e7eb!important}body.v10-light{background:linear-gradient(145deg,#fff,#f4f8ff 52%,#eef2ff)!important;color:#172033!important}body.v10-light .panel,body.v10-light .v4-command{background:#fff!important;border-color:#dbe4f0!important;color:#172033!important}
+</style>
+
+<script id="v11-generic-output-control">
+(function(){
+'use strict';
+function sourceForPanel(id){const p=document.getElementById('panel-'+id);if(!p)return null;const inp=p.querySelector('input[type=file]');return inp&&inp.files&&inp.files[0]?inp.files[0]:null}
+function targetBytes(id){const n=document.getElementById(id+'-target-size'),u=document.getElementById(id+'-target-unit');if(!n||!n.value)return null;const v=parseFloat(n.value);if(!v||v<=0)return null;return u&&u.value==='MB'?v*1048576:v*1024}
+function panelId(){const p=[...document.querySelectorAll('[id^="panel-"]')].find(x=>!x.classList.contains('hidden'));return p?p.id.replace('panel-',''):''}
+async function optimizePDF(blob,target){if(!target||blob.size<=target||!window.pdfjsLib||typeof buildCompressedPDF!=='function')return blob;const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise;let lo=0,hi=1,best=null,smallest=blob;for(let i=1;i<=6;i++){const s=(lo+hi)/2,b=await buildCompressedPDF(pdf,pdf.numPages,getTargetPreset(s),0,100,()=>{});if(b.size<smallest.size)smallest=b;if(b.size<=target){best=b;hi=s}else lo=s}return best||smallest}
+function addProgress(id,msg,pct){const p=document.getElementById('panel-'+id);if(!p)return null;let box=p.querySelector('.v11-output-progress');if(!box){box=document.createElement('div');box.className='v11-output-progress';p.appendChild(box)}box.innerHTML='<div class="v11-progress"><i style="width:'+pct+'%"></i></div><div class="v11-progress-line">'+msg+'</div>';return box}
+function summary(id,title,before,after){const p=document.getElementById('panel-'+id);if(!p)return;let b=p.querySelector('.v11-final-summary');if(!b){b=document.createElement('div');b.className='v11-summary v11-final-summary';p.appendChild(b)}const diff=before-after,pct=before?diff/before*100:0;b.innerHTML='<div class="v11-summary-title">✅ '+title+'</div><div class="v11-stats"><div class="v11-stat"><b>'+bytesV11(before)+'</b><span>Original</span></div><div class="v11-stat"><b>'+bytesV11(after)+'</b><span>New file</span></div><div class="v11-stat"><b>'+Math.abs(pct).toFixed(1)+'%</b><span>'+(diff>=0?'Reduced':'Size change')+'</span></div></div>'}
+function bytesV11(n){if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';return (n/1048576).toFixed(2)+' MB'}
+const original=window.dlBlob;
+if(typeof original==='function'&&!original.__v11Wrapped){const wrapped=async function(blob,name){const id=panelId(),target=targetBytes(id),src=sourceForPanel(id);if(blob&&blob.type==='application/pdf'&&target&&id!=='protect'){try{addProgress(id,'Optimizing output toward target size… ⏳',45);blob=await optimizePDF(blob,target);addProgress(id,'✅ Target-size processing complete',100)}catch(e){addProgress(id,'⚠️ Target optimization unavailable; using normal output',100)}}const result=original.call(this,blob,name);if(blob&&src)addTimeoutSummary(id,src.size,blob.size);return result};wrapped.__v11Wrapped=true;window.dlBlob=wrapped}
+function addTimeoutSummary(id,before,after){setTimeout(()=>summary(id,'Conversion complete',before,after),50)}
+})();
+</script>
+
 </html>
+
+
+<script id="v12-tool-switch-lifecycle">
+(function(){
+  'use strict';
+
+  // Keep every converter isolated when the user changes tools.
+  // A pending selection in one tool must never leak into another tool.
+  let v12CurrentTool = null;
+  let v12Switching = false;
+
+  function v12GetToolIdFromElement(el){
+    if(!el) return null;
+    return el.dataset?.tool || el.dataset?.tab || el.getAttribute?.('data-tool') ||
+           el.getAttribute?.('data-tab') || el.id || null;
+  }
+
+  function v12ResetFileInputs(){
+    document.querySelectorAll('input[type="file"]').forEach(function(input){
+      try {
+        // Resetting value makes selecting the same file again fire change.
+        input.value = '';
+      } catch(e){}
+    });
+  }
+
+  function v12ClearVisualQueues(){
+    // Clear only transient UI generated by the currently displayed tool.
+    // Do not touch permanent tool definitions/cards.
+    document.querySelectorAll('[data-v12-transient="true"]').forEach(function(el){
+      try { el.remove(); } catch(e){}
+    });
+  }
+
+  function v12AbortRunningWork(){
+    // AbortController-compatible jobs created by future/current tools.
+    try {
+      if(window.__activeConversionController &&
+         typeof window.__activeConversionController.abort === 'function'){
+        window.__activeConversionController.abort();
+      }
+    } catch(e){}
+    window.__activeConversionController = null;
+
+    // Stop common transient timers without touching the app's permanent timers.
+    if(Array.isArray(window.__conversionTimers)){
+      window.__conversionTimers.forEach(function(t){
+        try { clearTimeout(t); clearInterval(t); } catch(e){}
+      });
+      window.__conversionTimers = [];
+    }
+  }
+
+  function v12ClearKnownQueues(){
+    // These are the queue variables used by the existing app. Clear them
+    // when switching away, so the next tool starts completely fresh.
+    const names = [
+      'processingQueue',
+      'scannedPagesBuffer'
+    ];
+
+    names.forEach(function(name){
+      try {
+        if(Array.isArray(window[name])) window[name].length = 0;
+      } catch(e){}
+    });
+
+    // Do not reset PDF->Word backend/state here; its existing implementation
+    // remains untouched. Reset only visible file queues when they are present.
+    ['queue-merge','queue-resize','file-preview-list','selected-files',
+     'pdf-preview-list','compress-preview-list'].forEach(function(id){
+      const el = document.getElementById(id);
+      if(el && el.dataset && el.dataset.v12Owned === 'true'){
+        el.innerHTML = '';
+      }
+    });
+  }
+
+  function v12CloseOldPanels(nextId){
+    document.querySelectorAll('.tool-panel, .converter-panel, [data-tool-panel]').forEach(function(panel){
+      const id = panel.dataset?.tool || panel.dataset?.tab || panel.id || '';
+      if(String(id) !== String(nextId)){
+        panel.classList.remove('active','open','selected','show');
+        panel.setAttribute('aria-hidden','true');
+      }
+    });
+  }
+
+  function v12BeforeSwitch(nextId){
+    if(v12Switching) return;
+    v12Switching = true;
+
+    const oldId = v12CurrentTool;
+    if(oldId && String(oldId) !== String(nextId)){
+      v12AbortRunningWork();
+      v12ClearKnownQueues();
+      v12ClearVisualQueues();
+      v12ResetFileInputs();
+      v12CloseOldPanels(nextId);
+    }
+
+    v12CurrentTool = nextId || null;
+
+    // Let the original converter handler run first, then correct the viewport.
+    setTimeout(function(){
+      v12Switching = false;
+      v12ResetFileInputs();
+      v12ScrollToPanel(nextId);
+    }, 80);
+  }
+
+  function v12ScrollToPanel(id){
+    if(!id) return;
+
+    const candidates = [
+      document.getElementById(id),
+      document.getElementById('panel-' + id),
+      document.querySelector('[data-tool-panel="' + CSS.escape(String(id)) + '"]'),
+      document.querySelector('[data-tab-panel="' + CSS.escape(String(id)) + '"]')
+    ].filter(Boolean);
+
+    const panel = candidates[0];
+    if(!panel) return;
+
+    const header = document.querySelector('header, .topbar, .sticky-header, .app-header');
+    const category = document.querySelector('.category-bar, .categories, .search-category-bar');
+    const offset = Math.max(
+      18,
+      (header?.getBoundingClientRect?.().height || 0) +
+      (category?.getBoundingClientRect?.().height || 0) + 18
+    );
+
+    const rect = panel.getBoundingClientRect();
+    const target = Math.max(0, window.scrollY + rect.top - offset);
+    window.scrollTo({top: target, behavior:'smooth'});
+  }
+
+  // Wrap the existing switchTab without replacing its functionality.
+  if(typeof window.switchTab === 'function' && !window.__v12SwitchWrapped){
+    const originalSwitchTab = window.switchTab;
+    window.switchTab = function(id){
+      v12BeforeSwitch(id);
+      return originalSwitchTab.apply(this, arguments);
+    };
+    window.__v12SwitchWrapped = true;
+  }
+
+  // Catch direct tool-card clicks too, including inline onclick implementations.
+  document.addEventListener('click', function(e){
+    const card = e.target.closest?.('.tool-card, [data-tool-id], [data-tool]');
+    if(!card) return;
+
+    const id = v12GetToolIdFromElement(card);
+    if(!id) return;
+
+    // Do not interfere with buttons that are not tool selection controls.
+    if(e.target.closest('input,select,textarea,a,[data-no-tool-switch]')) return;
+    v12BeforeSwitch(id);
+  }, true);
+
+  // Expose a safe hook for future converters.
+  window.__v12StartNewTool = function(id){
+    v12BeforeSwitch(id);
+  };
+
+  // Initial state: no tool is considered active until the user selects one.
+  // This does not remove any existing converter functionality.
+  v12CurrentTool = null;
+})();
+</script>
+
+
+<style id="v13-active-tool-highlight">
+.tool-card.v13-selected-tool{
+  outline:3px solid #22d3ee!important;
+  outline-offset:2px!important;
+  transform:translateY(-1px) scale(1.015)!important;
+  box-shadow:0 0 0 2px rgba(34,211,238,.18),0 10px 28px rgba(34,211,238,.22)!important;
+}
+body.v9-light .tool-card.v13-selected-tool{
+  outline-color:#4f46e5!important;
+  box-shadow:0 0 0 2px rgba(79,70,229,.14),0 10px 28px rgba(79,70,229,.18)!important;
+}
+</style>
+<script id="v13-selection-highlight">
+(function(){
+  function mark(id){
+    document.querySelectorAll('.tool-card[id^="tab-"]').forEach(function(c){
+      c.classList.toggle('v13-selected-tool', c.id === 'tab-'+id);
+    });
+  }
+  const original = window.switchTab;
+  if(typeof original === 'function' && !window.__v13Wrapped){
+    window.switchTab = function(id){
+      mark(id);
+      return original.apply(this, arguments);
+    };
+    window.__v13Wrapped = true;
+  }
+  document.addEventListener('click',function(e){
+    const c=e.target.closest?.('.tool-card[id^="tab-"]');
+    if(c) mark(c.id.replace(/^tab-/,''));
+  },true);
+  window.__v13MarkSelectedTool=mark;
+})();
+</script>
