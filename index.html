@@ -1257,7 +1257,33 @@ IMAGE RESIZER
 
         </div>
 
-        <label>Export Format</label>
+        <label>Resize Method</label>
+
+        <select id="resize-mode" onchange="toggleResizeMode()">
+            <option value="size" selected>Target File Size (KB / MB)</option>
+            <option value="dimensions">Exact Width × Height (px)</option>
+        </select>
+
+        <div id="resize-size-box">
+            <label style="margin-top:8px">Target Size</label>
+            <div style="display:flex;gap:7px">
+                <input id="resize-size" type="number" min="1" placeholder="e.g. 150">
+                <select id="resize-unit"><option>KB</option><option>MB</option></select>
+            </div>
+        </div>
+
+        <div id="resize-dimensions-box" class="hidden" style="margin-top:8px">
+            <label>Width (px)</label>
+            <input id="resize-width" type="number" min="1" placeholder="e.g. 1080">
+            <label style="margin-top:7px">Height (px)</label>
+            <input id="resize-height" type="number" min="1" placeholder="e.g. 1350">
+            <label style="display:flex;align-items:center;gap:7px;margin-top:8px">
+                <input id="resize-keep-ratio" type="checkbox" checked style="width:auto;margin:0">
+                Keep aspect ratio
+            </label>
+        </div>
+
+        <label style="margin-top:10px">Export Format</label>
 
         <select id="resize-format">
 
@@ -1732,26 +1758,8 @@ NEW - COMPRESS PDF
 ADDITIONAL CONVERTERS & PDF TOOLS
 ===================================================== -->
 
-<div id="panel-pdfword" class="panel hidden">
-  <div class="tool-title">📝 PDF to Word</div>
-  <p class="tool-desc">Upload PDF → Convert → Download DOCX.</p>
-
-  <input id="pdfword-input" type="file" accept="application/pdf" hidden>
-
-  <div class="extra-drop" data-pick="pdfword-input">
-    📂 <b>Select PDF</b><br>
-    <small>Upload one PDF file</small>
-  </div>
-
-  <div id="pdfword-file-card"></div>
-
-  <div class="extra-actions">
-    <button id="pdfword-convert-btn" class="primary-btn success-btn" onclick="pdfToWord()">📝 CONVERT TO WORD</button>
-    <button class="primary-btn" onclick="clearExtraFile('pdfword-input')">🗑️ Clear</button>
-  </div>
-
-  <div id="pdfword-status" class="compress-status"></div>
-</div><div id="panel-<div id="panel-wordpdf" class="panel hidden"><div class="tool-title">📘 Word to PDF</div><p class="tool-desc">Convert DOC/DOCX into a clean, printable PDF.</p><input id="wordpdf-input" type="file" accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden><div class="extra-drop" data-pick="wordpdf-input">📂 <b>Select DOC / DOCX</b><br><small>or drag & drop here</small></div><div id="wordpdf-file-card"></div><div class="extra-options"><label>Page size<select id="wordpdf-size"><option>A4</option><option>A3</option><option>Letter</option></select></label><label>Orientation<select id="wordpdf-orient"><option value="p">Portrait</option><option value="l">Landscape</option></select></label><label>Quality<select id="wordpdf-quality"><option value="1.2">Standard</option><option value="1.6" selected>High</option><option value="2">Maximum</option></select></label></div><div class="extra-help">DOCX works best with browser conversion. Complex Word layouts may differ.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="wordToPDF()">📄 CONVERT TO PDF</button><button class="primary-btn" onclick="clearExtraFile('wordpdf-input')">🗑️ Clear</button></div><div id="wordpdf-status" class="compress-status"></div></div>
+<div id="panel-pdfword" class="panel hidden"><div class="tool-title">📝 PDF to Word</div><p class="tool-desc">Convert PDF text into a real editable DOCX document.</p><input id="pdfword-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="pdfword-input">📂 <b>Select PDF</b><br><small>or drag & drop here</small></div><div id="pdfword-file-card"></div><div class="extra-options"><label>Conversion<select id="pdfword-mode"><option value="high-fidelity" selected>High Fidelity — preserve layout</option><option value="ocr">OCR — scanned PDF</option></select></label><label>OCR language<select id="pdfword-ocr-lang"><option value="eng">English</option><option value="hin">Hindi</option><option value="eng+hin">English + Hindi</option></select></label><label>Page range<input id="pdfword-pages" class="tool-input" placeholder="All pages (e.g. 1-5)"></label></div><div class="extra-help">High Fidelity reconstructs text, fonts, images, tables, columns, spacing and page layout into an editable DOCX. Scanned PDFs automatically use OCR when needed. Complex PDFs can still have small Word-layout differences because PDF and DOCX use different layout models.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="pdfToWord()">📝 CONVERT TO WORD</button><button class="primary-btn" onclick="clearExtraFile('pdfword-input')">🗑️ Clear</button></div><div id="pdfword-status" class="compress-status"></div></div>
+<div id="panel-wordpdf" class="panel hidden"><div class="tool-title">📘 Word to PDF</div><p class="tool-desc">Convert DOC/DOCX into a clean, printable PDF.</p><input id="wordpdf-input" type="file" accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden><div class="extra-drop" data-pick="wordpdf-input">📂 <b>Select DOC / DOCX</b><br><small>or drag & drop here</small></div><div id="wordpdf-file-card"></div><div class="extra-options"><label>Page size<select id="wordpdf-size"><option>A4</option><option>A3</option><option>Letter</option></select></label><label>Orientation<select id="wordpdf-orient"><option value="p">Portrait</option><option value="l">Landscape</option></select></label><label>Quality<select id="wordpdf-quality"><option value="1.2">Standard</option><option value="1.6" selected>High</option><option value="2">Maximum</option></select></label></div><div class="extra-help">DOCX works best with browser conversion. Complex Word layouts may differ.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="wordToPDF()">📄 CONVERT TO PDF</button><button class="primary-btn" onclick="clearExtraFile('wordpdf-input')">🗑️ Clear</button></div><div id="wordpdf-status" class="compress-status"></div></div>
 <div id="panel-excelpdf" class="panel hidden"><div class="tool-title">📊 Excel to PDF</div><p class="tool-desc">Convert workbook sheets into a printable PDF.</p><input id="excelpdf-input" type="file" accept=".xls,.xlsx" hidden><div class="extra-drop" data-pick="excelpdf-input">📂 <b>Select EXCEL</b><br><small>XLS / XLSX • drag & drop</small></div><div id="excelpdf-file-card"></div><div class="extra-options"><label>Orientation<select id="excelpdf-orient"><option value="l">Landscape</option><option value="p">Portrait</option></select></label><label>Scale<select id="excelpdf-scale"><option value="0.9">Fit width</option><option value="1.2" selected>Standard</option><option value="1.5">Large text</option></select></label><label>Sheets<select id="excelpdf-sheets"><option value="all">All sheets</option><option value="first">First sheet</option></select></label></div><div class="extra-help">Each worksheet is rendered for printing; spreadsheet formulas are not edited in the PDF.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="excelToPDF()">📄 CONVERT TO PDF</button><button class="primary-btn" onclick="clearExtraFile('excelpdf-input')">🗑️ Clear</button></div><div id="excelpdf-status" class="compress-status"></div></div>
 <div id="panel-pptpdf" class="panel hidden"><div class="tool-title">📽️ PowerPoint to PDF</div><p class="tool-desc">Prepare PPT/PPTX for PDF conversion.</p><input id="pptpdf-input" type="file" accept=".ppt,.pptx" hidden><div class="extra-drop" data-pick="pptpdf-input">📂 <b>Select PPT / PPTX</b><br><small>or drag & drop here</small></div><div id="pptpdf-file-card"></div><div class="extra-options"><label>Conversion mode<select id="pptpdf-mode"><option value="browser">Browser preview / export</option><option value="office">Office engine (server)</option></select></label><label>Slides<input id="pptpdf-pages" class="tool-input" placeholder="All slides"></label></div><div class="extra-help">True slide-faithful PPT/PPTX → PDF needs an Office/LibreOffice rendering engine. This browser-only build will not fake a PDF.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="pptToPDF()">📄 CONVERT TO PDF</button><button class="primary-btn" onclick="clearExtraFile('pptpdf-input')">🗑️ Clear</button></div><div id="pptpdf-status" class="compress-status"></div></div>
 <div id="panel-pdfjpg" class="panel hidden"><div class="tool-title">🖼️ PDF to JPG</div><p class="tool-desc">Render PDF pages as high-quality JPG images.</p><input id="pdfjpg-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="pdfjpg-input">📂 <b>Select PDF</b><br><small>or drag & drop here</small></div><div id="pdfjpg-file-card"></div><div class="extra-options"><label>Quality<select id="pdfjpg-quality"><option value="1">Standard</option><option value="1.5" selected>High</option><option value="2">Ultra</option></select></label><label>Pages<input id="pdfjpg-pages" class="tool-input" placeholder="All (e.g. 1-3)"></label><label>Format<select id="pdfjpg-format"><option value="jpg">JPG</option><option value="png">PNG</option></select></label></div><div class="extra-actions"><button class="primary-btn success-btn" onclick="pdfToJPG()">🖼️ CONVERT PAGES</button><button class="primary-btn" onclick="clearExtraFile('pdfjpg-input')">🗑️ Clear</button></div><div id="pdfjpg-status" class="compress-status"></div></div>
@@ -1763,7 +1771,7 @@ ADDITIONAL CONVERTERS & PDF TOOLS
 <div id="panel-protect" class="panel hidden"><div class="tool-title">🔐 Protect PDF</div><p class="tool-desc">Configure password protection for a PDF.</p><input id="protect-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="protect-input">📂 <b>Select PDF</b><br><small>or drag & drop here</small></div><div id="protect-file-card"></div><div class="extra-options"><label>Password<div class="password-wrap"><input id="protect-password" class="tool-input" type="password" placeholder="Enter password" autocomplete="new-password"><button type="button" class="password-eye" data-password-toggle="protect-password" aria-label="Show password" title="Show password">👁️</button></div></label><label>Confirm<div class="password-wrap"><input id="protect-password2" class="tool-input" type="password" placeholder="Confirm password" autocomplete="new-password"><button type="button" class="password-eye" data-password-toggle="protect-password2" aria-label="Show password" title="Show password">👁️</button></div></label><label>Method<select id="protect-method"><option value="aes">AES / Password encryption</option><option value="permissions">Permissions</option></select></label></div><div class="extra-help">Creates real PDF password encryption locally in your browser. AES-256 requires HTTPS/localhost; RC4 legacy mode is available as a compatibility fallback.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="protectPDF()">🔐 PROTECT PDF</button><button class="primary-btn" onclick="clearExtraFile('protect-input')">🗑️ Clear</button></div><div id="protect-status" class="compress-status"></div></div>
 <div id="panel-organize" class="panel hidden"><div class="tool-title">🗂️ Organize PDF</div><p class="tool-desc">Reorder, duplicate and remove pages using a simple page sequence.</p><input id="organize-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="organize-input">📂 <b>Select PDF</b><br><small>or drag & drop here</small></div><div id="organize-file-card"></div><div class="extra-options"><label>Page order<input id="organize-order" class="tool-input" placeholder="e.g. 3,1,2,4"></label><label>Action<select id="organize-action"><option value="custom">Use preview order</option><option value="reverse">Reverse pages</option></select></label></div><div id="organize-preview" class="organize-preview"></div><div class="extra-help">Use page numbers separated by commas. Repeat a number to duplicate a page; omit a number to delete it.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="organizePDF()">🗂️ APPLY & DOWNLOAD</button><button class="primary-btn" onclick="clearExtraFile('organize-input')">🗑️ Clear</button></div><div id="organize-status" class="compress-status"></div></div>
 <div id="panel-pagenum" class="panel hidden"><div class="tool-title">🔢 Page Numbers</div><p class="tool-desc">Add page numbers with custom position, start number and format.</p><input id="pagenum-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="pagenum-input">📂 <b>Select PDF</b><br><small>or drag & drop here</small></div><div id="pagenum-file-card"></div><div class="extra-options"><label>Position<select id="pagenum-position"><option value="bottom-center">Bottom Center</option><option value="bottom-right">Bottom Right</option><option value="bottom-left">Bottom Left</option><option value="top-right">Top Right</option></select></label><label>Start<input id="pagenum-start" type="number" class="tool-input" value="1" min="1"></label><label>Format<select id="pagenum-format"><option value="number">1, 2, 3</option><option value="page">Page 1</option><option value="slash">1 / total</option></select></label><label>Pages<input id="pagenum-pages" class="tool-input" placeholder="All pages"></label></div><div class="extra-actions"><button class="primary-btn success-btn" onclick="addPageNumbers()">🔢 ADD PAGE NUMBERS</button><button class="primary-btn" onclick="clearExtraFile('pagenum-input')">🗑️ Clear</button></div><div id="pagenum-status" class="compress-status"></div></div>
-<div id="panel-ocr" class="panel hidden"><div class="tool-title">🔎 OCR PDF</div><p class="tool-desc">Recognize scanned pages and export searchable text data.</p><input id="ocr-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="ocr-input">📂 <b>Select Scanned PDF</b><br><small>or drag & drop here</small></div><div id="ocr-file-card"></div><div class="extra-options"><label>Language<select id="ocr-lang" class="tool-input"><option value="eng">English</option><option value="hin">Hindi</option><option value="eng+hin">English + Hindi</option></select></label><label>Resolution<select id="ocr-scale"><option value="1.5">Standard</option><option value="2" selected>High</option><option value="2.5">Ultra</option></select></label><label>Output<select id="ocr-output"><option value="txt">TXT text</option><option value="json">JSON with page text</option></select></label></div><div class="extra-help">OCR quality depends on scan clarity. Searchable-PDF embedding needs an OCR/PDF engine that can place text layers.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="ocrPDF()">🔎 RUN OCR</button><button class="primary-btn" onclick="clearExtraFile('ocr-input')">🗑️ Clear</button></div><div id="ocr-status" class="compress-status"></div></div>>
+<div id="panel-ocr" class="panel hidden"><div class="tool-title">🔎 OCR PDF</div><p class="tool-desc">Recognize scanned pages and export searchable text data.</p><input id="ocr-input" type="file" accept="application/pdf" hidden><div class="extra-drop" data-pick="ocr-input">📂 <b>Select Scanned PDF</b><br><small>or drag & drop here</small></div><div id="ocr-file-card"></div><div class="extra-options"><label>Language<select id="ocr-lang" class="tool-input"><option value="eng">English</option><option value="hin">Hindi</option><option value="eng+hin">English + Hindi</option></select></label><label>Resolution<select id="ocr-scale"><option value="1.5">Standard</option><option value="2" selected>High</option><option value="2.5">Ultra</option></select></label><label>Output<select id="ocr-output"><option value="txt">TXT text</option><option value="json">JSON with page text</option></select></label></div><div class="extra-help">OCR quality depends on scan clarity. Searchable-PDF embedding needs an OCR/PDF engine that can place text layers.</div><div class="extra-actions"><button class="primary-btn success-btn" onclick="ocrPDF()">🔎 RUN OCR</button><button class="primary-btn" onclick="clearExtraFile('ocr-input')">🗑️ Clear</button></div><div id="ocr-status" class="compress-status"></div></div>
 
 
 <!-- =====================================================
@@ -2152,129 +2160,78 @@ async function executeMerge(){
 RESIZER
 ===================================================== */
 
-async function executeResize(){
-
-    const btn=
-        document.getElementById("resize-btn");
-
-    const size=
-        parseFloat(
-            document.getElementById(
-                "resize-size"
-            ).value
-        );
-
-    if(!size || size<=0){
-
-        alert("Please enter target size.");
-
-        return;
-
-    }
-
-    const unit=
-        document.getElementById(
-            "resize-unit"
-        ).value;
-
-    const format=
-        document.getElementById(
-            "resize-format"
-        ).value;
-
-    const targetKB=
-        unit==="MB"
-        ?size*1024
-        :size;
-
-    btn.disabled=true;
-    btn.innerText="Processing...";
-
-    try{
-
-        for(const file of queue){
-
-            const img=
-                await loadImageFromFile(file);
-
-            const c=
-                document.createElement(
-                    "canvas"
-                );
-
-            c.width=img.naturalWidth;
-            c.height=img.naturalHeight;
-
-            c.getContext("2d")
-                .drawImage(img,0,0);
-
-            if(
-                targetKB &&
-                format==="image/jpeg"
-            ){
-
-                await new Promise(resolve=>{
-
-                    compressImage(
-                        c,
-                        targetKB,
-                        file.name,
-                        resolve
-                    );
-
-                });
-
-            }else{
-
-                const blob=
-                    await canvasBlob(
-                        c,
-                        format,
-                        .9
-                    );
-
-                download(
-                    blob,
-                    file.name.replace(
-                        /\.[^/.]+$/,
-                        ""
-                    )+
-                    (
-                        format==="image/png"
-                        ?".png"
-                        :".jpg"
-                    )
-                );
-
-            }
-
-        }
-
-        alert("Images processed successfully!");
-
-        queue=[];
-
-        document.getElementById(
-            "resize-queue"
-        ).innerHTML="";
-
-        btn.classList.add("hidden");
-
-    }catch(error){
-
-        alert(
-            "Resize Error: "+
-            error.message
-        );
-
-    }
-
-    btn.disabled=false;
-    btn.innerText=
-        "Compress & Download Images";
-
+function toggleResizeMode(){
+    const mode=document.getElementById('resize-mode')?.value||'size';
+    document.getElementById('resize-size-box')?.classList.toggle('hidden',mode!=='size');
+    document.getElementById('resize-dimensions-box')?.classList.toggle('hidden',mode!=='dimensions');
 }
 
+async function executeResize(){
+    const btn=document.getElementById('resize-btn');
+    const mode=document.getElementById('resize-mode')?.value||'size';
+    const format=document.getElementById('resize-format').value;
+    const files=Array.isArray(queue)?queue.slice():[];
+    if(!files.length){ alert('Please select at least one image.'); return; }
+
+    let targetKB=0;
+    if(mode==='size'){
+        const size=parseFloat(document.getElementById('resize-size')?.value);
+        if(!size||size<=0){alert('Please enter target file size.');return;}
+        const unit=document.getElementById('resize-unit').value;
+        targetKB=unit==='MB'?size*1024:size;
+    }else{
+        const w=parseInt(document.getElementById('resize-width')?.value,10);
+        const h=parseInt(document.getElementById('resize-height')?.value,10);
+        if(!w||!h||w<1||h<1){alert('Please enter width and height in pixels.');return;}
+    }
+
+    if(btn){btn.disabled=true;btn.innerText='Processing... ⏳';}
+    try{
+        for(let i=0;i<files.length;i++){
+            const file=files[i];
+            extraStatus('resize',`Processing ${i+1}/${files.length}...`);
+            const img=await loadImageFromFile(file);
+            let outW=img.naturalWidth, outH=img.naturalHeight;
+
+            if(mode==='dimensions'){
+                const tw=parseInt(document.getElementById('resize-width').value,10);
+                const th=parseInt(document.getElementById('resize-height').value,10);
+                if(document.getElementById('resize-keep-ratio')?.checked){
+                    const scale=Math.min(tw/img.naturalWidth,th/img.naturalHeight);
+                    outW=Math.max(1,Math.round(img.naturalWidth*scale));
+                    outH=Math.max(1,Math.round(img.naturalHeight*scale));
+                }else{
+                    outW=tw; outH=th;
+                }
+            }
+
+            const c=document.createElement('canvas');
+            c.width=outW;c.height=outH;
+            const ctx=c.getContext('2d');
+            if(format==='image/jpeg'){ctx.fillStyle='#fff';ctx.fillRect(0,0,outW,outH);}
+            ctx.drawImage(img,0,0,outW,outH);
+
+            if(mode==='size' && format==='image/jpeg'){
+                await new Promise((resolve,reject)=>{
+                    try{compressImage(c,targetKB,file.name,resolve)}catch(e){reject(e)}
+                });
+            }else{
+                const blob=await canvasBlob(c,format,0.92);
+                if(!blob)throw new Error('Image export failed.');
+                const ext=format==='image/png'?'.png':'.jpg';
+                download(blob,file.name.replace(/\.[^/.]+$/,'')+ext);
+            }
+        }
+        extraStatus('resize','✅ Images processed successfully.');
+        queue=[];
+        const q=document.getElementById('resize-queue');if(q)q.innerHTML='';
+        btn?.classList.add('hidden');
+    }catch(error){
+        extraStatus('resize','❌ Resize Error: '+escapeHTML(error?.message||error));
+    }finally{
+        if(btn){btn.disabled=false;btn.innerText='Compress & Download Images';}
+    }
+}
 
 function compressImage(
     canvas,
@@ -4183,6 +4140,7 @@ function rotateImage(){
     sourceCanvas=out;
 
     resetCrop();
+    if(typeof drawEditor==='function') drawEditor();
 
 }
 
@@ -4324,53 +4282,16 @@ SAVE UI
 ===================================================== */
 
 function updateSaveUI(){
-
-    const hasPages=
-        scannedPages.length>0;
-
-    const saveBox=
-        document.getElementById(
-            "save-box"
-        );
-
-    const saveBar=
-        document.getElementById(
-            "scan-save-bar"
-        );
-
-    const pageCount=
-        document.getElementById(
-            "page-count"
-        );
-
-    const saveBarPages=
-        document.getElementById(
-            "save-bar-pages"
-        );
-
-    const text=
-        `${scannedPages.length} `+
-        (
-            scannedPages.length===1
-            ?"Page"
-            :"Pages"
-        );
-
-    pageCount.innerText=text;
-
-    saveBarPages.innerText=text;
-
-    saveBox.classList.toggle(
-        "hidden",
-        !hasPages
-    );
-
-    saveBar.classList.toggle(
-        "hidden",
-        !hasPages ||
-        activeTab!=="scan"
-    );
-
+    const hasPages=scannedPages.length>0;
+    const saveBox=document.getElementById('save-box');
+    const saveBar=document.getElementById('scan-save-bar');
+    const pageCount=document.getElementById('page-count');
+    const saveBarPages=document.getElementById('save-bar-pages');
+    const text=`${scannedPages.length} ${scannedPages.length===1?'Page':'Pages'}`;
+    if(pageCount) pageCount.innerText=text;
+    if(saveBarPages) saveBarPages.innerText=text;
+    if(saveBox) saveBox.classList.toggle('hidden',!hasPages);
+    if(saveBar) saveBar.classList.toggle('hidden',!hasPages||activeTab!=='scan');
 }
 
 
@@ -6392,58 +6313,6 @@ async function pageText(page){
 const PDF_TO_WORD_API = 'https://super-converter-pdfword-api.onrender.com';
 
 async function pdfToWord(){
-  const f = selectedFile('pdfword-input');
-  if(!f){
-    extraStatus('pdfword','⚠️ Please select a PDF first.');
-    return;
-  }
-
-  const btn = document.getElementById('pdfword-convert-btn');
-  try{
-    if(f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)){
-      throw new Error('Please select a PDF file.');
-    }
-
-    if(btn) btn.disabled = true;
-    extraStatus('pdfword','⏳ Converting PDF to Word...');
-
-    const form = new FormData();
-    form.append('file', f, f.name);
-
-    const response = await fetch(
-      PDF_TO_WORD_API.replace(/\/$/,'') + '/convert/pdf-to-word',
-      { method:'POST', body:form }
-    );
-
-    if(!response.ok){
-      let msg = 'Conversion failed (' + response.status + ').';
-      try{
-        const j = await response.json();
-        msg = j.detail || j.message || msg;
-      }catch(_){}
-      throw new Error(msg);
-    }
-
-    const blob = await response.blob();
-    if(!blob.size) throw new Error('Empty DOCX received from conversion engine.');
-
-    let name = f.name.replace(/\.pdf$/i,'') + '.docx';
-    const cd = response.headers.get('content-disposition') || '';
-    const match = cd.match(/filename\*?=(?:UTF-8''|")?([^";]+)/i);
-    if(match){
-      try { name = decodeURIComponent(match[1].replace(/^"|"$/g,'')); } catch(_){}
-    }
-
-    dlBlob(blob, name);
-    extraStatus('pdfword','✅ Done — DOCX downloaded.');
-  }catch(e){
-    extraStatus('pdfword','❌ ' + escapeHTML(e?.message || e));
-  }finally{
-    if(btn) btn.disabled = false;
-  }
-}
-
-async function pdfToWord(){
  const f=selectedFile('pdfword-input');
  if(!f){alert('Select PDF first.');return}
  if(!/^https:\/\/[^\s]+\.onrender\.com$/i.test(PDF_TO_WORD_API)){
@@ -6484,8 +6353,28 @@ async function pdfToWord(){
 async function wordToPDF(){const f=selectedFile("wordpdf-input");if(!f){alert("Select DOC/DOCX first.");return}try{extraStatus("wordpdf","Converting... ⏳");const ab=await f.arrayBuffer();let html="";if(window.mammoth){const r=await mammoth.convertToHtml({arrayBuffer:ab});html=r.value}else html=`<pre>${escapeHTML(new TextDecoder().decode(ab))}</pre>`;const holder=document.createElement("div");holder.innerHTML=html;holder.style.cssText="position:fixed;left:-100000px;top:0;width:794px;background:white;color:black;padding:40px;font-family:Arial;line-height:1.5";document.body.appendChild(holder);const c=await html2canvas(holder,{scale:1.5,useCORS:true});const {jsPDF}=window.jspdf;const pdf=new jsPDF("p","pt","a4");const pageW=595.28,pageH=841.89;const ratio=pageW/c.width;const pagePx=pageH/ratio;for(let y=0,pg=0;y<c.height;y+=pagePx,pg++){const h=Math.min(pagePx,c.height-y);const part=document.createElement("canvas");part.width=c.width;part.height=h;part.getContext("2d").drawImage(c,0,y,c.width,h,0,0,c.width,h);if(pg)pdf.addPage();pdf.addImage(part.toDataURL("image/jpeg",.92),"JPEG",0,0,pageW,h*ratio)}document.body.removeChild(holder);dlBlob(pdf.output("blob"),f.name.replace(/\.(docx?|DOCX?)$/i,"")+".pdf");extraStatus("wordpdf","✅ PDF created.")}catch(e){extraStatus("wordpdf","❌ "+escapeHTML(e.message))}}
 
 async function excelToPDF(){const f=selectedFile("excelpdf-input");if(!f){alert("Select Excel first.");return}try{extraStatus("excelpdf","Reading workbook... ⏳");const wb=XLSX.read(await f.arrayBuffer(),{type:"array"});const html=wb.SheetNames.map(n=>`<h2>${escapeHTML(n)}</h2>`+XLSX.utils.sheet_to_html(wb.Sheets[n],{header:"",footer:""})).join("<hr>");const holder=document.createElement("div");holder.innerHTML=html;holder.style.cssText="position:fixed;left:-100000px;top:0;width:1050px;background:white;color:black;padding:24px;font-family:Arial;font-size:11px";holder.querySelectorAll("table").forEach(t=>t.style.cssText="border-collapse:collapse;width:100%");holder.querySelectorAll("td,th").forEach(t=>t.style.cssText="border:1px solid #999;padding:4px");document.body.appendChild(holder);const c=await html2canvas(holder,{scale:1.2});const {jsPDF}=window.jspdf;const pdf=new jsPDF("l","pt","a4");const pw=841.89,ph=595.28,ratio=pw/c.width,pagePx=ph/ratio;for(let y=0,pg=0;y<c.height;y+=pagePx,pg++){const h=Math.min(pagePx,c.height-y);const part=document.createElement("canvas");part.width=c.width;part.height=h;part.getContext("2d").drawImage(c,0,y,c.width,h,0,0,c.width,h);if(pg)pdf.addPage();pdf.addImage(part.toDataURL("image/jpeg",.9),"JPEG",0,0,pw,h*ratio)}document.body.removeChild(holder);dlBlob(pdf.output("blob"),f.name.replace(/\.(xlsx?|XLSX?)$/i,"")+".pdf");extraStatus("excelpdf","✅ Excel converted to PDF.")}catch(e){extraStatus("excelpdf","❌ "+escapeHTML(e.message))}}
-async function pptToPDF(){const f=selectedFile("pptpdf-input");if(!f){alert("Select PPT/PPTX first.");return}extraStatus("pptpdf","⚠️ Direct PPT/PPTX → PDF requires an Office rendering engine. A browser-only page cannot guarantee slide-faithful conversion. The file is retained after refresh; use an Office/LibreOffice backend for exact conversion.")}
+const OFFICE_TO_PDF_API = 'https://super-converter-pdfword-api.onrender.com';
 
+async function pptToPDF(){
+    const f=selectedFile('pptpdf-input');
+    if(!f){alert('Select PPT/PPTX first.');return;}
+    try{
+        extraStatus('pptpdf','Uploading PowerPoint... ⏳');
+        const form=new FormData();form.append('file',f,f.name);
+        const response=await fetch(OFFICE_TO_PDF_API.replace(/\/$/,'')+'/convert/ppt-to-pdf',{method:'POST',body:form});
+        if(!response.ok){
+            let msg='PowerPoint conversion failed ('+response.status+').';
+            try{const j=await response.json();msg=j.detail||j.message||msg}catch(_){}
+            throw new Error(msg);
+        }
+        const blob=await response.blob();
+        if(!blob.size)throw new Error('Empty PDF received from conversion engine.');
+        dlBlob(blob,f.name.replace(/\.(pptx?|PPTX?)$/i,'.pdf'));
+        extraStatus('pptpdf','✅ PowerPoint converted to PDF.');
+    }catch(e){
+        extraStatus('pptpdf','❌ '+escapeHTML(e?.message||e));
+    }
+}
 async function pdfToJPG(){
  const f=selectedFile("pdfjpg-input");
  if(!f){alert("Select PDF first.");return;}
@@ -6621,7 +6510,7 @@ INITIAL
 });
 
 renderPages();
-
+toggleResizeMode();
 updateSaveUI();
 
 </script>
