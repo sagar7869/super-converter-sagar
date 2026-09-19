@@ -1443,6 +1443,7 @@ body{
 @media(max-width:600px){.v4-command{top:4px}.v4-stats{grid-template-columns:repeat(3,1fr)}}
 </style>
 
+<style id="v21-single-panel-heading">[id^="panel-"] > .tool-title + .tool-title{display:none!important}</style>
 </head>
 
 <body>
@@ -2300,6 +2301,7 @@ function switchTab(tab){
     }catch(e){}
 
     if(typeof updateSaveUI==='function') updateSaveUI();
+    dedupePanelHeadings(document.getElementById("panel-"+tab));
 
     // Keep the selected panel heading fully visible below the sticky command bar.
     requestAnimationFrame(function(){
@@ -2311,6 +2313,21 @@ function switchTab(tab){
             window.scrollTo({top:Math.max(0,top-bottom-18),behavior:"smooth"});
         },60);}
     });
+}
+
+
+// Prevent accidental duplicate headings inside a converter panel. Some older
+// enhancement scripts can add the same .tool-title more than once; keep the
+// first real heading and remove only exact duplicates.
+function dedupePanelHeadings(panel){
+  if(!panel)return;
+  const titles=[...panel.querySelectorAll(':scope > .tool-title')];
+  if(titles.length<2)return;
+  const seen=new Set();
+  titles.forEach((el)=>{
+    const key=(el.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();
+    if(seen.has(key)) el.remove(); else seen.add(key);
+  });
 }
 
 
@@ -6452,13 +6469,20 @@ let outputQueue=[];
 let outputBusy=false;
 let currentOutput=null;
 function defaultOutputName(name){return String(name||'output').replace(/[/\\:*?"<>|]/g,'_')}
-function dlBlob(blob,name){
- outputQueue.push({blob,name:defaultOutputName(name)});
- processOutputQueue();
+function getActiveConverterPanel(){
+  return [...document.querySelectorAll('[id^="panel-"]')].find(p=>!p.classList.contains('hidden'))||null;
 }
-function hideCurrentUploadUI(){
+function dlBlob(blob,name){
+  // Every generated file goes through the same V21 output screen.
+  // Capture the originating panel now so async conversions can never
+  // accidentally attach the output controls to another tool.
+  const panel=getActiveConverterPanel();
+  outputQueue.push({blob,name:defaultOutputName(name),panelId:panel?.id||''});
+  processOutputQueue();
+}
+function hideCurrentUploadUI(panel){
   try{
-    const panel=[...document.querySelectorAll('[id^="panel-"]')].find(p=>!p.classList.contains('hidden'));
+    panel=panel||getActiveConverterPanel();
     if(!panel)return;
     panel.querySelectorAll('.drop-zone,.extra-drop,.camera-box').forEach(el=>{
       el.classList.add('v21-upload-locked');
@@ -6470,14 +6494,15 @@ function hideCurrentUploadUI(){
 function processOutputQueue(){
  if(outputBusy||!outputQueue.length)return;
  outputBusy=true; currentOutput=outputQueue.shift();
- hideCurrentUploadUI();
+ const targetPanel=(currentOutput.panelId&&document.getElementById(currentOutput.panelId))||getActiveConverterPanel();
+ currentOutput.panelId=targetPanel?.id||currentOutput.panelId||'';
+ hideCurrentUploadUI(targetPanel);
  const modal=document.getElementById('output-modal');
  const input=document.getElementById('output-name');
  const desc=document.getElementById('output-modal-desc');
  if(!modal||!input){downloadBlobNow(currentOutput.blob,currentOutput.name);outputBusy=false;currentOutput=null;processOutputQueue();return;}
- // Output screen is shown inside the currently active converter panel — never as a popup.
- const activePanel=[...document.querySelectorAll('[id^="panel-"]')].find(p=>!p.classList.contains('hidden'));
- if(activePanel && modal.parentElement!==activePanel) activePanel.appendChild(modal);
+ // One shared output component, rendered inline inside the converter that produced the file.
+ if(targetPanel && modal.parentElement!==targetPanel) targetPanel.appendChild(modal);
  input.value=currentOutput.name;
  desc.textContent='✅ File converted successfully. Choose an action below or change the file name first.';
  document.getElementById('output-drive-help').textContent='';
@@ -6633,7 +6658,7 @@ function finishOutputDownload(){
 }
 async function resetAfterOutput(){
  const keepTab=activeTab || panelId() || (location.hash||'').replace(/^#/,'') || 'merge';
- const panel=document.getElementById('panel-'+keepTab) || [...document.querySelectorAll('[id^="panel-"]')].find(p=>!p.classList.contains('hidden'));
+ const panel=document.getElementById('panel-'+keepTab) || (currentOutput?.panelId?document.getElementById(currentOutput.panelId):null) || getActiveConverterPanel();
  const keepScroll=window.scrollY;
 
  // Reset only the current converter. Do NOT reload the whole page.
@@ -7724,6 +7749,83 @@ function bytesV11(n){if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixe
 const original=window.dlBlob;
 if(typeof original==='function'&&!original.__v11Wrapped){const wrapped=async function(blob,name){const id=panelId(),target=targetBytes(id),src=sourceForPanel(id);if(blob&&blob.type==='application/pdf'&&target&&id!=='protect'){try{addProgress(id,'Optimizing output toward target size… ⏳',45);blob=await optimizePDF(blob,target);addProgress(id,'✅ Target-size processing complete',100)}catch(e){addProgress(id,'⚠️ Target optimization unavailable; using normal output',100)}}const result=original.call(this,blob,name);if(blob&&src)addTimeoutSummary(id,src.size,blob.size);return result};wrapped.__v11Wrapped=true;window.dlBlob=wrapped}
 function addTimeoutSummary(id,before,after){setTimeout(()=>summary(id,'Conversion complete',before,after),50)}
+})();
+</script>
+
+
+<script id="v21-final-output-and-fast-scroll-fix">
+(function(){
+  'use strict';
+
+  // V21 FINAL: every converter gets the same output screen. If the user
+  // switches to another tool while an older output is still open, close the
+  // old output immediately so the next converter can show its own controls.
+  function clearStaleOutputForPanel(panelId){
+    try{
+      if(window.outputBusy && window.currentOutput && window.currentOutput.panelId &&
+         window.currentOutput.panelId !== panelId){
+        const modal=document.getElementById('output-modal');
+        if(modal) modal.classList.add('hidden');
+        window.outputQueue=[];
+        window.currentOutput=null;
+        window.outputBusy=false;
+      }
+    }catch(e){}
+  }
+
+  // Replace the global dlBlob only once. The existing converter functions all
+  // call dlBlob, so this makes the output component consistent everywhere.
+  if(typeof window.dlBlob==='function' && !window.__v21FinalDlBlobFix){
+    const oldDlBlob=window.dlBlob;
+    const fixedDlBlob=function(blob,name){
+      const panel=[...document.querySelectorAll('[id^="panel-"]')]
+        .find(p=>!p.classList.contains('hidden'));
+      clearStaleOutputForPanel(panel?.id||'');
+      return oldDlBlob.call(this,blob,name);
+    };
+    window.dlBlob=fixedDlBlob;
+    window.__v21FinalDlBlobFix=true;
+  }
+
+  // Close an old output when changing tools. This does NOT reload the page.
+  if(typeof window.switchTab==='function' && !window.__v21FinalSwitchFix){
+    const oldSwitch=window.switchTab;
+    window.switchTab=function(id){
+      clearStaleOutputForPanel('panel-'+id);
+      const result=oldSwitch.apply(this,arguments);
+      // Counter all older smooth-scroll wrappers by putting the selected panel
+      // at its final position immediately after the original switch work.
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+          const panel=document.getElementById('panel-'+id);
+          if(!panel)return;
+          const command=document.getElementById('v4-command');
+          const offset=(command?.getBoundingClientRect?.().height||0)+18;
+          const target=Math.max(0,window.scrollY+panel.getBoundingClientRect().top-offset);
+          window.scrollTo({top:target,behavior:'auto'});
+        });
+      });
+      return result;
+    };
+    window.__v21FinalSwitchFix=true;
+  }
+
+  // Tool-card clicks/search results can also request scrolling independently.
+  // Make those final corrections immediate instead of a long smooth animation.
+  document.addEventListener('click',function(e){
+    const card=e.target.closest?.('.tool-card[id^="tab-"], [data-open-tool]');
+    if(!card)return;
+    const id=card.id?.replace(/^tab-/,'') || card.getAttribute('data-open-tool');
+    if(!id)return;
+    setTimeout(function(){
+      const panel=document.getElementById('panel-'+id);
+      if(!panel)return;
+      const command=document.getElementById('v4-command');
+      const offset=(command?.getBoundingClientRect?.().height||0)+18;
+      const target=Math.max(0,window.scrollY+panel.getBoundingClientRect().top-offset);
+      window.scrollTo({top:target,behavior:'auto'});
+    },90);
+  },true);
 })();
 </script>
 
