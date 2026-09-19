@@ -6603,41 +6603,144 @@ async function pageText(page){
  for(const item of items){const y=item.transform?item.transform[5]:0;if(lastY!==null&&Math.abs(y-lastY)>5){if(cur.length)lines.push(cur.join(' '));cur=[]}if(item.str)cur.push(item.str);lastY=y}
  if(cur.length)lines.push(cur.join(' ')); return lines.filter(Boolean);
 }
-const PDF_TO_WORD_API = 'https://super-converter-pdfword-api.onrender.com';
-
+/* ===== PDF to Word — fully client-side, preserves fonts / sizes / layout ===== */
+function parsePdfPageRange(range,total){
+  if(!range)return Array.from({length:total},(_,i)=>i+1);
+  const pages=new Set();
+  for(let part of String(range).split(',')){
+    part=part.trim();if(!part)continue;
+    const m=part.match(/^(\d+)\s*-\s*(\d+)$/);
+    if(m){let a=+m[1],b=+m[2];if(a>b)[a,b]=[b,a];for(let i=a;i<=b;i++)if(i>=1&&i<=total)pages.add(i);}
+    else if(/^\d+$/.test(part)){const n=+part;if(n>=1&&n<=total)pages.add(n);}
+  }
+  const arr=[...pages].sort((a,b)=>a-b);
+  return arr.length?arr:Array.from({length:total},(_,i)=>i+1);
+}
+function mapDocxFont(psName){
+  if(!psName)return 'Calibri';
+  const n=psName.toLowerCase();
+  if(n.includes('times')||(n.includes('serif')&&!n.includes('sans')))return 'Times New Roman';
+  if(n.includes('arial')||n.includes('helvetica')||n.includes('sans'))return 'Arial';
+  if(n.includes('courier')||n.includes('mono'))return 'Courier New';
+  if(n.includes('calibri'))return 'Calibri';
+  if(n.includes('georgia'))return 'Georgia';
+  if(n.includes('verdana'))return 'Verdana';
+  if(n.includes('tahoma'))return 'Tahoma';
+  if(n.includes('garamond'))return 'Garamond';
+  return 'Calibri';
+}
+async function resolvePdfFonts(page,items){
+  const map={};
+  const names=[...new Set(items.map(it=>it.fontName).filter(Boolean))];
+  for(const name of names){
+    let info={bold:false,italic:false,family:'Calibri'};
+    let resolved=null;
+    try{resolved=await page.commonObjs.get(name);}catch(e){}
+    const probe=(resolved&&resolved.name)?resolved.name:name;
+    if(/bold|black|heavy|semibold/i.test(probe))info.bold=true;
+    if(/italic|oblique/i.test(probe))info.italic=true;
+    if(resolved){if(resolved.bold||resolved.black)info.bold=true;if(resolved.italic)info.italic=true;}
+    info.family=mapDocxFont(probe);
+    map[name]=info;
+  }
+  return map;
+}
+async function ocrPageToDocxParagraphs(page,ocrLang,D){
+  const scale=2,v=page.getViewport({scale}),c=document.createElement('canvas');
+  c.width=v.width;c.height=v.height;
+  await page.render({canvasContext:c.getContext('2d'),viewport:v}).promise;
+  const {data}=await Tesseract.recognize(c.toDataURL('image/png'),ocrLang||'eng');
+  const text=(data.text||'').trim();
+  if(!text)return [];
+  return text.split(/\n\s*\n/).map(block=>{
+    const lines=block.split(/\n/).map(l=>l.trim()).filter(Boolean);
+    return new D.Paragraph({children:[new D.TextRun({text:lines.join(' '),font:'Calibri',size:24})],spacing:{line:276}});
+  });
+}
+async function pdfPageToParagraphs(page,ocrLang,useOcr){
+  const D=window.docx;
+  if(useOcr)return await ocrPageToDocxParagraphs(page,ocrLang,D);
+  const viewport=page.getViewport({scale:1}),pageW=viewport.width;
+  const tc=await page.getTextContent();
+  const items=(tc.items||[]).filter(it=>it.str||it.hasEOL);
+  if(!items.length)return [];
+  const fonts=await resolvePdfFonts(page,items);
+  const recs=[];
+  for(const it of items){
+    const tr=it.transform||[1,0,0,1,0,0];
+    const fs=Math.hypot(tr[2],tr[3])||Math.hypot(tr[0],tr[1])||10;
+    recs.push({str:it.str||'',x:tr[4],y:tr[5],fs,w:it.width||0,fn:it.fontName||''});
+  }
+  recs.sort((a,b)=>b.y-a.y);
+  const lines=[];let cur=[],curY=null;
+  for(const r of recs){
+    if(curY!==null&&Math.abs(r.y-curY)>Math.max(2,r.fs*0.5)){if(cur.length)lines.push(cur);cur=[];}
+    cur.push(r);curY=r.y;
+  }
+  if(cur.length)lines.push(cur);
+  const paragraphs=[];let prevTop=null;
+  for(const line of lines){
+    const ln=line.slice().sort((a,b)=>a.x-b.x);
+    if(!ln.length)continue;
+    const lineFs=Math.max(...ln.map(r=>r.fs));
+    const lineLeft=Math.min(...ln.map(r=>r.x));
+    const lineRight=Math.max(...ln.map(r=>r.x+r.w));
+    const lineW=lineRight-lineLeft;
+    const runs=[];
+    for(let i=0;i<ln.length;i++){
+      const r=ln[i];
+      if(i>0){
+        const prev=ln[i-1],gap=r.x-(prev.x+prev.w);
+        if(gap>r.fs*0.35){const sp=Math.max(1,Math.round(gap/(r.fs*0.28)));runs.push(new D.TextRun({text:' '.repeat(sp)}));}
+      }
+      if(!r.str)continue;
+      const f=fonts[r.fn]||{bold:false,italic:false,family:'Calibri'};
+      runs.push(new D.TextRun({text:r.str,bold:f.bold,italics:f.italic,font:f.family,size:Math.max(8,Math.round(r.fs*2))}));
+    }
+    if(!runs.length)continue;
+    let align=D.AlignmentType.LEFT;
+    if(Math.abs(lineLeft-(pageW-lineW)/2)<pageW*0.08&&lineW<pageW*0.9)align=D.AlignmentType.CENTER;
+    else if(Math.abs(lineRight-pageW)<pageW*0.05&&lineLeft>pageW*0.4)align=D.AlignmentType.RIGHT;
+    let before=0;
+    if(prevTop!==null){const vg=prevTop-(ln[0].y+lineFs);if(vg>lineFs*0.6)before=Math.round(vg*20);}
+    paragraphs.push(new D.Paragraph({children:runs,alignment:align,spacing:{line:Math.round(lineFs*1.15*20),before}}));
+    prevTop=ln[0].y;
+  }
+  return paragraphs;
+}
 async function pdfToWord(){
  const f=selectedFile('pdfword-input');
  if(!f){alert('Select PDF first.');return}
- if(!/^https:\/\/[^\s]+\.onrender\.com$/i.test(PDF_TO_WORD_API)){
-   extraStatus('pdfword','⚠️ PDF → Word engine is not connected yet. Deploy the backend on Render, then replace PDF_TO_WORD_API with your Render URL.');
-   return;
- }
+ if(!window.docx&&window.__ensureDocxLoaded)await window.__ensureDocxLoaded();
+ if(!window.docx){extraStatus('pdfword','❌ DOCX library failed to load. Check your connection and reload.');return}
+ if(!window.pdfjsLib){extraStatus('pdfword','❌ PDF engine not loaded. Reload the page.');return}
+ const mode=document.getElementById('pdfword-mode')?.value||'high-fidelity';
+ const lang=document.getElementById('pdfword-ocr-lang')?.value||'eng';
+ const range=document.getElementById('pdfword-pages')?.value?.trim()||'';
+ const D=window.docx;
  try{
-   const mode=document.getElementById('pdfword-mode')?.value||'high-fidelity';
-   const lang=document.getElementById('pdfword-ocr-lang')?.value||'eng';
-   const range=document.getElementById('pdfword-pages')?.value?.trim()||'';
-   if(f.size>25*1024*1024)throw new Error('PDF is larger than the 25 MB free-service limit.');
-   extraStatus('pdfword','Uploading PDF to the high-fidelity conversion engine... ⏳');
-   const form=new FormData();
-   form.append('file',f,f.name);
-   form.append('mode',mode);
-   form.append('ocr_lang',lang);
-   form.append('page_range',range);
-   const response=await fetch(PDF_TO_WORD_API.replace(/\/$/,'')+'/convert/pdf-to-word',{method:'POST',body:form});
-   if(!response.ok){
-     let msg='Conversion server error ('+response.status+').';
-     try{const j=await response.json();msg=j.detail||j.message||msg}catch(e){}
-     throw new Error(msg);
+   extraStatus('pdfword','Reading PDF... ⏳');
+   const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise;
+   const pages=parsePdfPageRange(range,pdf.numPages);
+   const children=[];
+   for(let pi=0;pi<pages.length;pi++){
+     const pn=pages[pi],page=await pdf.getPage(pn);
+     extraStatus('pdfword',`Extracting page ${pn}/${pages.length}... ⏳`);
+     let paras=await pdfPageToParagraphs(page,lang,mode==='ocr');
+     if(mode!=='ocr'&&paras.length===0){
+       extraStatus('pdfword',`Page ${pn} has no text layer — running OCR... ⏳`);
+       paras=await ocrPageToDocxParagraphs(page,lang,D);
+     }
+     if(!paras.length)paras=[new D.Paragraph({children:[new D.TextRun({text:'',font:'Calibri',size:22})]})];
+     if(pi>0)children.push(new D.Paragraph({children:[new D.PageBreak()]}));
+     children.push(...paras);
    }
-   extraStatus('pdfword','Building your editable DOCX with preserved layout... ⏳');
-   const blob=await response.blob();
-   if(!blob.size)throw new Error('The conversion server returned an empty DOCX.');
-   let name=f.name.replace(/\.pdf$/i,'-editable.docx');
-   const cd=response.headers.get('content-disposition')||'';
-   const match=cd.match(/filename\*?=(?:UTF-8''|\")?([^\";]+)/i);
-   if(match)name=decodeURIComponent(match[1].replace(/^\"|\"$/g,''));
-   dlBlob(blob,name);
-   extraStatus('pdfword','✅ High-fidelity editable DOCX created successfully.');
+   extraStatus('pdfword','Building editable DOCX with preserved layout... ⏳');
+   const doc=new D.Document({sections:[{children}]});
+   const blob=await D.Packer.toBlob(doc);
+   if(!blob.size)throw new Error('Generated DOCX is empty.');
+   dlBlob(blob,f.name.replace(/\.pdf$/i,'-editable.docx'));
+   extraStatus('pdfword','✅ Editable DOCX created — fonts, sizes & layout preserved.');
  }catch(e){
    extraStatus('pdfword','❌ PDF to Word failed: '+escapeHTML(e?.message||e));
  }
