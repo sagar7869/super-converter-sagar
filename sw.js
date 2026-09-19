@@ -32,7 +32,22 @@ self.addEventListener('fetch', event => {
   // Keep Google auth / API requests on the network.
   if (url.hostname === 'accounts.google.com' || url.hostname.endsWith('googleapis.com')) return;
 
-  // Same-origin app files: cache first, then network, and refresh the cache.
+  // Same-origin HTML navigations: network first so updates show on refresh.
+  if (url.origin === self.location.origin &&
+      (request.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('.html'))) {
+    event.respondWith(
+      fetch(request).then(response => {
+        if (response && response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+        }
+        return response;
+      }).catch(() => caches.match(request).then(cached => cached || caches.match('./')))
+    );
+    return;
+  }
+
+  // Other same-origin assets (icons, manifest, etc.): cache first, then network.
   if (url.origin === self.location.origin) {
     event.respondWith(
       caches.match(request).then(cached => {
