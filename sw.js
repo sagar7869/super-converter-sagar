@@ -1,4 +1,4 @@
-const CACHE_NAME = 'super-converter-pro-v21-20260919-1';
+const CACHE_NAME = 'super-converter-pro-v21-20260919-2';
 const APP_SHELL = [
   './',
   './index.html',
