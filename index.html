@@ -6603,7 +6603,7 @@ async function pageText(page){
  for(const item of items){const y=item.transform?item.transform[5]:0;if(lastY!==null&&Math.abs(y-lastY)>5){if(cur.length)lines.push(cur.join(' '));cur=[]}if(item.str)cur.push(item.str);lastY=y}
  if(cur.length)lines.push(cur.join(' ')); return lines.filter(Boolean);
 }
-const PDF_TO_WORD_API = 'https://pdf-to-word-api-4zw4.onrender.com';
+const PDF_TO_WORD_API = 'https://super-converter-pdfword-api.onrender.com';
 
 async function pdfToWord(){
  const f=selectedFile('pdfword-input');
@@ -6646,7 +6646,7 @@ async function pdfToWord(){
 async function wordToPDF(){const f=selectedFile("wordpdf-input");if(!f){alert("Select DOC/DOCX first.");return}try{extraStatus("wordpdf","Converting... ⏳");const ab=await f.arrayBuffer();let html="";if(window.mammoth){const r=await mammoth.convertToHtml({arrayBuffer:ab});html=r.value}else html=`<pre>${escapeHTML(new TextDecoder().decode(ab))}</pre>`;const holder=document.createElement("div");holder.innerHTML=html;holder.style.cssText="position:fixed;left:-100000px;top:0;width:794px;background:white;color:black;padding:40px;font-family:Arial;line-height:1.5";document.body.appendChild(holder);const c=await html2canvas(holder,{scale:1.5,useCORS:true});const {jsPDF}=window.jspdf;const pdf=new jsPDF("p","pt","a4");const pageW=595.28,pageH=841.89;const ratio=pageW/c.width;const pagePx=pageH/ratio;for(let y=0,pg=0;y<c.height;y+=pagePx,pg++){const h=Math.min(pagePx,c.height-y);const part=document.createElement("canvas");part.width=c.width;part.height=h;part.getContext("2d").drawImage(c,0,y,c.width,h,0,0,c.width,h);if(pg)pdf.addPage();pdf.addImage(part.toDataURL("image/jpeg",.92),"JPEG",0,0,pageW,h*ratio)}document.body.removeChild(holder);dlBlob(pdf.output("blob"),f.name.replace(/\.(docx?|DOCX?)$/i,"")+".pdf");extraStatus("wordpdf","✅ PDF created.")}catch(e){extraStatus("wordpdf","❌ "+escapeHTML(e.message))}}
 
 async function excelToPDF(){const f=selectedFile("excelpdf-input");if(!f){alert("Select Excel first.");return}try{extraStatus("excelpdf","Reading workbook... ⏳");const wb=XLSX.read(await f.arrayBuffer(),{type:"array"});const html=wb.SheetNames.map(n=>`<h2>${escapeHTML(n)}</h2>`+XLSX.utils.sheet_to_html(wb.Sheets[n],{header:"",footer:""})).join("<hr>");const holder=document.createElement("div");holder.innerHTML=html;holder.style.cssText="position:fixed;left:-100000px;top:0;width:1050px;background:white;color:black;padding:24px;font-family:Arial;font-size:11px";holder.querySelectorAll("table").forEach(t=>t.style.cssText="border-collapse:collapse;width:100%");holder.querySelectorAll("td,th").forEach(t=>t.style.cssText="border:1px solid #999;padding:4px");document.body.appendChild(holder);const c=await html2canvas(holder,{scale:1.2});const {jsPDF}=window.jspdf;const pdf=new jsPDF("l","pt","a4");const pw=841.89,ph=595.28,ratio=pw/c.width,pagePx=ph/ratio;for(let y=0,pg=0;y<c.height;y+=pagePx,pg++){const h=Math.min(pagePx,c.height-y);const part=document.createElement("canvas");part.width=c.width;part.height=h;part.getContext("2d").drawImage(c,0,y,c.width,h,0,0,c.width,h);if(pg)pdf.addPage();pdf.addImage(part.toDataURL("image/jpeg",.9),"JPEG",0,0,pw,h*ratio)}document.body.removeChild(holder);dlBlob(pdf.output("blob"),f.name.replace(/\.(xlsx?|XLSX?)$/i,"")+".pdf");extraStatus("excelpdf","✅ Excel converted to PDF.")}catch(e){extraStatus("excelpdf","❌ "+escapeHTML(e.message))}}
-const OFFICE_TO_PDF_API = 'https://pdf-to-word-api-4zw4.onrender.com';
+const OFFICE_TO_PDF_API = 'https://super-converter-pdfword-api.onrender.com';
 
 async function pptToPDF(){
     const f=selectedFile('pptpdf-input');
@@ -7744,3 +7744,319 @@ body.v9-light .tool-card.v13-selected-tool{
   window.__v13MarkSelectedTool=mark;
 })();
 </script>
+
+
+<style id="v14-modern-theme-fix">
+/* ===== V14: modern, clearly different themes + readable native selects ===== */
+
+/* Default colorful theme: modern Aurora/Glass, deliberately LIGHTER than Dark.
+   No converter logic is changed here. */
+body.v10-colorful{
+  background:
+    radial-gradient(900px 520px at -5% -5%, rgba(99,102,241,.20), transparent 58%),
+    radial-gradient(800px 500px at 105% 8%, rgba(6,182,212,.20), transparent 55%),
+    radial-gradient(900px 620px at 50% 110%, rgba(236,72,153,.14), transparent 58%),
+    linear-gradient(145deg,#f7f9ff 0%,#eef7ff 48%,#f8f1ff 100%) !important;
+  color:#172033 !important;
+}
+body.v10-colorful h1,
+body.v10-colorful .v10-panel-heading,
+body.v10-colorful .v4-command,
+body.v10-colorful .panel{
+  color:#172033 !important;
+}
+body.v10-colorful .v4-command,
+body.v10-colorful .panel{
+  background:rgba(255,255,255,.82)!important;
+  border-color:rgba(99,102,241,.16)!important;
+  box-shadow:0 12px 35px rgba(71,85,105,.12)!important;
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+}
+body.v10-colorful .tool-card{
+  background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(239,246,255,.94))!important;
+  border-color:#dbe4f0!important;
+  color:#24324a!important;
+  box-shadow:0 5px 18px rgba(71,85,105,.09)!important;
+}
+body.v10-colorful .tool-card.active,
+body.v10-colorful .tool-card.v13-selected-tool{
+  background:linear-gradient(135deg,#eef2ff,#ecfeff)!important;
+  border-color:#6366f1!important;
+  color:#312e81!important;
+}
+body.v10-colorful .v4-search input,
+body.v10-colorful input,
+body.v10-colorful textarea,
+body.v10-colorful select{
+  background:#ffffff!important;
+  color:#172033!important;
+  -webkit-text-fill-color:#172033!important;
+  border-color:#cbd5e1!important;
+  caret-color:#4f46e5!important;
+}
+body.v10-colorful input::placeholder,
+body.v10-colorful textarea::placeholder{
+  color:#64748b!important;
+  -webkit-text-fill-color:#64748b!important;
+}
+body.v10-colorful .drop-zone{
+  background:linear-gradient(135deg,#f8fafc,#eef6ff)!important;
+  color:#334155!important;
+  border-color:#818cf8!important;
+}
+body.v10-colorful label,
+body.v10-colorful .options-panel label,
+body.v10-colorful .split-method label,
+body.v10-colorful .compress-method label{
+  color:#334155!important;
+}
+
+/* LIGHT: clean neutral white, separate from colorful. */
+body.v10-light{
+  background:linear-gradient(145deg,#ffffff,#f8fafc 55%,#f1f5f9)!important;
+  color:#172033!important;
+}
+body.v10-light .panel,
+body.v10-light .v4-command{
+  background:#ffffff!important;
+  border-color:#dbe4f0!important;
+  color:#172033!important;
+  box-shadow:0 8px 24px rgba(15,23,42,.07)!important;
+}
+body.v10-light .tool-card{
+  background:#ffffff!important;
+  border-color:#dbe4f0!important;
+  color:#334155!important;
+}
+body.v10-light input,
+body.v10-light textarea,
+body.v10-light select,
+body.v10-light .v4-search input{
+  background:#ffffff!important;
+  color:#172033!important;
+  -webkit-text-fill-color:#172033!important;
+  border-color:#cbd5e1!important;
+}
+
+/* DARK: true dark UI, deliberately not colorful. */
+body.v10-dark{
+  background:#05070b!important;
+  color:#e5e7eb!important;
+}
+body.v10-dark .panel,
+body.v10-dark .v4-command{
+  background:#0b0f16!important;
+  border-color:#1f2937!important;
+  color:#e5e7eb!important;
+  box-shadow:0 12px 32px rgba(0,0,0,.42)!important;
+}
+body.v10-dark input,
+body.v10-dark textarea,
+body.v10-dark select,
+body.v10-dark .v4-search input{
+  background:#111827!important;
+  color:#f8fafc!important;
+  -webkit-text-fill-color:#f8fafc!important;
+  border-color:#334155!important;
+}
+
+/* Native dropdown menus: readable text in Chrome/Android and desktop browsers. */
+select,
+select option,
+select optgroup{
+  color:#172033;
+  background:#ffffff;
+  -webkit-text-fill-color:#172033;
+}
+body.v10-colorful select,
+body.v10-colorful select option,
+body.v10-colorful select optgroup,
+body.v10-light select,
+body.v10-light select option,
+body.v10-light select optgroup{
+  color:#172033!important;
+  background:#ffffff!important;
+  -webkit-text-fill-color:#172033!important;
+}
+body.v10-dark select,
+body.v10-dark select option,
+body.v10-dark select optgroup{
+  color:#f8fafc!important;
+  background:#111827!important;
+  -webkit-text-fill-color:#f8fafc!important;
+}
+body.v10-dark select,
+body.v10-colorful select,
+body.v10-light select{
+  color-scheme:light;
+}
+body.v10-dark select{
+  color-scheme:dark;
+}
+
+/* Keep selected converter highlight visible in every theme. */
+body.v10-colorful .tool-card.v13-selected-tool{
+  outline:3px solid #4f46e5!important;
+  outline-offset:2px!important;
+  box-shadow:0 0 0 2px rgba(79,70,229,.12),0 10px 26px rgba(79,70,229,.16)!important;
+}
+body.v10-light .tool-card.v13-selected-tool{
+  outline:3px solid #4f46e5!important;
+  outline-offset:2px!important;
+}
+body.v10-dark .tool-card.v13-selected-tool{
+  outline:3px solid #22d3ee!important;
+  outline-offset:2px!important;
+}
+</style>
+<script id="v14-theme-select-fix">
+(function(){
+  // Re-apply the readable theme class on startup without changing converter state.
+  function sync(){
+    var b=document.body;
+    if(!b) return;
+    if(!b.classList.contains('v10-colorful') &&
+       !b.classList.contains('v10-dark') &&
+       !b.classList.contains('v10-light')){
+      b.classList.add('v10-colorful');
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',sync);
+  else sync();
+})();
+</script>
+
+<style id="v15-premium-colorful">
+/* V15 — Premium Colorful / Aurora UI. Functionality untouched. */
+body.v10-colorful{
+  background:
+    radial-gradient(900px 520px at -8% -5%, rgba(124,58,237,.28), transparent 58%),
+    radial-gradient(760px 500px at 108% 8%, rgba(6,182,212,.25), transparent 55%),
+    radial-gradient(700px 520px at 50% 110%, rgba(236,72,153,.18), transparent 58%),
+    linear-gradient(135deg,#f7f9ff 0%,#eef7ff 42%,#fff3fb 100%) !important;
+  color:#18233d!important;
+}
+body.v10-colorful::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;
+  background:linear-gradient(120deg,rgba(255,255,255,.5),transparent 35%,rgba(255,255,255,.35));
+}
+body.v10-colorful .app-header,
+body.v10-colorful header{
+  background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(238,246,255,.88)) !important;
+  border:1px solid rgba(124,58,237,.16)!important;
+  box-shadow:0 12px 36px rgba(67,56,202,.13),0 2px 10px rgba(15,23,42,.06)!important;
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+}
+body.v10-colorful .app-header h1,
+body.v10-colorful header h1{
+  background:linear-gradient(90deg,#4f46e5,#06b6d4,#db2777);
+  -webkit-background-clip:text;background-clip:text;color:transparent!important;
+}
+body.v10-colorful .tool-grid{gap:14px!important;}
+body.v10-colorful .tool-card{
+  position:relative;overflow:hidden;
+  background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(246,248,255,.88))!important;
+  border:1px solid rgba(99,102,241,.16)!important;
+  border-radius:20px!important;
+  box-shadow:0 10px 28px rgba(59,65,140,.11), inset 0 1px 0 rgba(255,255,255,.95)!important;
+  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease!important;
+}
+body.v10-colorful .tool-card::before{
+  content:"";position:absolute;left:0;right:0;top:0;height:4px;
+  background:linear-gradient(90deg,#6366f1,#06b6d4,#22c55e,#f59e0b,#ec4899);
+  opacity:.9;
+}
+body.v10-colorful .tool-card:hover{
+  transform:translateY(-3px)!important;
+  border-color:rgba(99,102,241,.34)!important;
+  box-shadow:0 18px 40px rgba(79,70,229,.18),0 4px 14px rgba(6,182,212,.08)!important;
+}
+body.v10-colorful .tool-card:nth-child(5n+1) .tool-icon{background:linear-gradient(135deg,#6366f1,#8b5cf6)!important;}
+body.v10-colorful .tool-card:nth-child(5n+2) .tool-icon{background:linear-gradient(135deg,#06b6d4,#3b82f6)!important;}
+body.v10-colorful .tool-card:nth-child(5n+3) .tool-icon{background:linear-gradient(135deg,#10b981,#22c55e)!important;}
+body.v10-colorful .tool-card:nth-child(5n+4) .tool-icon{background:linear-gradient(135deg,#f59e0b,#f97316)!important;}
+body.v10-colorful .tool-card:nth-child(5n+5) .tool-icon{background:linear-gradient(135deg,#ec4899,#a855f7)!important;}
+body.v10-colorful .tool-card .tool-icon{
+  color:#fff!important;border-radius:15px!important;
+  box-shadow:0 8px 18px rgba(79,70,229,.18)!important;
+}
+body.v10-colorful .tool-card h3{color:#18233d!important;}
+body.v10-colorful .tool-card p{color:#64748b!important;}
+body.v10-colorful .v4-search,
+body.v10-colorful .search-box,
+body.v10-colorful .category-bar,
+body.v10-colorful .tool-panel,
+body.v10-colorful .panel,
+body.v10-colorful .converter-panel{
+  background:linear-gradient(145deg,rgba(255,255,255,.94),rgba(247,250,255,.88))!important;
+  border:1px solid rgba(99,102,241,.15)!important;
+  box-shadow:0 14px 34px rgba(59,65,140,.10)!important;
+  border-radius:20px!important;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+}
+body.v10-colorful .v4-search input,
+body.v10-colorful input,
+body.v10-colorful textarea,
+body.v10-colorful select{
+  background:rgba(255,255,255,.92)!important;
+  color:#18233d!important;-webkit-text-fill-color:#18233d!important;
+  border:1px solid #dbe3f2!important;
+  border-radius:13px!important;
+  box-shadow:inset 0 1px 2px rgba(15,23,42,.03),0 2px 8px rgba(79,70,229,.04)!important;
+}
+body.v10-colorful input:focus,
+body.v10-colorful textarea:focus,
+body.v10-colorful select:focus{
+  outline:none!important;border-color:#6366f1!important;
+  box-shadow:0 0 0 4px rgba(99,102,241,.12),0 5px 16px rgba(99,102,241,.08)!important;
+}
+body.v10-colorful select option,
+body.v10-colorful select optgroup{background:#fff!important;color:#18233d!important;-webkit-text-fill-color:#18233d!important;}
+body.v10-colorful button{
+  border-radius:13px!important;font-weight:700!important;
+  box-shadow:0 7px 18px rgba(79,70,229,.14)!important;
+}
+body.v10-colorful .btn-primary,
+body.v10-colorful .primary,
+body.v10-colorful button[type="submit"]{
+  background:linear-gradient(135deg,#4f46e5,#7c3aed 55%,#db2777)!important;
+  color:#fff!important;border:0!important;
+}
+body.v10-colorful .btn-primary:hover,
+body.v10-colorful .primary:hover{filter:saturate(1.12) brightness(1.03);transform:translateY(-1px);}
+body.v10-colorful .drop-zone,
+body.v10-colorful .upload-box,
+body.v10-colorful .dropzone{
+  background:linear-gradient(135deg,rgba(239,246,255,.96),rgba(253,242,248,.94))!important;
+  border:2px dashed #8b5cf6!important;
+  border-radius:20px!important;
+  box-shadow:inset 0 0 0 5px rgba(255,255,255,.42),0 10px 28px rgba(124,58,237,.08)!important;
+}
+body.v10-colorful .drop-zone:hover,
+body.v10-colorful .upload-box:hover,
+body.v10-colorful .dropzone:hover{border-color:#06b6d4!important;background:linear-gradient(135deg,#eff6ff,#ecfeff,#fdf2f8)!important;}
+body.v10-colorful .progress-bar,
+body.v10-colorful .progress-fill{
+  background:linear-gradient(90deg,#4f46e5,#06b6d4,#22c55e,#f59e0b,#ec4899)!important;
+}
+body.v10-colorful .v9-theme-btn.active,
+body.v10-colorful .v9-theme-btn.selected,
+body.v10-colorful .v9-theme-btn[data-theme="colorful"]{
+  background:linear-gradient(135deg,#4f46e5,#06b6d4,#db2777)!important;
+  color:#fff!important;border-color:transparent!important;
+  box-shadow:0 7px 20px rgba(79,70,229,.25)!important;
+}
+body.v10-colorful .v13-selected-tool{
+  outline:3px solid #06b6d4!important;outline-offset:3px!important;
+  box-shadow:0 0 0 5px rgba(6,182,212,.13),0 18px 42px rgba(79,70,229,.22)!important;
+}
+body.v10-colorful .floating-save-container{
+  background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(240,249,255,.94))!important;
+  border:1px solid rgba(99,102,241,.18)!important;
+  box-shadow:0 -12px 35px rgba(59,65,140,.14)!important;
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+}
+body.v10-colorful .status-success,.v10-colorful .success{color:#047857!important;}
+body.v10-colorful .badge{border-radius:999px!important;}
+</style>
