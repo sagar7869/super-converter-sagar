@@ -1,0 +1,14 @@
+services:
+  web:
+    image: nginx:alpine
+    ports:
+      - "3000:80"
+    volumes:
+      - ./:/usr/share/nginx/html:ro
+    command: ["sh", "-c", "sed -i 's/user  nginx;/user root;/' /etc/nginx/nginx.conf && exec nginx -g 'daemon off;'"]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
