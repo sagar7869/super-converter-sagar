@@ -6456,16 +6456,31 @@ function dlBlob(blob,name){
  outputQueue.push({blob,name:defaultOutputName(name)});
  processOutputQueue();
 }
+function hideCurrentUploadUI(){
+  try{
+    const panel=[...document.querySelectorAll('[id^="panel-"]')].find(p=>!p.classList.contains('hidden'));
+    if(!panel)return;
+    panel.querySelectorAll('.drop-zone,.extra-drop,.camera-box').forEach(el=>{
+      el.classList.add('v21-upload-locked');
+      el.style.display='none';
+    });
+    panel.querySelectorAll('input[type=file]').forEach(el=>{el.disabled=true;});
+  }catch(e){}
+}
 function processOutputQueue(){
  if(outputBusy||!outputQueue.length)return;
  outputBusy=true; currentOutput=outputQueue.shift();
+ hideCurrentUploadUI();
  const modal=document.getElementById('output-modal');
  const input=document.getElementById('output-name');
  const desc=document.getElementById('output-modal-desc');
  if(!modal||!input){downloadBlobNow(currentOutput.blob,currentOutput.name);outputBusy=false;currentOutput=null;processOutputQueue();return;}
+ // Output screen is shown inside the currently active converter panel — never as a popup.
+ const activePanel=[...document.querySelectorAll('[id^="panel-"]')].find(p=>!p.classList.contains('hidden'));
+ if(activePanel && modal.parentElement!==activePanel) activePanel.appendChild(modal);
  input.value=currentOutput.name;
- desc.textContent='Your file is ready. Use Download or WhatsApp / Share below.';
- document.getElementById('output-drive-help').textContent='Google Drive: sign in with Google and upload this output directly to your Drive.';
+ desc.textContent='✅ File converted successfully. Choose an action below or change the file name first.';
+ document.getElementById('output-drive-help').textContent='';
  modal.classList.remove('hidden');
  input.focus(); input.select();
 }
@@ -6606,20 +6621,127 @@ function finishOutputDownload(){
  const ext=(currentOutput.name.match(/\.[^.]+$/)||[''])[0];
  let finalName=name;
  if(ext && !/\.[A-Za-z0-9]{1,8}$/.test(name))finalName+=ext;
- downloadBlobNow(currentOutput.blob,finalName);
- document.getElementById('output-modal')?.classList.add('hidden');
- currentOutput=null;outputBusy=false;processOutputQueue();
+ const ok=downloadBlobNow(currentOutput.blob,finalName);
+ const save=document.getElementById('output-save');
+ if(save){
+   save.textContent=ok?'⬇️ Downloaded ✓':'⬇️ Download';
+   if(ok){
+     clearTimeout(window.__v21DownloadLabelTimer);
+     window.__v21DownloadLabelTimer=setTimeout(()=>{if(save)save.textContent='⬇️ Download Again'},1600);
+   }
+ }
+}
+async function resetAfterOutput(){
+ const keepTab=activeTab || panelId() || (location.hash||'').replace(/^#/,'') || 'merge';
+ const panel=document.getElementById('panel-'+keepTab) || [...document.querySelectorAll('[id^="panel-"]')].find(p=>!p.classList.contains('hidden'));
+ const keepScroll=window.scrollY;
+
+ // Reset only the current converter. Do NOT reload the whole page.
+ // This keeps the same menu/panel on screen and avoids the full-page blink.
+ try{
+   outputQueue=[];
+   currentOutput=null;
+   outputBusy=false;
+   googleDriveToken=null;
+   googleDriveTokenClient=null;
+ }catch(e){}
+
+ // Put the inline output block back at the end of <body> and hide it.
+ try{
+   const modal=document.getElementById('output-modal');
+   if(modal){
+     modal.classList.add('hidden');
+     if(modal.parentElement!==document.body) document.body.appendChild(modal);
+   }
+   const name=document.getElementById('output-name');
+   if(name) name.value='';
+   const desc=document.getElementById('output-modal-desc');
+   if(desc) desc.textContent='';
+   const driveHelp=document.getElementById('output-drive-help');
+   if(driveHelp) driveHelp.textContent='';
+ }catch(e){}
+
+ // Clear all transient conversion state used by the existing tools.
+ try{queue.length=0;}catch(e){queue=[];}
+ try{scannedPages.length=0;}catch(e){scannedPages=[];}
+ sourceCanvas=null;
+ editingIndex=-1;
+ try{splitPDFFile=null;splitResults=[];}catch(e){}
+ try{compressPDFFile=null;compressedPDFBlob=null;compressedPDFName='';}catch(e){}
+ try{organizeState=[];}catch(e){}
+ try{mergeFilesV11.length=0;resizeFilesV11.length=0;}catch(e){}
+ try{if(Array.isArray(window.processingQueue))window.processingQueue.length=0;}catch(e){}
+ try{if(Array.isArray(window.scannedPagesBuffer))window.scannedPagesBuffer.length=0;}catch(e){}
+ try{window.__activeConversionController?.abort?.();}catch(e){}
+ window.__activeConversionController=null;
+ if(Array.isArray(window.__conversionTimers)){
+   window.__conversionTimers.forEach(t=>{try{clearTimeout(t);clearInterval(t)}catch(e){}});
+   window.__conversionTimers=[];
+ }
+
+ // Clear file inputs and all file-preview/queue/status UI in this tool.
+ if(panel){
+   panel.querySelectorAll('input[type="file"]').forEach(input=>{
+     try{input.value='';}catch(e){}
+     input.disabled=false;
+   });
+   panel.querySelectorAll('.v21-upload-locked').forEach(el=>{
+     el.classList.remove('v21-upload-locked');
+     el.style.removeProperty('display');
+   });
+   panel.querySelectorAll('.drop-zone,.extra-drop,.camera-box').forEach(el=>{
+     el.classList.remove('v21-upload-locked');
+     if(el.style.display==='none') el.style.removeProperty('display');
+   });
+
+   // Restore normal form defaults, while leaving file inputs empty.
+   panel.querySelectorAll('input:not([type="file"]),select,textarea').forEach(el=>{
+     try{
+       if(el.tagName==='SELECT'){
+         [...el.options].forEach(o=>o.selected=o.defaultSelected);
+         if(![...el.options].some(o=>o.selected) && el.options.length) el.selectedIndex=0;
+       }else if(el.type==='checkbox' || el.type==='radio'){
+         el.checked=el.defaultChecked;
+       }else{
+         el.value=el.defaultValue||'';
+       }
+     }catch(e){}
+   });
+
+   panel.querySelectorAll('[id$="-file-card"],#merge-queue,#resize-queue,#file-preview-list,#selected-files,#pdf-preview-list,#compress-preview-list').forEach(el=>{el.innerHTML='';});
+   panel.querySelectorAll('[id$="-status"],.compress-status,.extra-help').forEach(el=>{
+     if(el.id && el.id==='output-drive-help') return;
+     if(!el.classList.contains('extra-help') || !el.dataset.keepStaticText) el.textContent='';
+   });
+   panel.querySelectorAll('.v11-output-progress,.v11-summary,#merge-v11-progress,#resize-v11-progress,.v4-progress-wrap').forEach(el=>el.remove());
+ }
+
+ try{await clearPersistedUploads();}catch(e){}
+ try{v12ResetFileInputs();}catch(e){}
+
+ // Refresh only the current tool's small UI pieces.
+ try{renderPages();}catch(e){}
+ try{updateSaveUI();}catch(e){}
+ try{toggleResizeMode();}catch(e){}
+ try{extraStatus(keepTab,'');}catch(e){}
+
+ // Keep the exact same menu/tool selected. No reload, no Home navigation,
+ // and no hash jump. Restore the user's previous scroll position.
+ activeTab=keepTab;
+ try{if(location.hash!=='#'+keepTab)history.replaceState(null,'','#'+keepTab);}catch(e){}
+ try{switchTab(keepTab);}catch(e){}
+ requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top:keepScroll,behavior:'auto'})));
 }
 function bindOutputModalEvents(){
  const save=document.getElementById('output-save');
  const share=document.getElementById('output-share');
  const drive=document.getElementById('output-drive');
- const cancel=document.getElementById('output-cancel');
+ const reset=document.getElementById('output-reset');
  const name=document.getElementById('output-name');
  if(save&&!save.dataset.bound){save.addEventListener('click',finishOutputDownload);save.dataset.bound='1'}
  if(share&&!share.dataset.bound){share.addEventListener('click',shareCurrentOutput);share.dataset.bound='1'}
  if(drive&&!drive.dataset.bound){drive.addEventListener('click',openDriveForOutput);drive.dataset.bound='1'}
- if(cancel&&!cancel.dataset.bound){cancel.addEventListener('click',()=>{outputQueue=[];closeOutputModal()});cancel.dataset.bound='1'}
+ if(reset&&!reset.dataset.bound){reset.addEventListener('click',resetAfterOutput);reset.dataset.bound='1'}
  if(name&&!name.dataset.bound){name.addEventListener('keydown',e=>{if(e.key==='Enter')finishOutputDownload()});name.dataset.bound='1'}
 }
 window.addEventListener('DOMContentLoaded',bindOutputModalEvents);
@@ -6887,8 +7009,16 @@ INITIAL
 clearPersistedUploads();
 renderPages();
 toggleResizeMode();
-const initialTab=(location.hash||'').replace(/^#/,'');
 const validTabs=["merge","resize","scan","split","compress","pdfword","wordpdf","excelpdf","pptpdf","pdfjpg","jpgpdf","sign","watermark","htmlpdf","unlock","protect","organize","pagenum","ocr"];
+let initialTab=(location.hash||'').replace(/^#/,'');
+try{
+  const resetTab=sessionStorage.getItem('scp_reset_return_tab');
+  if(resetTab && validTabs.includes(resetTab)){
+    initialTab=resetTab;
+    sessionStorage.removeItem('scp_reset_return_tab');
+    history.replaceState(null,'','#'+resetTab);
+  }
+}catch(e){}
 if(validTabs.includes(initialTab)) switchTab(initialTab); else {
   activeTab='';
   validTabs.forEach(function(t){
@@ -6902,7 +7032,7 @@ window.addEventListener('hashchange',()=>{const t=(location.hash||'').replace(/^
 
 </script>
 
-<div id="output-modal" class="output-modal hidden"><div class="output-modal-box"><div class="output-modal-title">💾 Save your file</div><div id="output-modal-desc" class="output-modal-desc"></div><label>Output file<input id="output-name" class="tool-input" readonly></label><div class="output-modal-actions"><button id="output-save" class="primary-btn success-btn">✅ OK • Download</button><button id="output-share" class="primary-btn">📱 WhatsApp / Share</button><button id="output-drive" type="button" class="primary-btn">☁️ Google Drive</button><button id="output-cancel" class="primary-btn">Cancel</button></div><div id="output-drive-help" class="extra-help"></div></div></div>
+<div id="output-modal" class="output-modal hidden"><div class="output-modal-box"><div class="output-modal-title">💾 Your File Is Ready</div><div id="output-modal-desc" class="output-modal-desc"></div><label class="output-file-label">Output file name<input id="output-name" class="tool-input" type="text" autocomplete="off"></label><div class="output-modal-actions"><button id="output-save" type="button" class="primary-btn success-btn">⬇️ Download</button><button id="output-share" type="button" class="primary-btn">📱 WhatsApp / Share</button><button id="output-drive" type="button" class="primary-btn">☁️ Google Drive</button><button id="output-reset" type="button" class="primary-btn">🔄 Reset / New File</button></div><div id="output-drive-help" class="extra-help"></div></div></div>
 
 <footer id="scp-footer" style="text-align:center;padding:28px 16px 34px;margin-top:28px;border-top:1px solid rgba(255,255,255,.10);color:#94a3b8;font-size:13px;">
   <div class="v17-footer-inner">
@@ -6919,10 +7049,34 @@ window.addEventListener('hashchange',()=>{const t=(location.hash||'').replace(/^
 
 <script>
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function () {
-    navigator.serviceWorker.register('./sw.js', {scope:'./'})
-      .then(function(reg){ console.log('Super Converter Pro PWA ready', reg.scope); })
-      .catch(function(err){ console.warn('PWA service worker registration failed:', err); });
+  window.addEventListener('load', async function () {
+    try {
+      const reg = await navigator.serviceWorker.register('./sw.js?v=20260919-2', {
+        scope:'./',
+        updateViaCache:'none'
+      });
+      console.log('Super Converter Pro PWA ready', reg.scope);
+
+      // Check GitHub Pages for a newer service worker frequently. This also
+      // updates an already-installed PWA without requiring the user to
+      // uninstall/reinstall the app.
+      const checkUpdate = () => reg.update().catch(()=>{});
+      checkUpdate();
+      setInterval(checkUpdate, 15000);
+
+      // New service worker takes control immediately; reload once so the
+      // newest index.html is visible in the open tab/app.
+      if (!navigator.serviceWorker.__scpUpdateBound) {
+        navigator.serviceWorker.__scpUpdateBound = true;
+        navigator.serviceWorker.addEventListener('controllerchange', function () {
+          if (window.__scpControllerReloaded) return;
+          window.__scpControllerReloaded = true;
+          window.location.reload();
+        });
+      }
+    } catch (err) {
+      console.warn('PWA service worker registration failed:', err);
+    }
   });
 }
 </script>
@@ -7519,6 +7673,7 @@ body.v10-light .v10-panel-subheading{color:#64748b}
 })();
 </script>
 <style id="v11-function-isolation-ui">
+.v21-upload-locked{display:none!important}
 .v11-file-card{display:grid;grid-template-columns:62px 1fr 34px;gap:10px;align-items:center;padding:10px;margin-top:10px;border:1px solid rgba(148,163,184,.22);border-radius:14px;background:rgba(15,23,42,.055)}
 .v11-thumb{width:62px;height:78px;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(100,116,139,.12);font-size:28px}
 .v11-thumb img,.v11-thumb canvas{width:100%;height:100%;object-fit:cover;display:block}.v11-meta{min-width:0}.v11-name{font-weight:800;word-break:break-word;font-size:13px}.v11-size{font-size:11px;opacity:.72;margin-top:4px}.v11-remove{width:30px;height:30px;border:0;border-radius:50%;background:rgba(239,68,68,.12);color:#ef4444;font-weight:900;cursor:pointer}
@@ -8170,7 +8325,7 @@ body.v10-colorful .primary-btn{background:linear-gradient(100deg,#ff2f7d,#8b5cf6
 body.v10-colorful .success-btn{background:linear-gradient(100deg,#00a878,#00b8a9,#06b6d4)!important}
 body.v10-colorful .v17-name-card{background:linear-gradient(135deg,#fff0f7,#edfaff 50%,#f1edff)!important;border:2px solid transparent!important;background-clip:padding-box!important;box-shadow:0 12px 28px rgba(124,58,237,.13)!important;position:relative}
 body.v10-colorful .v17-name-card:before{content:"";position:absolute;inset:-2px;border-radius:18px;padding:2px;background:linear-gradient(90deg,#ff2f7d,#8b5cf6,#00b8ff,#00c98b);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
-.v17-name-card{margin:14px 0 12px;padding:14px;border-radius:16px;position:relative;z-index:1}.v17-name-label{font-size:13px;font-weight:950;color:#17213b;margin-bottom:7px}.v17-name-help{font-size:10px;color:#5f6d87;margin-bottom:8px}.v17-name-input{width:100%;box-sizing:border-box!important;padding:12px 13px!important;border-radius:12px!important;background:#fff!important;color:#17213b!important;border:1px solid #b9c5df!important;font-weight:800!important;font-size:13px!important}.v17-name-input:focus{outline:none!important;border-color:#8b5cf6!important;box-shadow:0 0 0 4px rgba(139,92,246,.13)!important}.v17-file-summary{margin:8px 0 10px;padding:9px 11px;border-radius:12px;background:linear-gradient(90deg,#eff6ff,#fff1f8);border:1px solid rgba(99,102,241,.16);color:#33415f;font-size:11px;font-weight:800}.v17-file-card{border-radius:14px!important;border:1px solid rgba(99,102,241,.18)!important;background:linear-gradient(135deg,#fff,#f7f9ff)!important}.v17-file-detail{font-size:10px;color:#56627d;margin-top:3px;line-height:1.35}.v17-queue-summary{margin:8px 0;padding:10px 12px;border-radius:13px;background:linear-gradient(90deg,#fff0f7,#eefaff,#f2edff);border:1px solid rgba(124,58,237,.18);color:#33415f;font-size:11px;font-weight:850}.v17-hidden-legacy-name{display:none!important}
+.v17-name-card{display:none!important;margin:14px 0 12px;padding:14px;border-radius:16px;position:relative;z-index:1}.v17-name-label{font-size:13px;font-weight:950;color:#17213b;margin-bottom:7px}.v17-name-help{font-size:10px;color:#5f6d87;margin-bottom:8px}.v17-name-input{width:100%;box-sizing:border-box!important;padding:12px 13px!important;border-radius:12px!important;background:#fff!important;color:#17213b!important;border:1px solid #b9c5df!important;font-weight:800!important;font-size:13px!important}.v17-name-input:focus{outline:none!important;border-color:#8b5cf6!important;box-shadow:0 0 0 4px rgba(139,92,246,.13)!important}.v17-file-summary{margin:8px 0 10px;padding:9px 11px;border-radius:12px;background:linear-gradient(90deg,#eff6ff,#fff1f8);border:1px solid rgba(99,102,241,.16);color:#33415f;font-size:11px;font-weight:800}.v17-file-card{border-radius:14px!important;border:1px solid rgba(99,102,241,.18)!important;background:linear-gradient(135deg,#fff,#f7f9ff)!important}.v17-file-detail{font-size:10px;color:#56627d;margin-top:3px;line-height:1.35}.v17-queue-summary{margin:8px 0;padding:10px 12px;border-radius:13px;background:linear-gradient(90deg,#fff0f7,#eefaff,#f2edff);border:1px solid rgba(124,58,237,.18);color:#33415f;font-size:11px;font-weight:850}.v17-hidden-legacy-name{display:none!important}
 #scp-footer{margin-top:40px!important;padding:0!important;border-radius:28px 28px 0 0!important;background:linear-gradient(135deg,#071b4a,#1f1454 35%,#4a155f 66%,#064b5b)!important;color:#dff7ff!important;box-shadow:0 -18px 48px rgba(31,41,99,.22)!important;overflow:hidden!important}
 #scp-footer:before{height:4px!important;left:0!important;right:0!important;background:linear-gradient(90deg,#ff2f7d,#ffb000,#00c98b,#00b8ff,#8b5cf6,#ff2f7d)!important;box-shadow:0 0 22px rgba(0,184,255,.55)!important}
 #scp-footer .v17-footer-inner{padding:26px 18px 30px}
@@ -8181,8 +8336,16 @@ body.v10-colorful .v17-name-card:before{content:"";position:absolute;inset:-2px;
 #scp-footer .v17-footer-links a:hover{background:linear-gradient(90deg,rgba(255,47,125,.24),rgba(0,184,255,.24));color:#fff!important}
 #scp-footer .v17-footer-credit{padding-top:13px;border-top:1px solid rgba(255,255,255,.12);font-size:12px;color:#b9cce0!important}
 #scp-footer .v17-footer-credit strong{color:#fff!important;font-size:14px!important}
-#output-modal .output-modal-box label{display:none!important}
-#output-modal .output-modal-desc{font-weight:750}
+#output-modal.output-modal{position:static!important;inset:auto!important;background:transparent!important;display:block!important;padding:0!important;margin:16px 0 0!important;z-index:auto!important;backdrop-filter:none!important}
+#output-modal.output-modal.hidden{display:none!important}
+#output-modal .output-modal-box{width:100%!important;box-sizing:border-box!important;margin:0!important;border-radius:18px!important;padding:16px!important}
+#output-modal .output-modal-title{font-size:18px!important}
+#output-modal .output-modal-desc{font-weight:750;margin-bottom:12px!important}
+#output-modal .output-file-label{display:block!important;font-size:12px!important;font-weight:850!important;margin:0 0 10px!important}
+#output-modal #output-name{display:block!important;width:100%!important;box-sizing:border-box!important;margin-top:6px!important}
+#output-modal .output-modal-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:9px!important;margin-top:12px!important}
+#output-modal .output-modal-actions button{width:100%!important;min-height:46px!important}
+#output-modal #output-drive-help:empty{display:none!important}
 </style>
 <script id="v17-premium-colorful-files-js">
 (function(){
