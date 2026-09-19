@@ -6082,8 +6082,12 @@ async function executeCompressPDF(){
 
         setCompressProgress(100);
         result.classList.remove("hidden");
-        btn.innerText="✅ COMPRESSION COMPLETE";
-        setTimeout(()=>btn.innerText=originalText,1800);
+        btn.classList.add('v21-conversion-finished');
+        btn.style.display='none';
+        status.innerText=selected==="target"
+          ? (compressedSize<=targetBytes ? "✅ Compression completed." : "⚠️ Compression completed; target could not be fully reached.")
+          : "✅ PDF compression completed.";
+        dlBlob(finalBlob,filename);
 
     }catch(error){
         console.error("Compress PDF Error:",error);
@@ -6504,8 +6508,12 @@ function processOutputQueue(){
  // One shared output component, rendered inline inside the converter that produced the file.
  if(targetPanel && modal.parentElement!==targetPanel) targetPanel.appendChild(modal);
  input.value=currentOutput.name;
+ const saveBtn=document.getElementById('output-save');
+ if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='⬇️ Download';}
+ const driveBtn=document.getElementById('output-drive');
+ if(driveBtn){driveBtn.disabled=false;driveBtn.textContent='☁️ Google Drive';}
+ setDriveStatus('Google Drive: sign in with Google and upload this output directly to your Drive.');
  desc.textContent='✅ File converted successfully. Choose an action below or change the file name first.';
- document.getElementById('output-drive-help').textContent='';
  modal.classList.remove('hidden');
  input.focus(); input.select();
 }
@@ -6585,15 +6593,33 @@ function getGoogleDriveTokenClient(){
 }
 function requestGoogleDriveToken(){
  return new Promise((resolve,reject)=>{
+   let settled=false, timer=null, focusTimer=null;
+   const cleanup=()=>{
+     if(timer)clearTimeout(timer);
+     if(focusTimer)clearTimeout(focusTimer);
+     window.removeEventListener('focus',onFocus,true);
+     document.removeEventListener('visibilitychange',onVisibility,true);
+     window.removeEventListener('pageshow',onPageShow,true);
+   };
+   const finish=(fn,value)=>{if(settled)return;settled=true;cleanup();fn(value);};
+   const cancelled=()=>finish(reject,new Error('Google authorization was cancelled.'));
+   const onFocus=()=>{focusTimer=setTimeout(()=>{if(!googleDriveToken)cancelled();},700)};
+   const onVisibility=()=>{if(document.visibilityState==='visible')onFocus()};
+   const onPageShow=()=>onFocus();
    try{
      const client=getGoogleDriveTokenClient();
      client.callback=(resp)=>{
-       if(resp?.error){reject(new Error(resp.error_description||resp.error||'Google authorization was cancelled.'));return;}
+       if(resp?.error){googleDriveToken=null;finish(reject,new Error(resp.error_description||resp.error||'Google authorization was cancelled.'));return;}
+       if(!resp?.access_token){cancelled();return;}
        googleDriveToken=resp.access_token;
-       resolve(resp.access_token);
+       finish(resolve,resp.access_token);
      };
+     window.addEventListener('focus',onFocus,true);
+     document.addEventListener('visibilitychange',onVisibility,true);
+     window.addEventListener('pageshow',onPageShow,true);
+     timer=setTimeout(()=>{if(!googleDriveToken)cancelled();},120000);
      client.requestAccessToken({prompt:googleDriveToken?'':'consent'});
-   }catch(e){reject(e)}
+   }catch(e){finish(reject,e)}
  });
 }
 async function uploadOutputToGoogleDrive(file,token){
@@ -6636,9 +6662,12 @@ async function openDriveForOutput(){
    setDriveStatus('✅ <b>Uploaded to Google Drive.</b><br><a class="drive-link" href="'+link+'" target="_blank" rel="noopener">Open file in Google Drive ↗</a>');
    if(btn)btn.textContent='☁️ Uploaded ✓';
  }catch(e){
-   setDriveStatus('❌ '+escapeHTML(e.message||e)+'<br><small>If Google says the app is not verified or access is blocked, finish the OAuth consent/publication settings in Google Cloud.</small>');
-   if(btn)btn.textContent=oldText||'☁️ Google Drive';
- }finally{if(btn)btn.disabled=false;}
+   googleDriveToken=null;
+   setDriveStatus('');
+   if(btn){btn.textContent=oldText||'☁️ Google Drive';btn.disabled=false;}
+ }finally{
+   if(btn){btn.disabled=false;if(btn.textContent==='☁️ Connecting...')btn.textContent=oldText||'☁️ Google Drive';}
+ }
 }
 function finishOutputDownload(){
  if(!currentOutput)return;
@@ -6684,6 +6713,10 @@ async function resetAfterOutput(){
    if(desc) desc.textContent='';
    const driveHelp=document.getElementById('output-drive-help');
    if(driveHelp) driveHelp.textContent='';
+   const saveBtn=document.getElementById('output-save');
+   if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='⬇️ Download';}
+   const driveBtn=document.getElementById('output-drive');
+   if(driveBtn){driveBtn.disabled=false;driveBtn.textContent='☁️ Google Drive';}
  }catch(e){}
 
  // Clear all transient conversion state used by the existing tools.
@@ -6739,6 +6772,16 @@ async function resetAfterOutput(){
      if(!el.classList.contains('extra-help') || !el.dataset.keepStaticText) el.textContent='';
    });
    panel.querySelectorAll('.v11-output-progress,.v11-summary,#merge-v11-progress,#resize-v11-progress,.v4-progress-wrap').forEach(el=>el.remove());
+   if(keepTab==='compress'){
+     const cr=document.getElementById('compress-result');
+     const cp=document.getElementById('compress-progress');
+     const cs=document.getElementById('compress-status');
+     const cb=document.getElementById('compress-btn');
+     if(cr)cr.classList.add('hidden');
+     if(cp)cp.classList.add('hidden');
+     if(cs)cs.textContent='';
+     if(cb){cb.style.removeProperty('display');cb.classList.remove('v21-conversion-finished');cb.disabled=false;cb.textContent='📉 COMPRESS PDF';}
+   }
  }
 
  try{await clearPersistedUploads();}catch(e){}
@@ -7828,6 +7871,8 @@ function addTimeoutSummary(id,before,after){setTimeout(()=>summary(id,'Conversio
   },true);
 })();
 </script>
+
+<style id="v21-compress-clean-completion">#panel-compress .v21-conversion-finished{display:none!important}</style>
 
 </html>
 
