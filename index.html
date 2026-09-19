@@ -8553,3 +8553,174 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 
+
+
+<script id="v23-same-tool-reset-fix">
+(function(){
+  'use strict';
+
+  // IMPORTANT: the app's main state is declared with top-level `let` variables,
+  // so window.activeTab/window.outputBusy/etc. are NOT the real state. This
+  // reset intentionally touches those real variables directly.
+  function clearFileInput(input){
+    if(!input)return;
+    try{input.value='';}catch(e){}
+    try{const dt=new DataTransfer();input.files=dt.files;}catch(e){}
+    input.disabled=false;
+  }
+
+  function clearPanel(panel){
+    if(!panel)return;
+
+    // Remove generated file cards, thumbnails, queues, summaries and progress.
+    panel.querySelectorAll(
+      '[id$="-file-card"], #merge-queue, #resize-queue, #file-preview-list, ' +
+      '#selected-files, #pdf-preview-list, #compress-preview-list, #split-result-list, ' +
+      '#organize-preview, #scanned-grid'
+    ).forEach(el=>{try{el.innerHTML='';}catch(e){}});
+
+    panel.querySelectorAll(
+      '.v4-summary, .v11-summary, .v11-final-summary, .v11-output-progress, ' +
+      '.v4-progress-wrap, #resize-v11-progress, #merge-v11-progress, ' +
+      '.v17-file-summary, .v17-file-detail, .v17-queue-summary'
+    ).forEach(el=>{try{el.remove();}catch(e){}});
+
+    ['compress-file-info','compress-result','compress-progress','split-file-info','split-results'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el && panel.contains(el)){try{el.innerHTML='';}catch(e){} el.classList.add('hidden');}
+    });
+
+    // Smart Scan first-use state.
+    if(panel.id==='panel-scan'){
+      const grid=document.getElementById('scanned-grid'); if(grid)grid.innerHTML='';
+      const count=document.getElementById('page-count'); if(count)count.textContent='0 Pages';
+      document.getElementById('save-box')?.classList.add('hidden');
+      document.getElementById('scan-save-bar')?.classList.add('hidden');
+      document.getElementById('review-workspace')?.classList.add('hidden');
+    }
+
+    // Clear every file input in THIS tool only.
+    panel.querySelectorAll('input[type=file]').forEach(clearFileInput);
+
+    // Restore all upload controls. Reset means the tool is immediately reusable.
+    panel.querySelectorAll('.v21-upload-locked').forEach(el=>{
+      el.classList.remove('v21-upload-locked');
+      el.style.removeProperty('display');
+    });
+    panel.querySelectorAll('.drop-zone,.extra-drop,.camera-box').forEach(el=>{
+      el.classList.remove('v21-upload-locked');
+      el.style.removeProperty('display');
+    });
+
+    // Clear transient status text.
+    panel.querySelectorAll('[id$="-status"], .compress-status').forEach(el=>{
+      if(el.id!=='output-drive-help')el.textContent='';
+    });
+
+    // Restore controls to their HTML defaults (therefore KB/MB fields become blank).
+    panel.querySelectorAll('input:not([type=file]), select, textarea').forEach(el=>{
+      try{
+        if(el.tagName==='SELECT'){
+          const idx=[...el.options].findIndex(o=>o.defaultSelected);
+          el.selectedIndex=idx>=0?idx:0;
+        }else if(el.type==='checkbox' || el.type==='radio'){
+          el.checked=el.defaultChecked;
+        }else{
+          el.value=el.defaultValue || '';
+        }
+      }catch(e){}
+    });
+
+    // First-open action-button state for the three legacy tools.
+    panel.querySelectorAll('.primary-btn').forEach(btn=>{
+      btn.disabled=false;
+      btn.classList.remove('v21-conversion-finished');
+    });
+    if(panel.id==='panel-merge') document.getElementById('merge-btn')?.classList.add('hidden');
+    if(panel.id==='panel-resize') document.getElementById('resize-btn')?.classList.add('hidden');
+    if(panel.id==='panel-compress') document.getElementById('compress-controls')?.classList.add('hidden');
+    if(panel.id==='panel-split') document.getElementById('split-controls')?.classList.add('hidden');
+
+    try{toggleResizeMode();}catch(e){}
+    try{updateSaveUI();}catch(e){}
+  }
+
+  function resetOutputState(){
+    // These are the REAL lexical variables declared earlier in this HTML.
+    try{outputQueue=[];}catch(e){ }
+    try{outputBusy=false;}catch(e){ }
+    try{currentOutput=null;}catch(e){ }
+    try{googleDriveToken=null;}catch(e){ }
+    try{googleDriveTokenClient=null;}catch(e){ }
+
+    const modal=document.getElementById('output-modal');
+    if(modal){
+      modal.classList.add('hidden');
+      document.body.appendChild(modal);
+    }
+    const name=document.getElementById('output-name'); if(name)name.value='';
+    const desc=document.getElementById('output-modal-desc'); if(desc)desc.textContent='';
+    const help=document.getElementById('output-drive-help'); if(help)help.textContent='';
+    const save=document.getElementById('output-save'); if(save){save.disabled=false;save.textContent='⬇️ Download';}
+    const drive=document.getElementById('output-drive'); if(drive){drive.disabled=false;drive.textContent='☁️ Google Drive';}
+  }
+
+  async function sameToolReset(){
+    // Read the REAL selected tool, not window.activeTab.
+    const keepTab=(typeof activeTab!=='undefined' && activeTab) || (location.hash||'').replace(/^#/,'') || 'merge';
+    const panel=document.getElementById('panel-'+keepTab);
+    const keepScroll=window.scrollY;
+
+    // Stop old async work first.
+    try{window.__activeConversionController?.abort?.();}catch(e){}
+    window.__activeConversionController=null;
+    if(Array.isArray(window.__conversionTimers)){
+      window.__conversionTimers.forEach(t=>{try{clearTimeout(t);clearInterval(t)}catch(e){}});
+      window.__conversionTimers=[];
+    }
+
+    // Clear the REAL app queues/state variables.
+    try{queue.length=0;}catch(e){ }
+    try{processingQueue.length=0;}catch(e){ }
+    try{scannedPages.length=0;}catch(e){ }
+    try{scannedPagesBuffer.length=0;}catch(e){ }
+    try{mergeFilesV11.length=0;}catch(e){ }
+    try{resizeFilesV11.length=0;}catch(e){ }
+    try{splitPDFFile=null;splitResults=[];}catch(e){ }
+    try{compressPDFFile=null;compressedPDFBlob=null;compressedPDFName='';}catch(e){ }
+    try{organizeState=[];}catch(e){ }
+    try{sourceCanvas=null;editingIndex=-1;}catch(e){ }
+    try{mergeFilesV11=[];resizeFilesV11=[];}catch(e){ }
+
+    resetOutputState();
+    clearPanel(panel);
+
+    // Remove only global transient summaries/progress. Permanent tool cards remain.
+    document.querySelectorAll('.v4-summary,.v11-final-summary,.v11-output-progress').forEach(el=>{try{el.remove();}catch(e){}});
+
+    // Keep the same tool selected. Do NOT call switchTab: its older lifecycle
+    // wrappers can scroll/change state. We only restore the current panel.
+    try{activeTab=keepTab;}catch(e){}
+    try{history.replaceState(null,'','#'+keepTab);}catch(e){}
+    document.querySelectorAll('[id^="panel-"]').forEach(p=>p.classList.toggle('hidden',p.id!=='panel-'+keepTab));
+    document.querySelectorAll('.tool-card[id^="tab-"]').forEach(b=>b.classList.toggle('active',b.id==='tab-'+keepTab));
+
+    // Let any old thumbnail promise finish, then clean the same panel again.
+    setTimeout(()=>clearPanel(panel),60);
+    setTimeout(()=>clearPanel(panel),250);
+    setTimeout(()=>clearPanel(panel),700);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top:keepScroll,behavior:'auto'})));
+  }
+
+  // Capture the reset button before any older reset handlers.
+  document.addEventListener('click',function(e){
+    const btn=e.target.closest?.('#output-reset');
+    if(!btn)return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    sameToolReset();
+  },true);
+
+  window.__sameToolReset=sameToolReset;
+})();
+</script>
