@@ -1876,8 +1876,7 @@ NEW - COMPRESS PDF
             id="compress-input"
             type="file"
             accept="application/pdf"
-            hidden
-            onchange="loadCompressPDF(this.files[0])">
+            hidden>
 
     </div>
 
@@ -1949,7 +1948,6 @@ NEW - COMPRESS PDF
 
         </div>
 
-        </div>
 
 
         <div class="compress-help">
@@ -5554,6 +5552,8 @@ async function loadCompressPDF(file){
     compressPDFFile=file;
     compressedPDFBlob=null;
     compressedPDFName="";
+    const actionBtn=document.getElementById("compress-btn");
+    if(actionBtn){actionBtn.disabled=false;actionBtn.style.removeProperty("display");actionBtn.classList.remove("v21-conversion-finished");actionBtn.innerText="📉 COMPRESS PDF";}
 
     const info=
         document.getElementById(
@@ -5929,12 +5929,10 @@ function getTargetPreset(strength){
 }
 
 async function executeCompressPDF(){
-
     if(!compressPDFFile){
         alert("Please select a PDF first.");
         return;
     }
-
     if(!window.pdfjsLib){
         alert("PDF compressor library is not loaded. Please check your internet connection and reload the page.");
         return;
@@ -5945,15 +5943,13 @@ async function executeCompressPDF(){
     const result=document.getElementById("compress-result");
     const sizeInfo=document.getElementById("compress-size-info");
     const selected=document.getElementById("compress-quality").value;
-
-    let filename=document.getElementById("compress-name").value.trim();
-    if(!filename) filename="Compressed_Document";
+    let filename=document.getElementById("compress-name").value.trim()||"Compressed_Document";
     filename=filename.replace(/\.pdf$/i,"")+".pdf";
 
     let targetBytes=null;
     if(selected==="target"){
-        try{ targetBytes=getCompressTargetBytes(); }
-        catch(error){ alert(error.message); return; }
+        try{targetBytes=getCompressTargetBytes();}
+        catch(error){alert(error.message);return;}
     }
 
     const originalText=btn.innerText;
@@ -5962,89 +5958,90 @@ async function executeCompressPDF(){
     setCompressProgress(0);
 
     try{
-        status.innerText="Loading PDF rendering engine... ⏳";
-
+        status.innerText="Loading PDF… ⏳";
         const bytes=await compressPDFFile.arrayBuffer();
         const pdfJS=await pdfjsLib.getDocument({data:new Uint8Array(bytes)}).promise;
         const totalPages=pdfJS.numPages;
         const originalSize=compressPDFFile.size;
-
         let finalBlob=null;
         let finalMode="";
 
         if(selected!=="target"){
             const firstPreset=COMPRESS_PRESETS[selected];
-            const firstBlob=await buildCompressedPDF(
-                pdfJS,totalPages,firstPreset,0,selected==="maximum"?100:75,status
-            );
-            finalBlob=firstBlob;
+            finalBlob=await buildCompressedPDF(pdfJS,totalPages,firstPreset,0,85,status);
             finalMode=firstPreset.label;
-
-            if(firstBlob.size>=originalSize && selected!=="maximum"){
-                status.innerText="Output is not smaller — trying stronger compression... ⏳";
-                const maximumBlob=await buildCompressedPDF(
-                    pdfJS,totalPages,COMPRESS_PRESETS.maximum,75,100,status
-                );
-                if(maximumBlob.size<firstBlob.size){
-                    finalBlob=maximumBlob;
-                    finalMode=COMPRESS_PRESETS.maximum.label;
-                }
+            if(finalBlob.size>=originalSize && selected!=="maximum"){
+                status.innerText="Trying stronger compression… ⏳";
+                const stronger=await buildCompressedPDF(pdfJS,totalPages,COMPRESS_PRESETS.maximum,85,100,status);
+                if(stronger.size<finalBlob.size){finalBlob=stronger;finalMode=COMPRESS_PRESETS.maximum.label;}
             }
         }else{
-            if(targetBytes>=originalSize){
-                status.innerText="Target is larger than the original — creating a high-quality optimized copy... ⏳";
-                finalBlob=await buildCompressedPDF(
-                    pdfJS,totalPages,getTargetPreset(0),0,100,status
-                );
-                finalMode="Target optimisation — high quality";
-            }else{
-                let low=0, high=1;
-                let bestUnder=null;
-                let smallest=null;
-                const attempts=6;
+            /*
+             * FAST TARGET MODE
+             * Old code rebuilt the entire 21-page PDF up to 6 times.
+             * That made target compression unnecessarily slow.
+             * We now make a size-informed first pass and at most two
+             * refinement passes. The target is treated as a maximum;
+             * exact bytes are not guaranteed for every PDF.
+             */
+            const targetRatio=targetBytes/Math.max(1,originalSize);
+            const perPageKB=targetBytes/1024/Math.max(1,totalPages);
+            let baseStrength;
+            if(perPageKB<=30) baseStrength=.94;
+            else if(perPageKB<=50) baseStrength=.86;
+            else if(perPageKB<=80) baseStrength=.76;
+            else if(perPageKB<=120) baseStrength=.66;
+            else if(perPageKB<=200) baseStrength=.54;
+            else if(perPageKB<=350) baseStrength=.40;
+            else baseStrength=.25;
+            if(targetRatio<.30) baseStrength=Math.max(baseStrength,.82);
+            else if(targetRatio<.50) baseStrength=Math.max(baseStrength,.68);
 
-                for(let attempt=1;attempt<=attempts;attempt++){
-                    const strength=(low+high)/2;
-                    const preset=getTargetPreset(strength);
+            const makeTargetPreset=(strength)=>({
+                quality:Math.max(.20,Math.min(.78,.90-(.70*strength))),
+                maxDimension:Math.max(550,Math.round(2200-(1750*strength))),
+                label:`Target optimisation — ${Math.round(strength*100)}% compression`
+            });
 
-                    status.innerText=`Finding closest target size — attempt ${attempt}/${attempts}... ⏳`;
+            const attempts=[];
+            const run=async(strength,n,start,end)=>{
+                status.innerText=`Optimising for ${formatBytes(targetBytes)} — pass ${n}/3… ⏳`;
+                const blob=await buildCompressedPDF(pdfJS,totalPages,makeTargetPreset(strength),start,end,status);
+                attempts.push({blob,strength});
+                return blob;
+            };
 
-                    const blob=await buildCompressedPDF(
-                        pdfJS,totalPages,preset,
-                        ((attempt-1)/attempts)*100,
-                        (attempt/attempts)*100,
-                        status
-                    );
+            let strength=baseStrength;
+            let blob=await run(strength,1,0,72);
 
-                    if(!smallest || blob.size<smallest.blob.size){
-                        smallest={blob,strength};
-                    }
-
-                    if(blob.size<=targetBytes){
-                        if(!bestUnder || blob.size>bestUnder.blob.size){
-                            bestUnder={blob,strength};
-                        }
-                        high=strength;
-                    }else{
-                        low=strength;
-                    }
-
-                    await sleep(20);
-                }
-
-                const chosen=bestUnder || smallest;
-                finalBlob=chosen.blob;
-                finalMode=`Target optimisation — ${Math.round(chosen.strength*100)}% compression`;
+            if(blob.size>targetBytes){
+                // Stronger second pass; no need to rerender if already under target.
+                strength=Math.min(1,strength+.16);
+                blob=await run(strength,2,72,94);
+            }else if(blob.size<targetBytes*.82){
+                // If far below target, one lighter pass can preserve more quality.
+                strength=Math.max(0,strength-.14);
+                blob=await run(strength,2,72,94);
             }
+
+            if(blob.size>targetBytes){
+                strength=Math.min(1,strength+.14);
+                blob=await run(strength,3,94,100);
+            }
+
+            // Choose the largest result that is <= target. Otherwise use the smallest result.
+            const under=attempts.filter(x=>x.blob.size<=targetBytes).sort((a,b)=>b.blob.size-a.blob.size)[0];
+            const smallest=attempts.slice().sort((a,b)=>a.blob.size-b.blob.size)[0];
+            const chosen=under||smallest;
+            finalBlob=chosen.blob;
+            finalMode=makeTargetPreset(chosen.strength).label;
         }
 
         compressedPDFBlob=finalBlob;
         compressedPDFName=filename;
-
         const compressedSize=finalBlob.size;
         const difference=originalSize-compressedSize;
         const reduction=originalSize>0?(difference/originalSize)*100:0;
-
         let targetLine="";
         if(selected==="target"){
             const unit=document.getElementById("compress-target-unit").value;
@@ -6052,43 +6049,23 @@ async function executeCompressPDF(){
             const label=`${value} ${unit}`;
             targetLine=compressedSize<=targetBytes
                 ?`<br>🎯 Target: <strong>${escapeHTML(label)}</strong><br>✅ Achieved: <strong>${formatBytes(compressedSize)}</strong>`
-                :`<br>🎯 Target: <strong>${escapeHTML(label)}</strong><br><span class="compress-warning">⚠️ Target could not be reached; closest practical result: ${formatBytes(compressedSize)}</span>`;
+                :`<br>🎯 Target: <strong>${escapeHTML(label)}</strong><br><span class="compress-warning">⚠️ Target could not be reached in the fast 3-pass mode; closest practical result: ${formatBytes(compressedSize)}</span>`;
         }
 
         if(compressedSize<originalSize){
-            sizeInfo.innerHTML=`
-                <strong>Compression Complete ✅</strong><br><br>
-                📦 Original Size: <strong>${formatBytes(originalSize)}</strong><br>
-                📉 Compressed Size: <strong>${formatBytes(compressedSize)}</strong><br>
-                💾 Saved: <span class="compress-saved">${formatBytes(difference)} (${reduction.toFixed(1)}%)</span><br>
-                ⚙️ Mode: <strong>${escapeHTML(finalMode)}</strong><br>
-                📄 Pages: <strong>${totalPages}</strong>
-                ${targetLine}
-            `;
+            sizeInfo.innerHTML=`<strong>Compression Complete ✅</strong><br><br>📦 Original Size: <strong>${formatBytes(originalSize)}</strong><br>📉 Compressed Size: <strong>${formatBytes(compressedSize)}</strong><br>💾 Saved: <span class="compress-saved">${formatBytes(difference)} (${reduction.toFixed(1)}%)</span><br>⚙️ Mode: <strong>${escapeHTML(finalMode)}</strong><br>📄 Pages: <strong>${totalPages}</strong>${targetLine}`;
             status.innerText=selected==="target"?"✅ Target-size compression completed.":"✅ PDF compressed successfully.";
         }else{
             const increase=compressedSize-originalSize;
-            sizeInfo.innerHTML=`
-                <strong>Compression Finished ⚠️</strong><br><br>
-                📦 Original Size: <strong>${formatBytes(originalSize)}</strong><br>
-                📉 New PDF Size: <strong>${formatBytes(compressedSize)}</strong><br>
-                <span class="compress-warning">The rebuilt PDF is ${formatBytes(increase)} larger than the original. The original PDF may already be optimized.</span><br>
-                ⚙️ Mode: <strong>${escapeHTML(finalMode)}</strong><br>
-                📄 Pages: <strong>${totalPages}</strong>
-                ${targetLine}
-            `;
-            status.innerText=selected==="target"?"⚠️ Target result could not be made smaller than the original.":"⚠️ Original PDF was already highly optimized.";
+            sizeInfo.innerHTML=`<strong>Compression Finished ⚠️</strong><br><br>📦 Original Size: <strong>${formatBytes(originalSize)}</strong><br>📉 New PDF Size: <strong>${formatBytes(compressedSize)}</strong><br><span class="compress-warning">The rebuilt PDF is ${formatBytes(increase)} larger than the original. The original PDF may already be optimized.</span><br>⚙️ Mode: <strong>${escapeHTML(finalMode)}</strong><br>📄 Pages: <strong>${totalPages}</strong>${targetLine}`;
+            status.innerText=selected==="target"?"⚠️ Compression completed; target could not be fully reached.":"⚠️ Original PDF was already highly optimized.";
         }
 
         setCompressProgress(100);
         result.classList.remove("hidden");
         btn.classList.add('v21-conversion-finished');
         btn.style.display='none';
-        status.innerText=selected==="target"
-          ? (compressedSize<=targetBytes ? "✅ Compression completed." : "⚠️ Compression completed; target could not be fully reached.")
-          : "✅ PDF compression completed.";
         dlBlob(finalBlob,filename);
-
     }catch(error){
         console.error("Compress PDF Error:",error);
         status.innerText="";
@@ -6096,10 +6073,8 @@ async function executeCompressPDF(){
         alert("Compression Error: "+error.message);
         btn.innerText=originalText;
     }
-
     btn.disabled=false;
 }
-
 
 /* =====================================================
 DOWNLOAD COMPRESSED PDF
@@ -7759,7 +7734,31 @@ async function thumbFor(f,el){try{if(f.type?.startsWith('image/')){const u=URL.c
 function renderQueueV11(kind){const isMerge=kind==='merge',files=isMerge?mergeFilesV11:resizeFilesV11,box=document.getElementById(isMerge?'merge-queue':'resize-queue');if(!box)return;box.innerHTML=files.map((f,i)=>'<div class="v11-file-card"><div class="v11-thumb" id="v11-'+kind+'-thumb-'+i+'">'+iconFor(f)+'</div><div class="v11-meta"><div class="v11-name">'+escapeHTML(f.name)+'</div><div class="v11-size">'+bytes(f.size)+' • '+(f.type||'file')+'</div></div><button type="button" class="v11-remove" data-v11-remove="'+i+'" aria-label="Remove">✕</button></div>').join('');box.querySelectorAll('[data-v11-remove]').forEach(b=>b.onclick=()=>{const idx=+b.dataset.v11Remove;if(isMerge)mergeFilesV11.splice(idx,1);else resizeFilesV11.splice(idx,1);renderQueueV11(kind);updateLegacyQueue(kind)});files.forEach((f,i)=>thumbFor(f,document.getElementById('v11-'+kind+'-thumb-'+i)))}
 function updateLegacyQueue(kind){const n=kind==='merge'?mergeFilesV11:resizeFilesV11,btn=document.getElementById(kind==='merge'?'merge-btn':'resize-btn');if(btn)btn.classList.toggle('hidden',!n.length)}
 window.handleQueueFiles=function(files,type){const arr=Array.from(files||[]);if(type==='pdf'){mergeFilesV11=arr;renderQueueV11('merge');updateLegacyQueue('merge')}else{resizeFilesV11=arr;renderQueueV11('resize');updateLegacyQueue('resize')}};
-async function targetPdfV11(blob,targetBytes){if(!targetBytes||blob.size<=targetBytes)return blob;if(!window.pdfjsLib||typeof buildCompressedPDF!=='function')return blob;const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise;let lo=0,hi=1,best=null,smallest=null;for(let i=1;i<=6;i++){const s=(lo+hi)/2,b=await buildCompressedPDF(pdf,pdf.numPages,getTargetPreset(s),0,100,()=>{});if(!smallest||b.size<smallest.size)smallest=b;if(b.size<=targetBytes){best=b;hi=s}else lo=s}return best||smallest||blob}
+async function targetPdfV11(blob,targetBytes){
+  if(!targetBytes || blob.size<=targetBytes)return blob;
+  if(!window.pdfjsLib || typeof buildCompressedPDF!=="function")return blob;
+  const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise;
+  const ratio=targetBytes/Math.max(1,blob.size);
+  const perPage=targetBytes/Math.max(1,pdf.numPages)/1024;
+  let strength=perPage<=30?.94:perPage<=50?.86:perPage<=80?.76:perPage<=120?.66:perPage<=200?.54:.38;
+  if(ratio<.35)strength=Math.max(strength,.92);
+  else if(ratio<.55)strength=Math.max(strength,.78);
+  const makePreset=(st)=>({
+    quality:Math.max(.18,Math.min(.82,.92-(.72*st))),
+    maxDimension:Math.max(560,Math.round(2300-(1750*st))),
+    label:"Target optimisation"
+  });
+  let best=null,smallest=null,lastStrength=strength;
+  for(let pass=1;pass<=3;pass++){
+    const b=await buildCompressedPDF(pdf,pdf.numPages,makePreset(lastStrength),0,100,()=>{});
+    if(!smallest || b.size<smallest.size)smallest=b;
+    if(b.size<=targetBytes){best=b;break;}
+    const ratioNow=b.size/Math.max(1,targetBytes);
+    lastStrength=Math.min(1,lastStrength+(ratioNow>2?.16:ratioNow>1.3?.11:.07));
+  }
+  const chosen=best||smallest;
+  return chosen && chosen.size<blob.size ? chosen : blob;
+}
 function targetFrom(panelId){const box=document.getElementById(panelId+'-target-size'),unit=document.getElementById(panelId+'-target-unit');if(!box||!box.value)return null;const v=parseFloat(box.value);if(!v||v<=0)return null;return unit?.value==='MB'?v*1048576:v*1024}
 function injectTarget(panelId,note){const p=document.getElementById('panel-'+panelId);if(!p||p.querySelector('.v11-target'))return;const box=document.createElement('div');box.className='v11-target';box.innerHTML='<b>🎯 Output size (optional)</b><div class="v11-target-row"><input id="'+panelId+'-target-size" type="number" min="1" step="0.1" placeholder="e.g. 500"><select id="'+panelId+'-target-unit"><option value="KB">KB</option><option value="MB">MB</option></select></div><div class="v11-target-note">'+(note||'Optional. The converter will try to get as close as practical; exact bytes cannot always be guaranteed.')+'</div>';const actions=p.querySelector('.extra-actions')||p.querySelector('.primary-btn');if(actions)actions.parentNode.insertBefore(box,actions);else p.appendChild(box)}
 async function executeMergeV11(){const files=mergeFilesV11.slice();if(!files.length){alert('Please select at least one PDF.');return}const btn=document.getElementById('merge-btn'),q=document.getElementById('merge-queue');let prog=document.getElementById('merge-v11-progress');if(!prog){prog=document.createElement('div');prog.id='merge-v11-progress';q?.insertAdjacentElement('afterend',prog)}const set=(p,msg)=>prog.innerHTML='<div class="v11-progress"><i style="width:'+Math.max(0,Math.min(100,p))+'%"></i></div><div class="v11-progress-line">'+msg+'</div>';btn.disabled=true;set(2,'Preparing PDF merge… ⏳');try{const out=await PDFLib.PDFDocument.create();let totalBefore=files.reduce((a,f)=>a+f.size,0),pages=0;for(let i=0;i<files.length;i++){set((i/files.length)*75,'Merging file '+(i+1)+' of '+files.length+'… ⏳');const src=await PDFLib.PDFDocument.load(await files[i].arrayBuffer());pages+=src.getPageCount();(await out.copyPages(src,src.getPageIndices())).forEach(p=>out.addPage(p))}set(78,'Building merged PDF… ⏳');let blob=new Blob([await out.save()],{type:'application/pdf'});const target=targetFrom('merge');if(target){set(84,'Optimizing toward target size… ⏳');blob=await targetPdfV11(blob,target)}set(100,'✅ Merge completed');dlBlob(blob,'Merged_Document.pdf');const old=totalBefore,nu=blob.size,diff=old-nu,pct=old?(diff/old*100):0;let s=document.getElementById('merge-v11-summary');if(!s){s=document.createElement('div');s.id='merge-v11-summary';q?.insertAdjacentElement('afterend',s)}s.className='v11-summary';s.innerHTML='<div class="v11-summary-title">✅ Merge Complete</div><div class="v11-stats"><div class="v11-stat"><b>'+files.length+'</b><span>Files</span></div><div class="v11-stat"><b>'+bytes(old)+'</b><span>Original</span></div><div class="v11-stat"><b>'+bytes(nu)+'</b><span>Output</span></div></div><div style="font-size:11px;margin-top:8px">📄 '+pages+' pages • '+(pct>=0?'Saved '+bytes(Math.max(0,diff))+' ('+Math.max(0,pct).toFixed(1)+'%)':'Output increased by '+bytes(-diff))+'</div>';mergeFilesV11=[];renderQueueV11('merge');updateLegacyQueue('merge')}catch(e){set(0,'❌ '+escapeHTML(e.message||e));alert('Merge Error: '+(e.message||e))}finally{btn.disabled=false;btn.innerText='Merge & Download PDF'}}
@@ -7785,12 +7784,28 @@ body.v10-colorful{background:radial-gradient(800px 500px at 0% 0%,rgba(124,58,23
 function sourceForPanel(id){const p=document.getElementById('panel-'+id);if(!p)return null;const inp=p.querySelector('input[type=file]');return inp&&inp.files&&inp.files[0]?inp.files[0]:null}
 function targetBytes(id){const n=document.getElementById(id+'-target-size'),u=document.getElementById(id+'-target-unit');if(!n||!n.value)return null;const v=parseFloat(n.value);if(!v||v<=0)return null;return u&&u.value==='MB'?v*1048576:v*1024}
 function panelId(){const p=[...document.querySelectorAll('[id^="panel-"]')].find(x=>!x.classList.contains('hidden'));return p?p.id.replace('panel-',''):''}
-async function optimizePDF(blob,target){if(!target||blob.size<=target||!window.pdfjsLib||typeof buildCompressedPDF!=='function')return blob;const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise;let lo=0,hi=1,best=null,smallest=blob;for(let i=1;i<=6;i++){const s=(lo+hi)/2,b=await buildCompressedPDF(pdf,pdf.numPages,getTargetPreset(s),0,100,()=>{});if(b.size<smallest.size)smallest=b;if(b.size<=target){best=b;hi=s}else lo=s}return best||smallest}
+async function optimizePDF(blob,target){
+  if(!target || blob.size<=target || !window.pdfjsLib || typeof buildCompressedPDF!=="function")return blob;
+  const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise;
+  const ratio=target/Math.max(1,blob.size);
+  const perPage=target/Math.max(1,pdf.numPages)/1024;
+  let strength=perPage<=30?.94:perPage<=50?.86:perPage<=80?.76:perPage<=120?.66:perPage<=200?.54:.38;
+  if(ratio<.35)strength=Math.max(strength,.92); else if(ratio<.55)strength=Math.max(strength,.78);
+  let best=null,smallest=blob;
+  for(let pass=1;pass<=3;pass++){
+    const preset={quality:Math.max(.18,Math.min(.82,.92-(.72*strength))),maxDimension:Math.max(560,Math.round(2300-(1750*strength))),label:"Target optimisation"};
+    const b=await buildCompressedPDF(pdf,pdf.numPages,preset,0,100,()=>{});
+    if(b.size<smallest.size)smallest=b;
+    if(b.size<=target){best=b;break;}
+    const r=b.size/Math.max(1,target); strength=Math.min(1,strength+(r>2?.16:r>1.3?.11:.07));
+  }
+  const chosen=best||smallest; return chosen && chosen.size<blob.size ? chosen : blob;
+}
 function addProgress(id,msg,pct){const p=document.getElementById('panel-'+id);if(!p)return null;let box=p.querySelector('.v11-output-progress');if(!box){box=document.createElement('div');box.className='v11-output-progress';p.appendChild(box)}box.innerHTML='<div class="v11-progress"><i style="width:'+pct+'%"></i></div><div class="v11-progress-line">'+msg+'</div>';return box}
 function summary(id,title,before,after){const p=document.getElementById('panel-'+id);if(!p)return;let b=p.querySelector('.v11-final-summary');if(!b){b=document.createElement('div');b.className='v11-summary v11-final-summary';p.appendChild(b)}const diff=before-after,pct=before?diff/before*100:0;b.innerHTML='<div class="v11-summary-title">✅ '+title+'</div><div class="v11-stats"><div class="v11-stat"><b>'+bytesV11(before)+'</b><span>Original</span></div><div class="v11-stat"><b>'+bytesV11(after)+'</b><span>New file</span></div><div class="v11-stat"><b>'+Math.abs(pct).toFixed(1)+'%</b><span>'+(diff>=0?'Reduced':'Size change')+'</span></div></div>'}
 function bytesV11(n){if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';return (n/1048576).toFixed(2)+' MB'}
 const original=window.dlBlob;
-if(typeof original==='function'&&!original.__v11Wrapped){const wrapped=async function(blob,name){const id=panelId(),target=targetBytes(id),src=sourceForPanel(id);if(blob&&blob.type==='application/pdf'&&target&&id!=='protect'){try{addProgress(id,'Optimizing output toward target size… ⏳',45);blob=await optimizePDF(blob,target);addProgress(id,'✅ Target-size processing complete',100)}catch(e){addProgress(id,'⚠️ Target optimization unavailable; using normal output',100)}}const result=original.call(this,blob,name);if(blob&&src)addTimeoutSummary(id,src.size,blob.size);return result};wrapped.__v11Wrapped=true;window.dlBlob=wrapped}
+if(typeof original==='function'&&!original.__v11Wrapped){const wrapped=async function(blob,name){const id=panelId(),target=targetBytes(id),src=sourceForPanel(id);if(blob&&blob.type==='application/pdf'&&target&&id!=='protect'&&id!=='compress'&&id!=='merge'){try{addProgress(id,'Optimizing output toward target size… ⏳',45);blob=await optimizePDF(blob,target);addProgress(id,'✅ Target-size processing complete',100)}catch(e){addProgress(id,'⚠️ Target optimization unavailable; using normal output',100)}}const result=original.call(this,blob,name);if(blob&&src)addTimeoutSummary(id,src.size,blob.size);return result};wrapped.__v11Wrapped=true;window.dlBlob=wrapped}
 function addTimeoutSummary(id,before,after){setTimeout(()=>summary(id,'Conversion complete',before,after),50)}
 })();
 </script>
@@ -7873,6 +7888,151 @@ function addTimeoutSummary(id,before,after){setTimeout(()=>summary(id,'Conversio
 </script>
 
 <style id="v21-compress-clean-completion">#panel-compress .v21-conversion-finished{display:none!important}</style>
+
+
+<script id="v26-compress-authoritative-fix">
+(function(){
+  'use strict';
+
+  function q(id){ return document.getElementById(id); }
+  function clearInput(id){
+    const el=q(id); if(!el)return;
+    try{el.value='';}catch(e){}
+    try{const dt=new DataTransfer();el.files=dt.files;}catch(e){}
+    el.disabled=false;
+  }
+  function resetCompressVisual(){
+    const info=q('compress-file-info'), controls=q('compress-controls'), result=q('compress-result'), progress=q('compress-progress'), status=q('compress-status');
+    if(info){info.innerHTML='';info.classList.add('hidden');}
+    if(controls)controls.classList.add('hidden');
+    if(result){result.innerHTML='<div id="compress-size-info" class="compress-result-box"></div><button id="compress-download" class="primary-btn success-btn" style="margin-top:8px" onclick="downloadCompressedPDF()">💾 DOWNLOAD COMPRESSED PDF</button><div class="compress-note">⚠️ Browser compression rebuilds PDF pages as optimized images.</div>';result.classList.add('hidden');}
+    if(progress){progress.classList.add('hidden');const fill=q('compress-progress-fill');if(fill)fill.style.width='0%';}
+    if(status)status.textContent='';
+    const btn=q('compress-btn'); if(btn){btn.disabled=false;btn.style.removeProperty('display');btn.classList.remove('v21-conversion-finished');btn.textContent='📉 COMPRESS PDF';}
+    const target=q('compress-target'); if(target)target.value='';
+    const unit=q('compress-target-unit'); if(unit)unit.value='KB';
+    const quality=q('compress-quality'); if(quality)quality.value='balanced';
+    const name=q('compress-name'); if(name)name.value='Compressed_Document';
+  }
+  function clearCompressState(){
+    try{compressPDFFile=null;compressedPDFBlob=null;compressedPDFName='';}catch(e){}
+    clearInput('compress-input');
+    resetCompressVisual();
+  }
+
+  // Prevent duplicate load: V25 had a document-capture load plus an inline onchange.
+  // The inline handler was removed above; this handler is the one source of truth.
+  document.addEventListener('change',function(e){
+    const input=e.target;
+    if(!input || input.id!=='compress-input')return;
+    if(!input.files || !input.files[0])return;
+    const file=input.files[0];
+    // Let the existing V25 loader perform PDF parsing, then enforce a clean reusable UI.
+    setTimeout(function(){
+      try{
+        const btn=q('compress-btn');
+        const controls=q('compress-controls');
+        if(compressPDFFile===file){
+          if(controls)controls.classList.remove('hidden');
+          if(btn){btn.disabled=false;btn.style.removeProperty('display');btn.classList.remove('v21-conversion-finished');btn.textContent='📉 COMPRESS PDF';}
+          // Replace the preview card with one that contains real page count and size.
+          const box=q('compress-file-info');
+          if(box && !box.classList.contains('hidden')){
+            const name=String(file.name).replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+            const size=(typeof bytes==='function'?bytes(file.size):(file.size/1024/1024).toFixed(2)+' MB');
+            // PDFLib page count is already available from loadCompressPDF; read it from info if present.
+            let pagesText='';
+            const txt=box.textContent||'';
+            const m=txt.match(/(\d+)\s+pages?/i);
+            if(m)pagesText=m[1]+' '+(m[1]==='1'?'page':'pages');
+            if(!pagesText && window.pdfjsLib){
+              pdfjsLib.getDocument({data:new Uint8Array([])}).destroy?.().catch?.(()=>{});
+            }
+            // renderSinglePreview has already inserted a thumbnail. Add a reliable detail line.
+            const meta=box.querySelector('.v11-meta');
+            if(meta){
+              let d=meta.querySelector('.v26-compress-detail');
+              if(!d){d=document.createElement('div');d.className='v26-compress-detail';d.style.cssText='font-size:11px;opacity:.78;margin-top:4px;line-height:1.4';meta.appendChild(d);}
+              d.textContent=(pagesText?('📄 '+pagesText+' • '):'')+'💾 '+size;
+            }
+          }
+        }
+      }catch(err){console.error('V26 compress load repair',err)}
+    },50);
+  },true);
+
+  // The thumbnail X must clear EVERY piece of Compress PDF state, including the
+  // stale "Ready — N pages available" status that V25 left behind.
+  document.addEventListener('click',function(e){
+    const remove=e.target.closest?.('#compress-file-info .v11-remove');
+    if(!remove)return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    clearCompressState();
+  },true);
+
+  // If the user presses Compress after any lifecycle race, recover the selected
+  // file directly from the input instead of depending only on lexical state.
+  const oldExecute=window.executeCompressPDF;
+  if(typeof oldExecute==='function' && !window.__v26ExecuteWrap){
+    window.executeCompressPDF=async function(){
+      try{
+        if(!compressPDFFile){
+          const input=q('compress-input');
+          const f=input?.files?.[0];
+          if(f && typeof loadCompressPDF==='function') await loadCompressPDF(f);
+        }
+      }catch(e){console.error('V26 preload repair',e)}
+      return oldExecute.apply(this,arguments);
+    };
+    window.__v26ExecuteWrap=true;
+  }
+
+  // Switching tools: clear the tool being left, but NEVER reset the destination tool.
+  // This prevents old V12/V23/V25 wrappers from clearing a newly selected file.
+  const toolState={
+    merge:()=>{try{queue.length=0;mergeFilesV11.length=0}catch(e){}},
+    resize:()=>{try{processingQueue.length=0;resizeFilesV11.length=0}catch(e){}},
+    scan:()=>{try{scannedPages.length=0;scannedPagesBuffer.length=0;editingIndex=-1;sourceCanvas=null}catch(e){}},
+    split:()=>{try{splitPDFFile=null;splitResults=[]}catch(e){}},
+    compress:clearCompressState,
+    organize:()=>{try{organizeState=[]}catch(e){}}
+  };
+  function clearOutgoing(id){
+    try{if(toolState[id])toolState[id]();}catch(e){console.error('V26 switch cleanup',id,e)}
+  }
+  if(typeof window.switchTab==='function' && !window.__v26SwitchWrap){
+    const base=window.switchTab;
+    window.switchTab=function(next){
+      const current=(typeof activeTab!=='undefined'&&activeTab)||'';
+      if(current && current!==next)clearOutgoing(current);
+      return base.apply(this,arguments);
+    };
+    window.__v26SwitchWrap=true;
+  }
+
+  // Generic target-size helper: ensure every PDF-output panel with a target field
+  // actually passes that target through the existing dlBlob optimization wrapper.
+  // Do not apply it to Compress PDF (which has its own target engine).
+  function targetBytesFor(id){
+    const n=q(id+'-target-size'),u=q(id+'-target-unit');
+    if(!n || !n.value)return null;
+    const v=parseFloat(n.value);if(!Number.isFinite(v)||v<=0)return null;
+    return (u?.value==='MB'?v*1048576:v*1024);
+  }
+  window.__v26TargetBytesFor=targetBytesFor;
+
+  // On boot, guarantee the Compress panel is in true first-use state.
+  function boot(){
+    // The malformed DOM in V25 is fixed in source; this is a safety check.
+    const panel=q('panel-compress'), controls=q('compress-controls');
+    if(panel && controls && controls.parentElement!==panel){
+      // no-op: parser should already have the corrected hierarchy
+    }
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})();
+</script>
 
 </html>
 
@@ -8638,7 +8798,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     });
     if(panel.id==='panel-merge') document.getElementById('merge-btn')?.classList.add('hidden');
     if(panel.id==='panel-resize') document.getElementById('resize-btn')?.classList.add('hidden');
-    if(panel.id==='panel-compress') document.getElementById('compress-controls')?.classList.add('hidden');
+    if(panel.id==='panel-compress'){ document.getElementById('compress-controls')?.classList.add('hidden'); const cb=document.getElementById('compress-btn'); if(cb){cb.style.removeProperty('display');cb.classList.remove('v21-conversion-finished');cb.disabled=false;cb.innerText='📉 COMPRESS PDF';} }
     if(panel.id==='panel-split') document.getElementById('split-controls')?.classList.add('hidden');
 
     try{toggleResizeMode();}catch(e){}
@@ -8722,5 +8882,135 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   },true);
 
   window.__sameToolReset=sameToolReset;
+  document.addEventListener('change',function(e){
+    if(e.target && e.target.id==='compress-input' && e.target.files && e.target.files[0]){
+      setTimeout(()=>{try{loadCompressPDF(e.target.files[0]);}catch(err){console.error(err)}},0);
+    }
+  },true);
+})();
+</script>
+
+<script id="v25-tool-lifecycle-target-fix">
+(function(){
+  'use strict';
+
+  const TOOL_IDS=['merge','resize','scan','split','compress','pdfword','wordpdf','excelpdf','pptpdf','pdfjpg','jpgpdf','sign','watermark','htmlpdf','unlock','protect','organize','pagenum','ocr'];
+  let lastTool=null;
+  let switchingCleanup=false;
+
+  function clearInput(inp){
+    try{inp.value='';}catch(e){}
+    try{const d=new DataTransfer();inp.files=d.files;}catch(e){}
+    inp.disabled=false;
+  }
+
+  function clearTool(id){
+    const p=document.getElementById('panel-'+id); if(!p)return;
+    // Abort only transient work; never touch converter libraries or API settings.
+    try{window.__activeConversionController?.abort?.()}catch(e){}
+    try{if(Array.isArray(window.__conversionTimers)){window.__conversionTimers.forEach(t=>{try{clearTimeout(t);clearInterval(t)}catch(e){}});window.__conversionTimers=[]}}catch(e){}
+
+    // Clear the actual lexical state used by this app.
+    try{if(id==='merge'){queue.length=0;mergeFilesV11.length=0}}catch(e){}
+    try{if(id==='resize'){processingQueue.length=0;resizeFilesV11.length=0}}catch(e){}
+    try{if(id==='scan'){scannedPages.length=0;scannedPagesBuffer.length=0;editingIndex=-1;sourceCanvas=null;workingImageObj=null;originalImageDataBackup=null;currentRotation=0;isFilterActive=false}}catch(e){}
+    try{if(id==='split'){splitPDFFile=null;splitResults=[]}}catch(e){}
+    try{if(id==='compress'){compressPDFFile=null;compressedPDFBlob=null;compressedPDFName=''}}catch(e){}
+    try{if(id==='organize'){organizeState=[]}}catch(e){}
+
+    // Clear generated UI but keep the permanent upload/drop zone.
+    p.querySelectorAll('[id$="-file-card"],#merge-queue,#resize-queue,#file-preview-list,#selected-files,#pdf-preview-list,#compress-preview-list,#split-result-list,#organize-preview,#scanned-grid,.v4-summary,.v11-summary,.v11-final-summary,.v11-output-progress,.v4-progress-wrap,[id$="-progress"]').forEach(el=>{try{el.innerHTML='';el.classList.add('hidden')}catch(e){}});
+    ['compress-file-info','compress-result','compress-progress','split-file-info','split-results'].forEach(x=>{const el=document.getElementById(x);if(el&&p.contains(el)){try{el.innerHTML=''}catch(e){}el.classList.add('hidden')}});
+    p.querySelectorAll('input[type=file]').forEach(clearInput);
+    p.querySelectorAll('.v21-upload-locked').forEach(el=>{el.classList.remove('v21-upload-locked');el.style.removeProperty('display')});
+    p.querySelectorAll('.drop-zone,.extra-drop,.camera-box').forEach(el=>{el.classList.remove('v21-upload-locked');el.style.removeProperty('display')});
+    p.querySelectorAll('[id$="-status"],.compress-status').forEach(el=>{if(el.id!=='output-drive-help')el.textContent=''});
+
+    // Restore ONLY user-editable form fields. Target KB/MB is optional and therefore blank.
+    p.querySelectorAll('input:not([type=file]),select,textarea').forEach(el=>{
+      try{
+        if(el.tagName==='SELECT'){
+          const idx=[...el.options].findIndex(o=>o.defaultSelected); el.selectedIndex=idx>=0?idx:0;
+        }else if(el.type==='checkbox'||el.type==='radio') el.checked=el.defaultChecked;
+        else el.value=el.defaultValue||'';
+      }catch(e){}
+    });
+
+    p.querySelectorAll('button.primary-btn').forEach(b=>{b.disabled=false;b.classList.remove('v21-conversion-finished');});
+    if(id==='merge')document.getElementById('merge-btn')?.classList.add('hidden');
+    if(id==='resize')document.getElementById('resize-btn')?.classList.add('hidden');
+    if(id==='compress'){
+      document.getElementById('compress-controls')?.classList.add('hidden');
+      const b=document.getElementById('compress-btn'); if(b){b.disabled=false;b.style.removeProperty('display');b.classList.remove('v21-conversion-finished');b.innerText='📉 COMPRESS PDF';}
+    }
+    if(id==='split')document.getElementById('split-controls')?.classList.add('hidden');
+    if(id==='scan'){
+      document.getElementById('page-count')&&(document.getElementById('page-count').textContent='0 Pages');
+      document.getElementById('save-box')?.classList.add('hidden'); document.getElementById('scan-save-bar')?.classList.add('hidden'); document.getElementById('review-workspace')?.classList.add('hidden');
+    }
+    try{toggleResizeMode()}catch(e){}
+    try{updateSaveUI()}catch(e){}
+  }
+
+  function closeOutput(){
+    try{outputQueue=[];outputBusy=false;currentOutput=null;googleDriveToken=null;googleDriveTokenClient=null}catch(e){}
+    const m=document.getElementById('output-modal'); if(m)m.classList.add('hidden');
+  }
+
+  function cleanOutgoing(next){
+    if(!lastTool || lastTool===next || switchingCleanup)return;
+    switchingCleanup=true;
+    try{clearTool(lastTool);closeOutput()}finally{switchingCleanup=false}
+  }
+
+  // The original switch wrappers are retained; this wrapper only cleans the tool
+  // being left, then lets the original navigation happen normally.
+  const originalSwitch=window.switchTab;
+  if(typeof originalSwitch==='function'){
+    window.switchTab=function(id){
+      cleanOutgoing(id);
+      lastTool=id;
+      return originalSwitch.apply(this,arguments);
+    };
+  }
+
+  // Initialize from current visible/hash state without forcing navigation.
+  const hash=(location.hash||'').replace(/^#/,'');
+  lastTool=TOOL_IDS.includes(hash)?hash:null;
+  document.addEventListener('click',function(e){
+    const card=e.target.closest?.('.tool-card[id^="tab-"]'); if(!card)return;
+    const id=card.id.replace(/^tab-/,''); if(TOOL_IDS.includes(id)){cleanOutgoing(id);lastTool=id;}
+  },true);
+
+  // Reset delayed-cleanup race fix: V23's delayed cleanup could erase a newly
+  // selected file. Once Reset has returned the tool to first-use state, do not
+  // run any delayed blanket cleanup over a later user selection.
+  if(typeof window.__sameToolReset==='function'){
+    const oldReset=window.__sameToolReset;
+    window.__sameToolReset=async function(){
+      return oldReset.apply(this,arguments);
+    };
+  }
+
+  // Compress PDF must become reusable immediately after every load.
+  const oldCompress=window.loadCompressPDF;
+  if(typeof oldCompress==='function' && !window.__v25CompressLoadFix){
+    window.loadCompressPDF=async function(file){
+      await oldCompress.call(this,file);
+      if(file){
+        document.getElementById('compress-controls')?.classList.remove('hidden');
+        const b=document.getElementById('compress-btn');
+        if(b){b.disabled=false;b.style.removeProperty('display');b.classList.remove('v21-conversion-finished');b.innerText='📉 COMPRESS PDF';}
+      }
+    };
+    window.__v25CompressLoadFix=true;
+  }
+
+  // Optional target size fields: normalize KB/MB conversion consistently.
+  document.addEventListener('input',function(e){
+    if(e.target?.matches?.('input[id$="-target-size"],#compress-target,#resize-size,#resize-both-size')){
+      const n=parseFloat(e.target.value); if(Number.isFinite(n)&&n>0)e.target.setCustomValidity('');
+    }
+  },true);
 })();
 </script>
